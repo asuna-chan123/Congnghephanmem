@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết sản phẩm - E-Tech Store</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS (sharing styles with home page + custom product detail styles) -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Specific page styles to prevent cluttering main stylesheet too much */
+        .detail-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 50px;
+            margin-top: 30px;
+            margin-bottom: 60px;
+        }
+        .gallery-box {
+            position: relative;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 450px;
+            box-shadow: var(--shadow-sm);
+        }
+        .gallery-box img {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: var(--radius-md);
+        }
+        .favorite-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        .favorite-toggle-btn.favorited {
+            color: #ef4444;
+            background-color: #fef2f2;
+            border-color: #fca5a5;
+        }
+        .product-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .product-meta h1 {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .rating-summary {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .stars {
+            color: #fbbf24;
+        }
+        .price-box {
+            background-color: var(--light);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin: 10px 0;
+        }
+        .price-box-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .rental-price-large {
+            font-size: 36px;
+            font-weight: 800;
+            color: #059669;
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+        .rental-price-large span {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+        .buy-price-small {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .buy-price-value {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 16px;
+        }
+        .option-group {
+            margin-bottom: 20px;
+        }
+        .option-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .option-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--border);
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .option-select:focus {
+            border-color: var(--primary);
+        }
+        .booking-calendar-box {
+            border: 2px dashed #059669;
+            background-color: #f0fdf4;
+            padding: 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 25px;
+        }
+        [data-theme="dark"] .booking-calendar-box {
+            background-color: #064e3b20;
+            border-color: #059669;
+        }
+        .calendar-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .calendar-input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .calendar-input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            outline: none;
+        }
+        .blocked-dates-info {
+            font-size: 12px;
+            color: #ef4444;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .detail-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn-try-prominent {
+            background-color: #059669;
+            color: white;
+            font-size: 18px;
+            padding: 16px;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
+            border: none;
+        }
+        .btn-try-prominent:hover {
+            background-color: #047857;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.6);
+        }
+        .reviews-section {
+            margin-top: 60px;
+            border-top: 1px solid var(--border);
+            padding-top: 40px;
+        }
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .reviews-summary-stats {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .reviews-average-number {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        .review-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 24px;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .review-user-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .review-username {
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .review-date {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .review-comment {
+            font-size: 14px;
+            color: var(--text-main);
+            margin-top: 8px;
+        }
+        @media (max-width: 900px) {
+            .detail-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation (Etsy Inspired) -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <a href="/" class="logo">E-Tech<span>Store</span></a>
+            </div>
+            
+            <div class="search-area-wrapper">
+                <div class="search-bar-container">
+                    <div class="category-dropdown-btn" id="category-dropdown-btn">
+                        Danh mục <i class="fa-solid fa-chevron-down"></i>
+                        <div class="category-dropdown-menu" id="category-dropdown-menu">
+                            <a href="/#category-dien-thoai"><i class="fa-solid fa-mobile-screen-button"></i> Điện thoại</a>
+                            <a href="/#category-laptop"><i class="fa-solid fa-laptop"></i> Laptop</a>
+                            <a href="/#category-may-anh"><i class="fa-solid fa-camera"></i> Máy ảnh</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="/#dynamic-categories" class="view-all-categories-btn">Hiển thị tất cả</a>
+                        </div>
+                    </div>
+                    <form class="search-form">
+                        <input type="text" placeholder="Tìm kiếm bất kỳ thiết bị công nghệ nào..." aria-label="Search">
+                        <button type="submit" class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+                </div>
+                <div class="search-suggestions" id="search-suggestions">
+                    <span class="suggestion-title-label">Đề xuất:</span>
+                    <a href="/#try-before-buy"><i class="fa-solid fa-gift"></i> Quà tặng</a>
+                    <a href="/#combo-packages"><i class="fa-solid fa-cubes"></i> Gói theo nhu cầu</a>
+                    <a href="/#category-dien-thoai"><i class="fa-solid fa-fire"></i> Sản phẩm hot</a>
+                    <a href="/#try-before-buy"><i class="fa-solid fa-circle-check"></i> Phù hợp với bạn</a>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="action-btn" id="theme-toggle" title="Đổi giao diện">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <a href="#" class="action-link sign-in-btn">Đăng nhập</a>
+                <a href="#" class="action-btn favorite-btn"><i class="fa-regular fa-heart"></i></a>
+                <button class="action-btn cart-btn-toggle" id="cart-toggle-btn">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- Detail Grid -->
+        <div class="detail-layout" id="product-detail-layout">
+            <!-- Loading state -->
+            <div class="loading-spinner" style="grid-column: 1 / -1;">
+                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải thông tin chi tiết sản phẩm...
+            </div>
+        </div>
+
+        <!-- Related Products Section -->
+        <section class="related-section">
+            <div class="section-title-wrapper">
+                <div>
+                    <span class="section-subtitle">Có thể bạn cũng thích</span>
+                    <h3 class="section-title">Sản Phẩm Loại Liên Quan</h3>
+                </div>
+            </div>
+            <div class="carousel-wrapper">
+                <button class="carousel-nav-btn carousel-prev" id="related-prev"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel-container" id="related-products-container">
+                    <!-- Related cards injected here -->
+                </div>
+                <button class="carousel-nav-btn carousel-next" id="related-next"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </section>
+
+        <!-- Reviews Section -->
+        <section class="reviews-section">
+            <div class="reviews-header">
+                <div>
+                    <h3 class="section-title">Đánh giá từ khách hàng</h3>
+                </div>
+                <div class="reviews-summary-stats">
+                    <div class="reviews-average-number" id="avg-rating-val">0.0</div>
+                    <div>
+                        <div class="stars" id="avg-stars-container">
+                            <!-- stars -->
+                        </div>
+                        <span id="reviews-count-label" style="font-size: 13px; color: var(--text-muted);">0 đánh giá</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="reviews-list-container">
+                <!-- Review cards injected here -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Shopping Cart Sidebar (Drawer) -->
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer-overlay" id="cart-overlay"></div>
+        <div class="cart-drawer-content">
+            <div class="cart-drawer-header">
+                <h3>Giỏ hàng của bạn (<span id="cart-drawer-count">0</span>)</h3>
+                <button class="close-cart-btn" id="close-cart-btn">&times;</button>
+            </div>
+            
+            <div class="cart-items-list" id="cart-items-list">
+                <!-- Cart Items Injected Here -->
+            </div>
+            
+            <div class="cart-drawer-footer">
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Tạm tính:</span>
+                        <strong id="cart-subtotal">0 đ</strong>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" id="checkout-btn">Tiến hành thanh toán</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="/" class="logo">E-Tech<span>Store</span></a>
+                <p>&copy; 2026 E-Tech Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/product-detail.js"></script>
+</body>
+</html>

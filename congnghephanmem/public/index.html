@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Tech Store - Trải nghiệm mua sắm & Dùng thử công nghệ</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header Navigation (Etsy Inspired) -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <a href="/" class="logo">E-Tech<span>Store</span></a>
+            </div>
+            
+            <div class="search-area-wrapper">
+                <div class="search-bar-container">
+                    <div class="category-dropdown-btn" id="category-dropdown-btn">
+                        Danh mục <i class="fa-solid fa-chevron-down"></i>
+                        <div class="category-dropdown-menu" id="category-dropdown-menu">
+                            <a href="#category-dien-thoai"><i class="fa-solid fa-mobile-screen-button"></i> Điện thoại</a>
+                            <a href="#category-laptop"><i class="fa-solid fa-laptop"></i> Laptop</a>
+                            <a href="#category-may-anh"><i class="fa-solid fa-camera"></i> Máy ảnh</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#dynamic-categories" class="view-all-categories-btn">Hiển thị tất cả</a>
+                        </div>
+                    </div>
+                    <form class="search-form">
+                        <input type="text" placeholder="Tìm kiếm bất kỳ thiết bị công nghệ nào..." aria-label="Search">
+                        <button type="submit" class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+                </div>
+                <div class="search-suggestions" id="search-suggestions">
+                    <span class="suggestion-title-label">Đề xuất:</span>
+                    <a href="#try-before-buy"><i class="fa-solid fa-gift"></i> Quà tặng</a>
+                    <a href="#combo-packages"><i class="fa-solid fa-cubes"></i> Gói theo nhu cầu</a>
+                    <a href="#category-dien-thoai"><i class="fa-solid fa-fire"></i> Sản phẩm hot</a>
+                    <a href="#try-before-buy"><i class="fa-solid fa-circle-check"></i> Phù hợp với bạn</a>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="action-btn" id="theme-toggle" title="Đổi giao diện">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <a href="#" class="action-link sign-in-btn">Đăng nhập</a>
+                <a href="#" class="action-btn favorite-btn"><i class="fa-regular fa-heart"></i></a>
+                <button class="action-btn cart-btn-toggle" id="cart-toggle-btn">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Banner Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <span class="badge">Độc quyền tại E-Tech</span>
+                <h1>Trải nghiệm công nghệ đỉnh cao trước khi sở hữu</h1>
+                <p>Mua sắm các thiết bị Phone, Laptop, Camera chính hãng hoặc dùng thử ngắn hạn với mức phí cực rẻ. Tiết kiệm tối đa chi phí với Gói Combo thiết kế riêng.</p>
+                <div class="hero-cta">
+                    <a href="#try-before-buy" class="btn btn-primary">Dùng thử ngay</a>
+                    <a href="#combo-packages" class="btn btn-outline">Xem các Gói Combo</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="image-glow"></div>
+                <img src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=800&auto=format&fit=crop&q=60" alt="Premium Tech Setup">
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+        
+        <!-- Category Carousels Container -->
+        <section class="categories-section">
+            <div class="section-title-wrapper">
+                <div>
+                    <span class="section-subtitle">Khám phá theo danh mục</span>
+                    <h2 class="section-title">Thiết Bị Công Nghệ Mới Nhất</h2>
+                </div>
+            </div>
+
+            <!-- Dynamic Category Carousels will be injected here -->
+            <div id="dynamic-categories">
+                <!-- Skeleton loader or spinner while fetching -->
+                <div class="loading-spinner">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu sản phẩm...
+                </div>
+            </div>
+        </section>
+
+        <!-- Banner Middle (Etsy-like Promotional Banner) -->
+        <section class="promo-banner-section">
+            <div class="promo-grid">
+                <div class="promo-card promo-left" style="background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(88, 28, 135, 0.8)), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=60');">
+                    <div class="promo-content">
+                        <h3>Dịch vụ Dùng thử đặc biệt</h3>
+                        <p>Bạn băn khoăn về chất lượng máy ảnh hay tốc độ của chiếc Laptop? Hãy đăng ký dùng thử 3-7 ngày trước khi đưa ra quyết định mua hàng chính thức.</p>
+                        <a href="#try-before-buy" class="btn btn-white">Tìm hiểu thêm <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="promo-card promo-right" style="background-image: linear-gradient(135deg, rgba(249, 115, 22, 0.95), rgba(220, 38, 38, 0.8)), url('https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&auto=format&fit=crop&q=60');">
+                    <div class="promo-content">
+                        <h3>Ưu đãi Combo siêu hời</h3>
+                        <p>Tiết kiệm lên tới 15% khi mua các Gói sản phẩm được đồng bộ hóa theo nhu cầu làm việc, sáng tạo hay du lịch phượt.</p>
+                        <a href="#combo-packages" class="btn btn-white">Xem ngay <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Combos Section ("Gói Nhu Cầu") -->
+        <section class="combos-section" id="combo-packages">
+            <div class="section-title-wrapper">
+                <div>
+                    <span class="section-subtitle">Giải pháp đồng bộ</span>
+                    <h2 class="section-title">Gói Sản Phẩm Theo Nhu Cầu</h2>
+                </div>
+            </div>
+            
+            <div class="combos-grid" id="combos-container">
+                <!-- Dynamic Combos Injected Here -->
+            </div>
+        </section>
+
+        <!-- Try Before Buy Section -->
+        <section class="try-section" id="try-before-buy">
+            <div class="section-title-wrapper">
+                <div>
+                    <span class="section-subtitle">Tiết kiệm & An tâm</span>
+                    <h2 class="section-title">Dùng Thử Trước Khi Mua</h2>
+                </div>
+            </div>
+
+            <div class="try-grid" id="try-before-buy-container">
+                <!-- Dynamic Try Before Buy Products Injected Here -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Shopping Cart Sidebar (Drawer) -->
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer-overlay" id="cart-overlay"></div>
+        <div class="cart-drawer-content">
+            <div class="cart-drawer-header">
+                <h3>Giỏ hàng của bạn (<span id="cart-drawer-count">0</span>)</h3>
+                <button class="close-cart-btn" id="close-cart-btn">&times;</button>
+            </div>
+            
+            <div class="cart-items-list" id="cart-items-list">
+                <!-- Cart Items Injected Here -->
+                <div class="empty-cart-message">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    <p>Giỏ hàng của bạn đang trống.</p>
+                </div>
+            </div>
+            
+            <div class="cart-drawer-footer">
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Tạm tính:</span>
+                        <strong id="cart-subtotal">0 đ</strong>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" id="checkout-btn">Tiến hành thanh toán</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="/" class="logo">E-Tech<span>Store</span></a>
+                <p>Nâng tầm trải nghiệm công nghệ của bạn bằng các dịch vụ mua sắm linh hoạt, hỗ trợ dùng thử trước khi mua hàng đầu Việt Nam.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                    <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <h4>Về E-Tech</h4>
+                <ul>
+                    <li><a href="#">Giới thiệu</a></li>
+                    <li><a href="#">Tuyển dụng</a></li>
+                    <li><a href="#">Báo chí</a></li>
+                    <li><a href="#">Chính sách bảo mật</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h4>Hỗ trợ khách hàng</h4>
+                <ul>
+                    <li><a href="#">Trung tâm trợ giúp</a></li>
+                    <li><a href="#">Chính sách dùng thử</a></li>
+                    <li><a href="#">Chính sách đổi trả</a></li>
+                    <li><a href="#">Liên hệ hỗ trợ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-subscribe">
+                <h4>Đăng ký nhận tin tức</h4>
+                <p>Nhận các mã giảm giá đặc biệt và thông tin sản phẩm mới nhất.</p>
+                <form class="subscribe-form" onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký!');">
+                    <input type="email" placeholder="Email của bạn..." required>
+                    <button type="submit">Đăng ký</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 E-Tech Store. All rights reserved. Thiết kế tương tự phong cách Etsy.</p>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="js/app.js"></script>
+</body>
+</html>

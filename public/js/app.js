@@ -1,6 +1,26 @@
 // State Management
-let cart = [];
 let homeData = null;
+
+// Session Management
+function getSessionId() {
+    let sessionId = localStorage.getItem('sessionId');
+    if (!sessionId) {
+        sessionId = 'session_' + Date.now() + Math.random().toString(36).substring(2);
+        localStorage.setItem('sessionId', sessionId);
+    }
+    return sessionId;
+}
+
+// API Fetch Helper
+async function apiFetch(url, options = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-Session-Id': getSessionId(),
+        ...(options.headers || {})
+    };
+    const res = await fetch(url, { ...options, headers });
+    return await res.json();
+}
 
 // DOM Elements
 const dynamicCategories = document.getElementById('dynamic-categories');
@@ -8,12 +28,7 @@ const combosContainer = document.getElementById('combos-container');
 const tryBeforeBuyContainer = document.getElementById('try-before-buy-container');
 const themeToggle = document.getElementById('theme-toggle');
 const cartToggleBtn = document.getElementById('cart-toggle-btn');
-const cartDrawer = document.getElementById('cart-drawer');
-const cartOverlay = document.getElementById('cart-overlay');
-const closeCartBtn = document.getElementById('close-cart-btn');
-const cartItemsList = document.getElementById('cart-items-list');
-const cartDrawerCount = document.getElementById('cart-drawer-count');
-const cartSubtotal = document.getElementById('cart-subtotal');
+
 const cartCountBadges = document.querySelectorAll('.cart-count');
 const categoryDropdownBtn = document.getElementById('category-dropdown-btn');
 const categoryDropdownMenu = document.getElementById('category-dropdown-menu');
@@ -53,6 +68,7 @@ const categoryTagLabels = {
 
 // Fetch and Render Home Page Data
 async function loadHomeData() {
+    if (!dynamicCategories) return;
     try {
         const response = await fetch('/api/home-data');
         const data = await response.json();
@@ -373,127 +389,57 @@ function checkUrlHashFilter() {
 }
 
 // Shopping Cart Actions
-function saveCart() {
-    localStorage.setItem('etech_cart', JSON.stringify(cart));
-}
-
-function loadCart() {
-    const stored = localStorage.getItem('etech_cart');
-    if (stored) {
-        cart = JSON.parse(stored);
-        updateCartUI();
-    }
-}
-
-function addToCart(productId, type = 'buy') {
-    let product = null;
-    if (homeData && homeData.categories) {
-        for (const cat of homeData.categories) {
-            const found = cat.products.find(p => p.id === productId);
-            if (found) { product = found; break; }
+async function loadCart() {
+    try {
+        const data = await apiFetch('/api/cart');
+        if (data.success) {
+            updateCartUI(data.cart.length);
         }
+    } catch (e) {
+        console.error('Error loading cart', e);
     }
-    
-    if (!product && homeData && homeData.tryBeforeBuy) {
-        product = homeData.tryBeforeBuy.find(p => p.id === productId);
-    }
-    
-    if (!product) return;
-    
-    const itemPrice = type === 'trial' ? product.trial_price_per_day : product.price;
-    const itemTitle = type === 'trial' ? `${product.name} (Dùng thử 1 ngày)` : product.name;
-    const itemTypeName = type === 'trial' ? 'Dùng thử' : 'Mua đứt';
-
-    const cartItem = {
-        uniqueId: Date.now() + Math.random().toString(36).substr(2, 9),
-        id: product.id,
-        name: itemTitle,
-        price: itemPrice,
-        image: product.image_url,
-        type: itemTypeName
-    };
-    
-    cart.push(cartItem);
-    saveCart();
-    updateCartUI();
-    openCart();
 }
 
-function addComboToCart(comboId) {
-    if (!homeData || !homeData.combos) return;
-    
-    const combo = homeData.combos.find(c => c.id === comboId);
-    if (!combo) return;
-    
-    const cartItem = {
-        uniqueId: Date.now() + Math.random().toString(36).substr(2, 9),
-        id: combo.id,
-        name: combo.name,
-        price: combo.price,
-        image: combo.image_url,
-        type: 'Gói Combo'
-    };
-    
-    cart.push(cartItem);
-    saveCart();
-    updateCartUI();
-    openCart();
-}
-
-function removeCartItem(uniqueId) {
-    cart = cart.filter(item => item.uniqueId !== uniqueId);
-    saveCart();
-    updateCartUI();
-}
-
-function updateCartUI() {
-    cartCountBadges.forEach(badge => {
-        badge.textContent = cart.length;
-    });
-    cartDrawerCount.textContent = cart.length;
-    
-    if (cart.length === 0) {
-        cartItemsList.innerHTML = `
-            <div class="empty-cart-message">
-                <i class="fa-solid fa-basket-shopping"></i>
-                <p>Giỏ hàng của bạn đang trống.</p>
-            </div>
-        `;
-        cartSubtotal.textContent = formatCurrency(0);
-    } else {
-        cartItemsList.innerHTML = '';
-        let total = 0;
-        
-        cart.forEach(item => {
-            total += item.price;
-            
-            const itemElement = document.createElement('div');
-            itemElement.className = 'cart-item';
-            itemElement.innerHTML = `
-                <img src="${item.image || 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=500'}" alt="${item.name}">
-                <div class="cart-item-info">
-                    <h5 class="cart-item-title" style="font-size: 13px;">${item.name}</h5>
-                    <span class="cart-item-type">${item.type}</span>
-                    <div class="cart-item-price">${formatCurrency(item.price)}</div>
-                </div>
-                <button class="remove-cart-item" onclick="removeCartItem('${item.uniqueId}')">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
-            `;
-            cartItemsList.appendChild(itemElement);
+async function addToCart(productId, type = 'buy') {
+    try {
+        const res = await apiFetch('/api/cart/add', {
+            method: 'POST',
+            body: JSON.stringify({ productId, type })
         });
-        
-        cartSubtotal.textContent = formatCurrency(total);
+        if (res.success) {
+            window.location.href = '/cart.html';
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (e) {
+        console.error('Error adding to cart', e);
+        alert('Lỗi thêm vào giỏ hàng');
     }
 }
 
-// Drawer Toggle Functions
-function openCart() {
-    cartDrawer.classList.add('open');
+async function addComboToCart(comboId) {
+    try {
+        const res = await apiFetch('/api/cart/add', {
+            method: 'POST',
+            body: JSON.stringify({ comboId, type: 'combo' })
+        });
+        if (res.success) {
+            window.location.href = '/cart.html';
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (e) {
+        console.error('Error adding to cart', e);
+        alert('Lỗi thêm vào giỏ hàng');
+    }
 }
 
-function closeCart() {
-    cartDrawer.classList.remove('open');
+function updateCartUI(count) {
+    if (cartCountBadges) {
+        cartCountBadges.forEach(badge => {
+            badge.textContent = count;
+        });
+    }
 }
 
 // Theme Switcher (Light / Dark)
@@ -532,21 +478,14 @@ window.addEventListener('scroll', () => {
 });
 
 // Event Listeners
-themeToggle.addEventListener('click', toggleTheme);
-cartToggleBtn.addEventListener('click', openCart);
-closeCartBtn.addEventListener('click', closeCart);
-cartOverlay.addEventListener('click', closeCart);
-document.getElementById('checkout-btn').addEventListener('click', () => {
-    if (cart.length === 0) {
-        alert('Giỏ hàng trống! Hãy chọn mua hoặc dùng thử sản phẩm.');
-    } else {
-        alert('Cảm ơn bạn đã đặt hàng demo! Hệ thống đã ghi nhận thành công.');
-        cart = [];
-        saveCart();
-        updateCartUI();
-        closeCart();
-    }
-});
+if (themeToggle) {
+    themeToggle.addEventListener('click', toggleTheme);
+}
+if (cartToggleBtn) {
+    cartToggleBtn.addEventListener('click', () => {
+        window.location.href = '/cart.html';
+    });
+}
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {

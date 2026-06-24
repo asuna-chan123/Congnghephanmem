@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const homeRoutes = require('./src/routes/home.route');
 const productRoutes = require('./src/routes/product.route');
+const cartRoutes = require('./src/routes/cart.route');
+const favoriteRoutes = require('./src/routes/favorite.route');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +18,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // API Routes
 app.use('/api', homeRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/favorites', favoriteRoutes);
 
 // Clean routes
 app.get('/products', (req, res) => {

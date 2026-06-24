@@ -80,11 +80,11 @@
                     <i class="fa-solid fa-moon"></i>
                 </button>
                 <a href="#" class="action-link sign-in-btn">Đăng nhập</a>
-                <a href="#" class="action-btn favorite-btn"><i class="fa-regular fa-heart"></i></a>
-                <button class="action-btn cart-btn-toggle" id="cart-toggle-btn">
+                <a href="/favorites.html" class="action-btn favorite-btn"><i class="fa-regular fa-heart"></i></a>
+                <a href="/cart.html" class="action-btn cart-btn-toggle" id="cart-toggle-btn">
                     <i class="fa-solid fa-bag-shopping"></i>
                     <span class="cart-count">0</span>
-                </button>
+                </a>
             </div>
         </div>
     </header>
@@ -179,34 +179,6 @@
 
     </main>
 
-    <!-- Shopping Cart Sidebar (Drawer) -->
-    <div class="cart-drawer" id="cart-drawer">
-        <div class="cart-drawer-overlay" id="cart-overlay"></div>
-        <div class="cart-drawer-content">
-            <div class="cart-drawer-header">
-                <h3>Giỏ hàng của bạn (<span id="cart-drawer-count">0</span>)</h3>
-                <button class="close-cart-btn" id="close-cart-btn">&times;</button>
-            </div>
-            
-            <div class="cart-items-list" id="cart-items-list">
-                <!-- Cart Items Injected Here -->
-                <div class="empty-cart-message">
-                    <i class="fa-solid fa-basket-shopping"></i>
-                    <p>Giỏ hàng của bạn đang trống.</p>
-                </div>
-            </div>
-            
-            <div class="cart-drawer-footer">
-                <div class="cart-summary">
-                    <div class="summary-row">
-                        <span>Tạm tính:</span>
-                        <strong id="cart-subtotal">0 đ</strong>
-                    </div>
-                </div>
-                <button class="btn btn-primary btn-block" id="checkout-btn">Tiến hành thanh toán</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Footer Section -->
     <footer class="main-footer">

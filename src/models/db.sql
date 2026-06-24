@@ -2,6 +2,8 @@
 PRAGMA foreign_keys = ON;
 
 -- Drop tables if they exist to start fresh
+DROP TABLE IF EXISTS favorites;
+DROP TABLE IF EXISTS cart_items;
 DROP TABLE IF EXISTS rentals;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS combo_products;
@@ -68,6 +70,28 @@ CREATE TABLE rentals (
     product_id INTEGER NOT NULL,
     start_date TEXT NOT NULL, -- Format YYYY-MM-DD
     end_date TEXT NOT NULL,   -- Format YYYY-MM-DD
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+-- Cart Items Table
+CREATE TABLE cart_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    product_id INTEGER,
+    combo_id INTEGER,
+    type TEXT NOT NULL, -- 'buy', 'trial', 'combo'
+    quantity INTEGER DEFAULT 1,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(session_id, product_id, combo_id, type)
+);
+
+-- Favorites Table
+CREATE TABLE favorites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    product_id INTEGER NOT NULL,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(session_id, product_id),
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 

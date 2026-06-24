@@ -49,18 +49,6 @@ const filterInStock = document.getElementById('filter-in-stock');
 const activeFiltersRow = document.getElementById('active-filters-row');
 const clearAllFiltersBtn = document.getElementById('clear-all-filters-btn');
 const headerSearchInput = document.getElementById('header-search-input');
-const categoryDropdownBtn = document.getElementById('category-dropdown-btn');
-const categoryDropdownMenu = document.getElementById('category-dropdown-menu');
-
-const themeToggle = document.getElementById('theme-toggle');
-const cartToggleBtn = document.getElementById('cart-toggle-btn');
-const cartDrawer = document.getElementById('cart-drawer');
-const cartOverlay = document.getElementById('cart-overlay');
-const closeCartBtn = document.getElementById('close-cart-btn');
-const cartItemsList = document.getElementById('cart-items-list');
-const cartDrawerCount = document.getElementById('cart-drawer-count');
-const cartSubtotal = document.getElementById('cart-subtotal');
-const cartCountBadges = document.querySelectorAll('.cart-count');
 
 // Helper to format currency
 function formatCurrency(value) {
@@ -445,142 +433,9 @@ function renderAll() {
     renderProducts();
 }
 
-// Cart Drawer Updates (Synced from Local Storage)
-function loadCart() {
-    const stored = localStorage.getItem('etech_cart');
-    if (stored) {
-        cart = JSON.parse(stored);
-        updateCartUI();
-    }
-}
 
-function saveCart() {
-    localStorage.setItem('etech_cart', JSON.stringify(cart));
-    updateCartUI();
-}
-
-function updateCartUI() {
-    cartCountBadges.forEach(badge => badge.textContent = cart.length);
-    cartDrawerCount.textContent = cart.length;
-    
-    if (cart.length === 0) {
-        cartItemsList.innerHTML = `
-            <div class="empty-cart-message">
-                <i class="fa-solid fa-basket-shopping"></i>
-                <p>Giỏ hàng của bạn đang trống.</p>
-            </div>
-        `;
-        cartSubtotal.textContent = formatCurrency(0);
-    } else {
-        cartItemsList.innerHTML = '';
-        let total = 0;
-        
-        cart.forEach(item => {
-            total += item.price;
-            
-            const itemElement = document.createElement('div');
-            itemElement.className = 'cart-item';
-            itemElement.innerHTML = `
-                <img src="${item.image}" alt="${item.name}">
-                <div class="cart-item-info">
-                    <h5 class="cart-item-title" style="font-size: 13px;">${item.name}</h5>
-                    <span class="cart-item-type">${item.type}</span>
-                    <div class="cart-item-price">${formatCurrency(item.price)}</div>
-                </div>
-                <button class="remove-cart-item" onclick="removeCartItem('${item.uniqueId}')">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
-            `;
-            cartItemsList.appendChild(itemElement);
-        });
-        
-        cartSubtotal.textContent = formatCurrency(total);
-    }
-}
-
-function addToCart(productId, type = 'buy') {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    
-    const itemPrice = type === 'trial' ? product.trial_price_per_day : product.price;
-    const itemTitle = type === 'trial' ? `${product.name} (Dùng thử 1 ngày)` : product.name;
-    const itemTypeName = type === 'trial' ? 'Dùng thử' : 'Mua đứt';
-
-    const cartItem = {
-        uniqueId: Date.now() + Math.random().toString(36).substr(2, 9),
-        id: product.id,
-        name: itemTitle,
-        price: itemPrice,
-        image: product.image_url,
-        type: itemTypeName
-    };
-    
-    cart.push(cartItem);
-    saveCart();
-    openCart();
-}
-
-window.removeCartItem = function(uniqueId) {
-    cart = cart.filter(item => item.uniqueId !== uniqueId);
-    saveCart();
-};
-
-function openCart() {
-    cartDrawer.classList.add('open');
-}
-
-function closeCart() {
-    cartDrawer.classList.remove('open');
-}
-
-// Category Dropdown Toggle
-if (categoryDropdownBtn && categoryDropdownMenu) {
-    categoryDropdownBtn.addEventListener('click', (e) => {
-        if (e.target.tagName === 'A' || e.target.closest('#category-dropdown-menu a')) {
-            return;
-        }
-        e.stopPropagation();
-        categoryDropdownMenu.classList.toggle('show');
-    });
-
-    document.addEventListener('click', () => {
-        categoryDropdownMenu.classList.remove('show');
-    });
-}
-
-// Theme System
-function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    const icon = themeToggle.querySelector('i');
-    icon.className = savedTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-}
-
-themeToggle.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    themeToggle.querySelector('i').className = newTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-});
-
-cartToggleBtn.addEventListener('click', openCart);
-closeCartBtn.addEventListener('click', closeCart);
-cartOverlay.addEventListener('click', closeCart);
-document.getElementById('checkout-btn').addEventListener('click', () => {
-    if (cart.length === 0) {
-        alert('Giỏ hàng trống!');
-    } else {
-        alert('Cảm ơn bạn đã đăng ký thuê/mua sản phẩm!');
-        cart = [];
-        saveCart();
-        closeCart();
-    }
-});
 
 // Load everything on DOM load
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    loadCart();
     fetchCatalogData();
 });

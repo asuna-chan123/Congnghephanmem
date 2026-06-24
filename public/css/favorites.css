@@ -1,0 +1,162 @@
+/* favorites.css */
+.favorites-page-wrapper {
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 0 24px;
+}
+
+.favorites-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.title-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.title-group h1 {
+    font-size: 32px;
+    font-weight: 400;
+    font-family: serif;
+}
+
+.sign-in-pill {
+    background: transparent;
+    border: 1px solid #222;
+    border-radius: 99px;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.sign-in-pill:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.action-group {
+    display: flex;
+    gap: 10px;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 99px;
+    transition: background 0.2s;
+}
+
+.icon-btn:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.icon-btn.circle {
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    padding: 0;
+}
+
+.alert-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 30px;
+    font-size: 14px;
+    color: var(--text-main);
+    max-width: 600px;
+}
+
+.alert-box i {
+    margin-top: 3px;
+}
+
+.alert-box strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.fav-card {
+    position: relative;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.fav-card-image {
+    width: 100%;
+    aspect-ratio: 4/5;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+}
+
+.fav-card-heart {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    color: #e53935; /* Red heart */
+    cursor: pointer;
+    z-index: 2;
+}
+
+.fav-card-info {
+    padding: 8px 0;
+}
+
+.fav-card-title {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.fav-card-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.fav-card-price {
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.free-delivery-badge {
+    display: inline-block;
+    background-color: #d4edda;
+    color: #155724;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 4px;
+}

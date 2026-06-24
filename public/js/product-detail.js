@@ -22,6 +22,8 @@ const cartItemsList = document.getElementById('cart-items-list');
 const cartDrawerCount = document.getElementById('cart-drawer-count');
 const cartSubtotal = document.getElementById('cart-subtotal');
 const cartCountBadges = document.querySelectorAll('.cart-count');
+const categoryDropdownBtn = document.getElementById('category-dropdown-btn');
+const categoryDropdownMenu = document.getElementById('category-dropdown-menu');
 
 // Extract Product ID
 const urlParams = new URLSearchParams(window.location.search);
@@ -412,6 +414,7 @@ function handleDetailAction(actionType) {
     };
 
     cart.push(cartItem);
+    saveCart();
     updateCartUI();
     openCart();
 }
@@ -556,8 +559,21 @@ function updateCartUI() {
     }
 }
 
+function saveCart() {
+    localStorage.setItem('etech_cart', JSON.stringify(cart));
+}
+
+function loadCart() {
+    const stored = localStorage.getItem('etech_cart');
+    if (stored) {
+        cart = JSON.parse(stored);
+        updateCartUI();
+    }
+}
+
 function removeCartItem(uniqueId) {
     cart = cart.filter(item => item.uniqueId !== uniqueId);
+    saveCart();
     updateCartUI();
 }
 
@@ -604,13 +620,30 @@ document.getElementById('checkout-btn').addEventListener('click', () => {
     } else {
         alert('Cảm ơn bạn đã đăng ký thuê/mua sản phẩm!');
         cart = [];
+        saveCart();
         updateCartUI();
         closeCart();
     }
 });
 
+// Category Dropdown Toggle
+if (categoryDropdownBtn && categoryDropdownMenu) {
+    categoryDropdownBtn.addEventListener('click', (e) => {
+        if (e.target.tagName === 'A' || e.target.closest('#category-dropdown-menu a')) {
+            return;
+        }
+        e.stopPropagation();
+        categoryDropdownMenu.classList.toggle('show');
+    });
+
+    document.addEventListener('click', () => {
+        categoryDropdownMenu.classList.remove('show');
+    });
+}
+
 // Init
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
+    loadCart();
     loadProductDetails();
 });

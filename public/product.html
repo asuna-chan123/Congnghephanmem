@@ -273,15 +273,42 @@
                     <div class="category-dropdown-btn" id="category-dropdown-btn">
                         Danh mục <i class="fa-solid fa-chevron-down"></i>
                         <div class="category-dropdown-menu" id="category-dropdown-menu">
-                            <a href="/#category-dien-thoai"><i class="fa-solid fa-mobile-screen-button"></i> Điện thoại</a>
-                            <a href="/#category-laptop"><i class="fa-solid fa-laptop"></i> Laptop</a>
-                            <a href="/#category-may-anh"><i class="fa-solid fa-camera"></i> Máy ảnh</a>
-                            <div class="dropdown-divider"></div>
-                            <a href="/#dynamic-categories" class="view-all-categories-btn">Hiển thị tất cả</a>
+                            <div class="dropdown-grid">
+                                <div class="dropdown-col">
+                                    <h4><i class="fa-solid fa-mobile-screen-button"></i> Điện thoại</h4>
+                                    <a href="/products.html?category=dien-thoai">Tất cả điện thoại</a>
+                                    <a href="/products.html?category=dien-thoai&tag=gia-re">Giá rẻ</a>
+                                    <a href="/products.html?category=dien-thoai&tag=chup-anh">Chụp ảnh đẹp</a>
+                                    <a href="/products.html?category=dien-thoai&tag=hieu-nang">Hiệu năng cao</a>
+                                    <a href="/products.html?category=dien-thoai&tag=pin-trau">Pin trâu</a>
+                                    <a href="/products.html?category=dien-thoai&tag=mong-nhe">Mỏng nhẹ</a>
+                                </div>
+                                <div class="dropdown-col">
+                                    <h4><i class="fa-solid fa-laptop"></i> Laptop</h4>
+                                    <a href="/products.html?category=laptop">Tất cả laptop</a>
+                                    <a href="/products.html?category=laptop&tag=van-phong">Văn phòng</a>
+                                    <a href="/products.html?category=laptop&tag=sang-trong">Sang trọng</a>
+                                    <a href="/products.html?category=laptop&tag=mong-nhe">Mỏng nhẹ</a>
+                                    <a href="/products.html?category=laptop&tag=do-hoa">Đồ họa</a>
+                                    <a href="/products.html?category=laptop&tag=choi-game">Chơi game</a>
+                                </div>
+                                <div class="dropdown-col">
+                                    <h4><i class="fa-solid fa-camera"></i> Máy ảnh</h4>
+                                    <a href="/products.html?category=may-anh">Tất cả máy ảnh</a>
+                                    <a href="/products.html?category=may-anh&tag=du-lich">Du lịch</a>
+                                    <a href="/products.html?category=may-anh&tag=chuyen-nghiep">Chuyên nghiệp</a>
+                                    <a href="/products.html?category=may-anh&tag=vlog">Vlog</a>
+                                    <a href="/products.html?category=may-anh&tag=action-cam">Action Cam</a>
+                                    <a href="/products.html?category=may-anh&tag=compact">Compact</a>
+                                </div>
+                            </div>
+                            <div class="dropdown-footer-row">
+                                <a href="/products.html" class="view-all-categories-btn">Hiển thị tất cả thiết bị công nghệ</a>
+                            </div>
                         </div>
                     </div>
-                    <form class="search-form">
-                        <input type="text" placeholder="Tìm kiếm bất kỳ thiết bị công nghệ nào..." aria-label="Search">
+                    <form class="search-form" action="/products.html" method="GET">
+                        <input type="text" name="search" placeholder="Tìm kiếm bất kỳ thiết bị công nghệ nào..." aria-label="Search">
                         <button type="submit" class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
                     </form>
                 </div>

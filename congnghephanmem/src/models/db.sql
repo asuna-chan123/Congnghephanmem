@@ -138,7 +138,7 @@ INSERT INTO combos (name, description, price, original_price, image_url, stock_q
 ),
 (
   'Combo Du lịch & Phượt hành trình', 
-  'Bộ thiết bị bền bỉ lưu giữ mọi khoảnh khắc đáng nhớ trên mọi cung đường. Ghi hình mượt mà, thời lượng pin thoải mái cho cả chuyến đi dài.', 
+  'Bộ thiết bị bền bỉ lưu giữ mọi khoảnh khắc đáng nhớ trên mọi cung đường. Ghi hình mượt mượt mà, thời lượng pin thoải mái cho cả chuyến đi dài.', 
   12990000, 
   15480000, 
   'https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=500&auto=format&fit=crop&q=60', 

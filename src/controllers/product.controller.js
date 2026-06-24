@@ -2,6 +2,25 @@ const ProductModel = require('../models/product.model');
 const ReviewModel = require('../models/review.model');
 
 class ProductController {
+  static async getAllProductsList(req, res) {
+    try {
+      const products = await ProductModel.getAllProducts();
+      const categories = await ProductModel.getAllCategories();
+      res.json({
+        success: true,
+        products,
+        categories
+      });
+    } catch (error) {
+      console.error('Error fetching all products list:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching products list.',
+        error: error.message
+      });
+    }
+  }
+
   static async getProductDetails(req, res) {
     try {
       const productId = parseInt(req.params.id);

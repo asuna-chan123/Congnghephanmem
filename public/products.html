@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Thiết Bị Công Nghệ - E-Tech Store</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Product Page Layout */
+        .products-page-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+        }
+
+        /* Sidebar Filters */
+        .filters-sidebar {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .filter-group {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-group:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .filter-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .filter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .filter-item input[type="checkbox"],
+        .filter-item input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        /* Category pills in sidebar */
+        .category-filter-btn {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            text-align: left;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            color: var(--text-main);
+        }
+
+        .category-filter-btn.active {
+            background-color: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Results Area */
+        .results-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .results-title-bar h2 {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .results-count {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .sort-select-wrapper select {
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            font-weight: 500;
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .active-filters-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .active-filter-pill {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .clear-filters-btn {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 6px;
+        }
+
+        .clear-filters-btn:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        /* Products Grid */
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 60px 20px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .products-page-container {
+                grid-template-columns: 1fr;
+            }
+            .filters-sidebar {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation (Etsy Inspired) -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <a href="/" class="logo">E-Tech<span>Store</span></a>
+            </div>
+            
+            <div class="search-area-wrapper">
+                <div class="search-bar-container">
+                    <div class="category-dropdown-btn" id="category-dropdown-btn">
+                        Danh mục <i class="fa-solid fa-chevron-down"></i>
+                        <div class="category-dropdown-menu" id="category-dropdown-menu">
+                            <div class="dropdown-grid">
+                                <div class="dropdown-col">
+                                    <h4><i class="fa-solid fa-mobile-screen-button"></i> Điện thoại</h4>
+                                    <a href="/products.html?category=dien-thoai">Tất cả điện thoại</a>
+                                    <a href="/products.html?category=dien-thoai&tag=gia-re">Giá rẻ</a>
+                                    <a href="/products.html?category=dien-thoai&tag=chup-anh">Chụp ảnh đẹp</a>
+                                    <a href="/products.html?category=dien-thoai&tag=hieu-nang">Hiệu năng cao</a>
+                                    <a href="/products.html?category=dien-thoai&tag=pin-trau">Pin trâu</a>
+                                    <a href="/products.html?category=dien-thoai&tag=mong-nhe">Mỏng nhẹ</a>
+                                </div>
+                                <div class="dropdown-col">
+                                    <h4><i class="fa-solid fa-laptop"></i> Laptop</h4>
+                                    <a href="/products.html?category=laptop">Tất cả laptop</a>
+                                    <a href="/products.html?category=laptop&tag=van-phong">Văn phòng</a>
+                                    <a href="/products.html?category=laptop&tag=sang-trong">Sang trọng</a>
+                                    <a href="/products.html?category=laptop&tag=mong-nhe">Mỏng nhẹ</a>
+                                    <a href="/products.html?category=laptop&tag=do-hoa">Đồ họa</a>
+                                    <a href="/products.html?category=laptop&tag=choi-game">Chơi game</a>
+                                </div>
+                                <div class="dropdown-col">
+                                    <h4><i class="fa-solid fa-camera"></i> Máy ảnh</h4>
+                                    <a href="/products.html?category=may-anh">Tất cả máy ảnh</a>
+                                    <a href="/products.html?category=may-anh&tag=du-lich">Du lịch</a>
+                                    <a href="/products.html?category=may-anh&tag=chuyen-nghiep">Chuyên nghiệp</a>
+                                    <a href="/products.html?category=may-anh&tag=vlog">Vlog</a>
+                                    <a href="/products.html?category=may-anh&tag=action-cam">Action Cam</a>
+                                    <a href="/products.html?category=may-anh&tag=compact">Compact</a>
+                                </div>
+                            </div>
+                            <div class="dropdown-footer-row">
+                                <a href="/products.html" class="view-all-categories-btn">Hiển thị tất cả thiết bị công nghệ</a>
+                            </div>
+                        </div>
+                    </div>
+                    <form class="search-form" action="/products.html" method="GET">
+                        <input type="text" name="search" id="header-search-input" placeholder="Tìm kiếm bất kỳ thiết bị công nghệ nào..." aria-label="Search">
+                        <button type="submit" class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="action-btn" id="theme-toggle" title="Đổi giao diện">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <a href="#" class="action-link sign-in-btn">Đăng nhập</a>
+                <a href="#" class="action-btn favorite-btn"><i class="fa-regular fa-heart"></i></a>
+                <button class="action-btn cart-btn-toggle" id="cart-toggle-btn">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Products Directory Container -->
+    <main class="products-page-container">
+        
+        <!-- Sidebar Filters -->
+        <aside class="filters-sidebar">
+            <!-- Categories selector -->
+            <div class="filter-group">
+                <h4 class="filter-title">Danh mục</h4>
+                <div class="filter-list" id="category-filter-list">
+                    <button class="category-filter-btn active" data-category="all">
+                        <i class="fa-solid fa-layer-group"></i> Tất cả thiết bị
+                    </button>
+                    <button class="category-filter-btn" data-category="dien-thoai">
+                        <i class="fa-solid fa-mobile-screen-button"></i> Điện thoại
+                    </button>
+                    <button class="category-filter-btn" data-category="laptop">
+                        <i class="fa-solid fa-laptop"></i> Laptop
+                    </button>
+                    <button class="category-filter-btn" data-category="may-anh">
+                        <i class="fa-solid fa-camera"></i> Máy ảnh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Tag Filters based on category -->
+            <div class="filter-group" id="tags-filter-group" style="display: none;">
+                <h4 class="filter-title">Bộ lọc đặc tính</h4>
+                <div class="filter-list" id="dynamic-tags-list">
+                    <!-- Javascript will inject filters here -->
+                </div>
+            </div>
+
+            <!-- Rental/Buy options filter -->
+            <div class="filter-group">
+                <h4 class="filter-title">Hình thức</h4>
+                <div class="filter-list">
+                    <label class="filter-item">
+                        <input type="checkbox" id="filter-trial-only">
+                        <span>Hỗ trợ dùng thử trước khi mua</span>
+                    </label>
+                    <label class="filter-item">
+                        <input type="checkbox" id="filter-in-stock">
+                        <span>Chỉ hiện sản phẩm còn hàng</span>
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Catalog Section -->
+        <section class="catalog-section">
+            
+            <!-- Sorting and Result Header -->
+            <div class="results-header-row">
+                <div class="results-title-bar">
+                    <h2 id="catalog-title">Tất cả thiết bị công nghệ</h2>
+                    <span class="results-count" id="catalog-results-count">Đang tải sản phẩm...</span>
+                </div>
+                
+                <div class="sort-select-wrapper">
+                    <select id="sort-select">
+                        <option value="default">Sắp xếp: Mặc định</option>
+                        <option value="rent-asc">Giá thuê: Thấp đến Cao</option>
+                        <option value="rent-desc">Giá thuê: Cao đến Thấp</option>
+                        <option value="buy-asc">Giá mua đứt: Thấp đến Cao</option>
+                        <option value="buy-desc">Giá mua đứt: Cao đến Thấp</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Active filter chips -->
+            <div class="active-filters-row" id="active-filters-row" style="display: none;">
+                <!-- Filter chips will go here dynamically -->
+                <button class="clear-filters-btn" id="clear-all-filters-btn">Xóa tất cả</button>
+            </div>
+
+            <!-- Grid catalog -->
+            <div class="catalog-grid" id="catalog-grid">
+                <!-- Products injected dynamically -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Shopping Cart Sidebar (Drawer) -->
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer-overlay" id="cart-overlay"></div>
+        <div class="cart-drawer-content">
+            <div class="cart-drawer-header">
+                <h3>Giỏ hàng của bạn (<span id="cart-drawer-count">0</span>)</h3>
+                <button class="close-cart-btn" id="close-cart-btn">&times;</button>
+            </div>
+            
+            <div class="cart-items-list" id="cart-items-list">
+                <!-- Cart Items Injected Here -->
+            </div>
+            
+            <div class="cart-drawer-footer">
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Tạm tính:</span>
+                        <strong id="cart-subtotal">0 đ</strong>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" id="checkout-btn">Tiến hành thanh toán</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="/" class="logo">E-Tech<span>Store</span></a>
+                <p>&copy; 2026 E-Tech Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/products.js"></script>
+</body>
+</html>

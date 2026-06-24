@@ -1092,8 +1092,8 @@ ul {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
-    width: 230px;
-    padding: 12px 0;
+    width: 680px;
+    padding: 20px;
     display: none;
     flex-direction: column;
     z-index: 150;
@@ -1104,31 +1104,84 @@ ul {
     display: flex;
 }
 
-.category-dropdown-menu a {
-    padding: 10px 20px;
+.dropdown-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.dropdown-col h4 {
     font-size: 14px;
-    font-weight: 500;
-    color: var(--text-main);
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+}
+
+.dropdown-col a {
+    padding: 6px 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+    display: block;
     transition: var(--transition);
 }
 
-.category-dropdown-menu a:hover {
-    background-color: var(--light);
+.dropdown-col a:hover {
     color: var(--primary);
+    transform: translateX(4px);
 }
 
-.dropdown-divider {
-    height: 1px;
-    background-color: var(--border);
-    margin: 8px 0;
+.dropdown-footer-row {
+    border-top: 1px solid var(--border);
+    padding-top: 15px;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .view-all-categories-btn {
     font-weight: 600 !important;
     color: var(--primary) !important;
+    font-size: 13px;
+}
+
+/* Category Filter Pills Styles */
+.category-filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 25px;
+    padding: 0 5px;
+}
+
+.tag-filter-btn {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.tag-filter-btn:hover {
+    border-color: #059669;
+    color: #059669;
+    background-color: rgba(5, 150, 105, 0.05);
+}
+
+.tag-filter-btn.active {
+    background-color: #059669;
+    border-color: #059669;
+    color: white;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
 }
 
 /* Search Suggestions tag list styling */

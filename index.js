@@ -17,6 +17,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', homeRoutes);
 app.use('/api/products', productRoutes);
 
+// Clean routes
+app.get('/products', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'products.html'));
+});
+
 // Catch-all to serve index.html for undefined routes
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

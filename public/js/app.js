@@ -23,6 +23,34 @@ function formatCurrency(value) {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 }
 
+// Tag labels definitions for filtering
+const categoryTagLabels = {
+    1: [ // Phone
+        { tag: 'all', label: 'Tất cả' },
+        { tag: 'gia-re', label: 'Giá rẻ' },
+        { tag: 'chup-anh', label: 'Chụp ảnh đẹp' },
+        { tag: 'hieu-nang', label: 'Hiệu năng cao' },
+        { tag: 'pin-trau', label: 'Pin trâu' },
+        { tag: 'mong-nhe', label: 'Mỏng nhẹ' }
+    ],
+    2: [ // Laptop
+        { tag: 'all', label: 'Tất cả' },
+        { tag: 'van-phong', label: 'Thiết bị văn phòng' },
+        { tag: 'sang-trong', label: 'Sang trọng' },
+        { tag: 'mong-nhe', label: 'Mỏng nhẹ' },
+        { tag: 'do-hoa', label: 'Đồ họa' },
+        { tag: 'choi-game', label: 'Chơi game' }
+    ],
+    3: [ // Camera
+        { tag: 'all', label: 'Tất cả' },
+        { tag: 'du-lich', label: 'Du lịch' },
+        { tag: 'chuyen-nghiep', label: 'Chuyên nghiệp' },
+        { tag: 'vlog', label: 'Vlog' },
+        { tag: 'action-cam', label: 'Action Cam' },
+        { tag: 'compact', label: 'Compact' }
+    ]
+};
+
 // Fetch and Render Home Page Data
 async function loadHomeData() {
     try {
@@ -35,6 +63,7 @@ async function loadHomeData() {
             renderCombos(data.combos);
             renderTryBeforeBuy(data.tryBeforeBuy);
             initDropdownScrolls();
+            checkUrlHashFilter();
         } else {
             dynamicCategories.innerHTML = `<div class="error-msg">Không thể tải dữ liệu: ${data.message}</div>`;
         }
@@ -44,7 +73,7 @@ async function loadHomeData() {
     }
 }
 
-// Render Category Carousels
+// Render Category Carousels with Filter Pills
 function renderCategories(categories) {
     dynamicCategories.innerHTML = '';
     
@@ -55,15 +84,45 @@ function renderCategories(categories) {
         categorySection.className = 'category-carousel-section';
         categorySection.id = `category-${cat.slug}`;
         
+        // Title block
         const titleWrapper = document.createElement('div');
         titleWrapper.className = 'section-title-wrapper';
+        titleWrapper.style.margin = '40px 0 15px 0';
         titleWrapper.innerHTML = `
-            <div>
-                <h3 class="section-title" style="font-size: 22px;">${cat.name}</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 class="section-title" style="font-size: 22px; margin: 0;">${cat.name}</h3>
+                <a href="/products.html?category=${cat.slug}" class="view-all-link" style="color: var(--primary-color); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 5px; font-size: 14px; transition: var(--transition);">
+                    Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                </a>
             </div>
         `;
         categorySection.appendChild(titleWrapper);
 
+        // Filter Pills container
+        const filtersContainer = document.createElement('div');
+        filtersContainer.className = 'category-filters-container';
+        filtersContainer.id = `filters-cat-${cat.id}`;
+        
+        const tagsList = categoryTagLabels[cat.id] || [];
+        tagsList.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = `tag-filter-btn ${item.tag === 'all' ? 'active' : ''}`;
+            btn.setAttribute('data-tag', item.tag);
+            btn.textContent = item.label;
+            
+            btn.addEventListener('click', () => {
+                // Remove active class from sibling buttons
+                filtersContainer.querySelectorAll('.tag-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Perform product card filtering
+                filterCategoryProducts(cat.id, item.tag);
+            });
+            filtersContainer.appendChild(btn);
+        });
+        categorySection.appendChild(filtersContainer);
+
+        // Carousel Slider
         const carouselWrapper = document.createElement('div');
         carouselWrapper.className = 'carousel-wrapper';
         
@@ -77,13 +136,15 @@ function renderCategories(categories) {
         
         const carouselContainer = document.createElement('div');
         carouselContainer.className = 'carousel-container';
+        carouselContainer.id = `carousel-cat-${cat.id}`;
         
         cat.products.forEach(prod => {
             const isOutOfStock = prod.stock_quantity <= 0;
             const card = document.createElement('div');
             card.className = 'product-card';
-            // Click card to open details
             card.style.cursor = 'pointer';
+            // Save tags as datasets for quick filtering
+            card.setAttribute('data-product-tags', prod.tags || '');
             
             card.innerHTML = `
                 <div class="product-image-container" onclick="goToDetails(${prod.id})">
@@ -96,7 +157,6 @@ function renderCategories(categories) {
                 <div class="product-info">
                     <h4 class="product-name" title="${prod.name}" onclick="goToDetails(${prod.id})">${prod.name}</h4>
                     <div class="product-pricing">
-                        <!-- Rental price on top, larger and bold -->
                         <div class="trial-price-row" style="font-size: 16px; font-weight: 800; color: #059669; margin-bottom: 4px;">
                             <i class="fa-solid fa-rotate"></i> ${formatCurrency(prod.trial_price_per_day)}/ngày
                         </div>
@@ -105,7 +165,6 @@ function renderCategories(categories) {
                         </div>
                     </div>
                     <div class="product-actions">
-                        <!-- Try before buy is green and prominent -->
                         <button class="btn btn-primary" style="background-color: #059669; border-color: #059669;" onclick="goToDetails(${prod.id})" ${isOutOfStock ? 'disabled' : ''}>
                             ${isOutOfStock ? 'Hết hàng' : 'Thử trước'}
                         </button>
@@ -124,13 +183,36 @@ function renderCategories(categories) {
         categorySection.appendChild(carouselWrapper);
         dynamicCategories.appendChild(categorySection);
         
-        // Add scroll behavior to buttons
+        // Scroll button actions
         prevBtn.addEventListener('click', () => {
             carouselContainer.scrollBy({ left: -300, behavior: 'smooth' });
         });
         nextBtn.addEventListener('click', () => {
             carouselContainer.scrollBy({ left: 300, behavior: 'smooth' });
         });
+    });
+}
+
+// Client-side filtering implementation
+function filterCategoryProducts(categoryId, activeTag) {
+    const carousel = document.getElementById(`carousel-cat-${categoryId}`);
+    if (!carousel) return;
+
+    const cards = carousel.querySelectorAll('.product-card');
+    cards.forEach(card => {
+        if (activeTag === 'all') {
+            card.style.display = 'flex';
+            return;
+        }
+
+        const tagsAttr = card.getAttribute('data-product-tags') || '';
+        const productTags = tagsAttr.split(',').map(t => t.trim());
+        
+        if (productTags.includes(activeTag)) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
     });
 }
 
@@ -144,8 +226,6 @@ function renderCombos(combos) {
     
     combos.forEach(combo => {
         const isOutOfStock = combo.stock_quantity <= 0;
-        
-        // Render listed products in combo
         const itemsLi = combo.products.map(p => `
             <li><i class="fa-solid fa-check"></i> ${p.name}</li>
         `).join('');
@@ -189,7 +269,7 @@ function renderTryBeforeBuy(products) {
         const isOutOfStock = prod.stock_quantity <= 0;
         const card = document.createElement('div');
         card.className = 'product-card';
-        card.style.minWidth = 'auto'; // allow responsive grid sizing
+        card.style.minWidth = 'auto';
         card.style.maxWidth = '100%';
         card.style.cursor = 'pointer';
         card.innerHTML = `
@@ -203,7 +283,6 @@ function renderTryBeforeBuy(products) {
             <div class="product-info">
                 <h4 class="product-name" title="${prod.name}" onclick="goToDetails(${prod.id})">${prod.name}</h4>
                 <div class="product-pricing">
-                    <!-- Rental price on top, larger and bold -->
                     <div class="trial-price-row" style="font-size: 16px; font-weight: 800; color: #059669; margin-bottom: 4px;">
                         ${formatCurrency(prod.trial_price_per_day)} <span style="font-size: 12px; font-weight: 500; color: var(--text-muted);">/ ngày</span>
                     </div>
@@ -224,7 +303,6 @@ function renderTryBeforeBuy(products) {
 
 // Category Dropdown Toggle
 categoryDropdownBtn.addEventListener('click', (e) => {
-    // If the click is inside the dropdown list on a link, don't close immediately here
     if (e.target.tagName === 'A' || e.target.closest('#category-dropdown-menu a')) {
         return;
     }
@@ -236,36 +314,79 @@ document.addEventListener('click', () => {
     categoryDropdownMenu.classList.remove('show');
 });
 
-// Category Dropdown Scroll Links
+// Category Dropdown Subcategory Navigation Handler
 function initDropdownScrolls() {
     const links = categoryDropdownMenu.querySelectorAll('a');
     links.forEach(link => {
         link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetId = link.getAttribute('href').split('#')[1];
-            const targetElement = document.getElementById(targetId);
-            
-            if (targetElement) {
-                const headerHeight = document.querySelector('.main-header').offsetHeight;
-                const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY;
-                const offsetPosition = elementPosition - headerHeight - 20;
+            const targetHash = link.getAttribute('href');
+            if (targetHash && targetHash.startsWith('#')) {
+                e.preventDefault();
+                const targetId = targetHash.split('#')[1];
+                const targetTag = link.getAttribute('data-tag');
+                
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    const headerHeight = document.querySelector('.main-header').offsetHeight;
+                    const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY;
+                    const offsetPosition = elementPosition - headerHeight - 20;
 
-                window.scrollTo({
-                    top: offsetPosition,
-                    behavior: 'smooth'
-                });
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+
+                    // Auto-activate corresponding tag filter
+                    if (targetTag) {
+                        let catId = null;
+                        if (targetId === 'category-dien-thoai') catId = 1;
+                        else if (targetId === 'category-laptop') catId = 2;
+                        else if (targetId === 'category-may-anh') catId = 3;
+
+                        if (catId) {
+                            const filtersBox = document.getElementById(`filters-cat-${catId}`);
+                            if (filtersBox) {
+                                const btn = filtersBox.querySelector(`[data-tag="${targetTag}"]`);
+                                if (btn) btn.click();
+                            }
+                        }
+                    }
+                }
             }
             categoryDropdownMenu.classList.remove('show');
         });
     });
 }
 
+// Check URL Hash on load (e.g. if loaded from detail page dropdown link)
+function checkUrlHashFilter() {
+    const hash = window.location.hash;
+    if (hash) {
+        setTimeout(() => {
+            const targetId = hash.split('#')[1];
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 300);
+    }
+}
+
 // Shopping Cart Actions
+function saveCart() {
+    localStorage.setItem('etech_cart', JSON.stringify(cart));
+}
+
+function loadCart() {
+    const stored = localStorage.getItem('etech_cart');
+    if (stored) {
+        cart = JSON.parse(stored);
+        updateCartUI();
+    }
+}
+
 function addToCart(productId, type = 'buy') {
-    // Find product details
     let product = null;
-    
-    // Scan standard category products
     if (homeData && homeData.categories) {
         for (const cat of homeData.categories) {
             const found = cat.products.find(p => p.id === productId);
@@ -273,14 +394,12 @@ function addToCart(productId, type = 'buy') {
         }
     }
     
-    // Scan extra items or try before buy products
     if (!product && homeData && homeData.tryBeforeBuy) {
         product = homeData.tryBeforeBuy.find(p => p.id === productId);
     }
     
     if (!product) return;
     
-    // Define item price based on action type
     const itemPrice = type === 'trial' ? product.trial_price_per_day : product.price;
     const itemTitle = type === 'trial' ? `${product.name} (Dùng thử 1 ngày)` : product.name;
     const itemTypeName = type === 'trial' ? 'Dùng thử' : 'Mua đứt';
@@ -295,6 +414,7 @@ function addToCart(productId, type = 'buy') {
     };
     
     cart.push(cartItem);
+    saveCart();
     updateCartUI();
     openCart();
 }
@@ -315,23 +435,23 @@ function addComboToCart(comboId) {
     };
     
     cart.push(cartItem);
+    saveCart();
     updateCartUI();
     openCart();
 }
 
 function removeCartItem(uniqueId) {
     cart = cart.filter(item => item.uniqueId !== uniqueId);
+    saveCart();
     updateCartUI();
 }
 
 function updateCartUI() {
-    // Update Counts
     cartCountBadges.forEach(badge => {
         badge.textContent = cart.length;
     });
     cartDrawerCount.textContent = cart.length;
     
-    // Update List
     if (cart.length === 0) {
         cartItemsList.innerHTML = `
             <div class="empty-cart-message">
@@ -422,6 +542,7 @@ document.getElementById('checkout-btn').addEventListener('click', () => {
     } else {
         alert('Cảm ơn bạn đã đặt hàng demo! Hệ thống đã ghi nhận thành công.');
         cart = [];
+        saveCart();
         updateCartUI();
         closeCart();
     }
@@ -430,5 +551,6 @@ document.getElementById('checkout-btn').addEventListener('click', () => {
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
+    loadCart();
     loadHomeData();
 });

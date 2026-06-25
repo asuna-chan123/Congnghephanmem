@@ -22,6 +22,7 @@ class ProductModel {
       SELECT 
         d."DeviceID" AS id,
         d."DeviceName" AS name,
+        d."Manufacturer" AS manufacturer,
         MIN(dv."DepositAmount") AS price,
         CAST(MIN(dv."DepositAmount") * 1.15 AS DECIMAL(12,2)) AS original_price,
         MIN(dv."DailyRentalPrice") AS trial_price_per_day,
@@ -37,7 +38,7 @@ class ProductModel {
       FROM "Device" d
       JOIN "Device_Variant" dv ON d."DeviceID" = dv."DeviceID"
       WHERE d."CategoryId" = ?
-      GROUP BY d."DeviceID", d."DeviceName", d."Image", d."CategoryId", d."Description"
+      GROUP BY d."DeviceID", d."DeviceName", d."Image", d."CategoryId", d."Description", d."Manufacturer"
     `;
     return db.query(sql, [categoryId]);
   }
@@ -47,6 +48,7 @@ class ProductModel {
       SELECT 
         d."DeviceID" AS id,
         d."DeviceName" AS name,
+        d."Manufacturer" AS manufacturer,
         MIN(dv."DepositAmount") AS price,
         CAST(MIN(dv."DepositAmount") * 1.15 AS DECIMAL(12,2)) AS original_price,
         MIN(dv."DailyRentalPrice") AS trial_price_per_day,
@@ -61,7 +63,7 @@ class ProductModel {
         END AS tags
       FROM "Device" d
       JOIN "Device_Variant" dv ON d."DeviceID" = dv."DeviceID"
-      GROUP BY d."DeviceID", d."DeviceName", d."Image", d."CategoryId", d."Description"
+      GROUP BY d."DeviceID", d."DeviceName", d."Image", d."CategoryId", d."Description", d."Manufacturer"
     `;
     return db.query(sql);
   }
@@ -71,6 +73,7 @@ class ProductModel {
       SELECT 
         d."DeviceID" AS id,
         d."DeviceName" AS name,
+        d."Manufacturer" AS manufacturer,
         MIN(dv."DepositAmount") AS price,
         CAST(MIN(dv."DepositAmount") * 1.15 AS DECIMAL(12,2)) AS original_price,
         MIN(dv."DailyRentalPrice") AS trial_price_per_day,
@@ -85,7 +88,7 @@ class ProductModel {
         END AS tags
       FROM "Device" d
       JOIN "Device_Variant" dv ON d."DeviceID" = dv."DeviceID"
-      GROUP BY d."DeviceID", d."DeviceName", d."Image", d."CategoryId", d."Description"
+      GROUP BY d."DeviceID", d."DeviceName", d."Image", d."CategoryId", d."Description", d."Manufacturer"
     `;
     return db.query(sql);
   }
@@ -95,6 +98,7 @@ class ProductModel {
       SELECT 
         d."DeviceID" AS id,
         d."DeviceName" AS name,
+        d."Manufacturer" AS manufacturer,
         d."Description" AS description,
         d."Image" AS image_url,
         d."CategoryId" AS category_id,
@@ -106,7 +110,7 @@ class ProductModel {
       FROM "Device" d
       JOIN "Device_Variant" dv ON d."DeviceID" = dv."DeviceID"
       WHERE d."DeviceID" = ?
-      GROUP BY d."DeviceID", d."DeviceName", d."Image", d."CategoryId", d."Description"
+      GROUP BY d."DeviceID", d."DeviceName", d."Image", d."CategoryId", d."Description", d."Manufacturer"
       LIMIT 1
     `;
     const product = await db.get(sql, [productId]);
@@ -141,6 +145,7 @@ class ProductModel {
       SELECT 
         d."DeviceID" AS id,
         d."DeviceName" AS name,
+        d."Manufacturer" AS manufacturer,
         MIN(dv."DepositAmount") AS price,
         CAST(MIN(dv."DepositAmount") * 1.15 AS DECIMAL(12,2)) AS original_price,
         MIN(dv."DailyRentalPrice") AS trial_price_per_day,
@@ -151,7 +156,7 @@ class ProductModel {
       FROM "Device" d
       JOIN "Device_Variant" dv ON d."DeviceID" = dv."DeviceID"
       WHERE d."CategoryId" = ? AND d."DeviceID" != ?
-      GROUP BY d."DeviceID", d."DeviceName", d."Image", d."CategoryId"
+      GROUP BY d."DeviceID", d."DeviceName", d."Image", d."CategoryId", d."Manufacturer"
       LIMIT 6
     `;
     return db.query(sql, [categoryId, excludeProductId]);

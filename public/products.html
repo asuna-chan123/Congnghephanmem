@@ -205,12 +205,153 @@
             margin-bottom: 20px;
         }
 
+        /* Premium Category Hero and Cards */
+        .category-hero-section {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 10px 0 25px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+
+        .cat-hero-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .cat-hero-desc {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .category-cards-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding: 5px;
+            scrollbar-width: none;
+        }
+        
+        .category-cards-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-cards-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: nowrap;
+            justify-content: center;
+        }
+
+        .category-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            width: 140px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .category-card.active {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+            box-shadow: var(--shadow-md);
+        }
+
+        .category-card-image-box {
+            width: 116px;
+            height: 140px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background-color: var(--light);
+        }
+
+        .category-card-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .category-card:hover .category-card-image-box img {
+            transform: scale(1.08);
+        }
+
+        .category-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 4px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .category-card.active .category-card-title {
+            color: var(--primary);
+        }
+
+        .show-more-wrapper {
+            margin-top: 15px;
+        }
+
+        .show-more-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .show-more-btn:hover {
+            background-color: var(--light);
+            border-color: var(--text-muted);
+        }
+        
+        .filter-item-muted {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 5px 0;
+        }
+
         @media (max-width: 900px) {
             .products-page-container {
                 grid-template-columns: 1fr;
             }
             .filters-sidebar {
                 position: static;
+            }
+            .category-cards-grid {
+                justify-content: flex-start;
             }
         }
     </style>
@@ -223,24 +364,31 @@
     <!-- Main Products Directory Container -->
     <main class="products-page-container">
         
+        <!-- Premium Category Card Filter Section (Full Width at Top of Grid) -->
+        <section class="category-hero-section">
+            <h1 class="cat-hero-title" id="cat-hero-title">Tất cả thiết bị công nghệ</h1>
+            <p class="cat-hero-desc" id="cat-hero-desc">Khám phá và trải nghiệm các thiết bị công nghệ đỉnh cao trước khi sở hữu</p>
+            
+            <div class="category-cards-wrapper">
+                <div class="category-cards-grid" id="category-cards-grid">
+                    <!-- Javascript will render cards here -->
+                </div>
+            </div>
+            
+            <div class="show-more-wrapper" id="show-more-wrapper" style="display: none;">
+                <button class="show-more-btn" id="show-more-categories-btn">
+                    Xem thêm (<span id="more-categories-count">0</span>)
+                </button>
+            </div>
+        </section>
+
         <!-- Sidebar Filters -->
         <aside class="filters-sidebar">
-            <!-- Categories selector -->
+            <!-- Brand/Manufacturer selector -->
             <div class="filter-group">
-                <h4 class="filter-title">Danh mục</h4>
-                <div class="filter-list" id="category-filter-list">
-                    <button class="category-filter-btn active" data-category="all">
-                        <i class="fa-solid fa-layer-group"></i> Tất cả thiết bị
-                    </button>
-                    <button class="category-filter-btn" data-category="dien-thoai">
-                        <i class="fa-solid fa-mobile-screen-button"></i> Điện thoại
-                    </button>
-                    <button class="category-filter-btn" data-category="laptop">
-                        <i class="fa-solid fa-laptop"></i> Laptop
-                    </button>
-                    <button class="category-filter-btn" data-category="may-anh">
-                        <i class="fa-solid fa-camera"></i> Máy ảnh
-                    </button>
+                <h4 class="filter-title">Hãng sản xuất</h4>
+                <div class="filter-list" id="brand-filter-list">
+                    <!-- Dynamic brands list -->
                 </div>
             </div>
 

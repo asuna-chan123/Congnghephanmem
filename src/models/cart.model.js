@@ -8,38 +8,40 @@ class CartModel {
         ci.session_id,
         ci.type,
         ci.quantity,
-        ci.product_id,
+        ci.variant_id,
         ci.combo_id,
-        p.name as product_name,
-        p.price as product_price,
-        p.trial_price_per_day as product_trial_price,
-        p.image_url as product_image_url,
+        d."DeviceName" as product_name,
+        dv."Color" as color,
+        dv."StorageCapacity" as capacity,
+        dv."DepositAmount" as product_price,
+        dv."DailyRentalPrice" as product_trial_price,
+        d."Image" as product_image_url,
         c.name as combo_name,
         c.price as combo_price,
         c.image_url as combo_image_url
-      FROM cart_items ci
-      LEFT JOIN products p ON ci.product_id = p.id
-      LEFT JOIN combos c ON ci.combo_id = c.id
+      FROM "cart_items" ci
+      LEFT JOIN "Device_Variant" dv ON ci.variant_id = dv."VariantID"
+      LEFT JOIN "Device" d ON dv."DeviceID" = d."DeviceID"
+      LEFT JOIN "combos" c ON ci.combo_id = c.id
       WHERE ci.session_id = ?
       ORDER BY ci.added_at DESC
     `;
     const items = await query(sql, [sessionId]);
     
-    // Format the items to match the expected client structure
     return items.map(item => {
       let price = 0;
       let name = '';
       let image = '';
       let typeName = '';
 
-      if (item.type === 'trial' && item.product_id) {
+      if (item.type === 'trial' && item.variant_id) {
         price = item.product_trial_price;
-        name = `${item.product_name} (Dùng thử 1 ngày)`;
+        name = `Thuê ${item.product_name} (${item.color}, ${item.capacity})`;
         image = item.product_image_url;
         typeName = 'Dùng thử';
-      } else if (item.type === 'buy' && item.product_id) {
+      } else if (item.type === 'buy' && item.variant_id) {
         price = item.product_price;
-        name = item.product_name;
+        name = `${item.product_name} (${item.color}, ${item.capacity})`;
         image = item.product_image_url;
         typeName = 'Mua đứt';
       } else if (item.type === 'combo' && item.combo_id) {
@@ -52,9 +54,9 @@ class CartModel {
       return {
         cart_item_id: item.cart_item_id,
         uniqueId: item.cart_item_id, // alias for frontend
-        id: item.product_id || item.combo_id,
+        id: item.variant_id || item.combo_id,
         name,
-        price,
+        price: parseFloat(price) || 0,
         image,
         type: typeName,
         quantity: item.quantity
@@ -62,36 +64,53 @@ class CartModel {
     });
   }
 
-  static async addItem(sessionId, productId, comboId, type) {
+  static async addItem(sessionId, productId, comboId, type, quantity = 1, variantId = null) {
+    let targetVariantId = variantId;
+
+    // Nếu chỉ nhận được productId (ví dụ từ Trang chủ), tự động lấy Variant đầu tiên làm mặc định
+    if (!targetVariantId && productId) {
+      const defaultVar = await get('SELECT "VariantID" FROM "Device_Variant" WHERE "DeviceID" = ? LIMIT 1', [productId]);
+      if (defaultVar) {
+        targetVariantId = defaultVar.VariantID;
+      }
+    }
+
     // Check if it already exists to increment quantity
     const existing = await get(
-      `SELECT id, quantity FROM cart_items WHERE session_id = ? AND IFNULL(product_id, 0) = ? AND IFNULL(combo_id, 0) = ? AND type = ?`,
-      [sessionId, productId || 0, comboId || 0, type]
+      `SELECT id, quantity FROM "cart_items" 
+       WHERE session_id = ? 
+         AND COALESCE(variant_id, 0) = COALESCE(?, 0) 
+         AND COALESCE(combo_id, 0) = COALESCE(?, 0) 
+         AND type = ?`,
+      [sessionId, targetVariantId || 0, comboId || 0, type]
     );
 
     if (existing) {
-      const sql = `UPDATE cart_items SET quantity = quantity + 1 WHERE id = ?`;
-      await query(sql, [existing.id]);
+      const sql = `UPDATE "cart_items" SET quantity = quantity + ? WHERE id = ?`;
+      await query(sql, [quantity, existing.id]);
       return existing.id;
     } else {
       const sql = `
-        INSERT INTO cart_items (session_id, product_id, combo_id, type)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO "cart_items" (session_id, variant_id, combo_id, type, quantity)
+        VALUES (?, ?, ?, ?, ?)
       `;
-      const result = await query(sql, [sessionId, productId, comboId, type]);
-      // Note: we can't easily return insertId from our custom query wrapper without changing it,
-      // but we don't strictly need it if we just refetch.
+      const result = await query(sql, [sessionId, targetVariantId, comboId, type, quantity]);
       return true;
     }
   }
 
   static async removeItem(sessionId, cartItemId) {
-    const sql = `DELETE FROM cart_items WHERE session_id = ? AND id = ?`;
+    const sql = `DELETE FROM "cart_items" WHERE session_id = ? AND id = ?`;
     return await query(sql, [sessionId, cartItemId]);
   }
 
+  static async updateQuantity(sessionId, cartItemId, quantity) {
+    const sql = `UPDATE "cart_items" SET quantity = ? WHERE session_id = ? AND id = ?`;
+    return await query(sql, [quantity, sessionId, cartItemId]);
+  }
+
   static async clearCart(sessionId) {
-    const sql = `DELETE FROM cart_items WHERE session_id = ?`;
+    const sql = `DELETE FROM "cart_items" WHERE session_id = ?`;
     return await query(sql, [sessionId]);
   }
 }

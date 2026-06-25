@@ -19,16 +19,16 @@ class FavoriteController {
   static async toggleFavorite(req, res) {
     try {
       const sessionId = req.headers['x-session-id'];
-      const { productId } = req.body;
+      const { productId, variantId } = req.body;
 
       if (!sessionId) {
         return res.status(400).json({ success: false, message: 'Session ID is required' });
       }
-      if (!productId) {
-        return res.status(400).json({ success: false, message: 'Product ID is required' });
+      if (!productId && !variantId) {
+        return res.status(400).json({ success: false, message: 'Product ID or Variant ID is required' });
       }
 
-      const result = await FavoriteModel.toggleFavorite(sessionId, productId);
+      const result = await FavoriteModel.toggleFavorite(sessionId, productId, variantId);
       res.json({ success: true, favorited: result.favorited });
     } catch (error) {
       console.error('Error toggling favorite:', error);
@@ -39,13 +39,13 @@ class FavoriteController {
   static async checkFavorite(req, res) {
     try {
       const sessionId = req.headers['x-session-id'];
-      const productId = req.params.productId;
+      const productId = parseInt(req.params.productId);
 
-      if (!sessionId) {
+      if (!sessionId || isNaN(productId)) {
         return res.json({ success: true, favorited: false });
       }
 
-      const favorited = await FavoriteModel.isFavorited(sessionId, productId);
+      const favorited = await FavoriteModel.isProductFavorited(sessionId, productId);
       res.json({ success: true, favorited });
     } catch (error) {
       console.error('Error checking favorite:', error);

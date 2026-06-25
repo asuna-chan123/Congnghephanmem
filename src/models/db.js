@@ -1,62 +1,53 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const fs = require('fs');
+require('dotenv').config();
+const { Pool } = require('pg');
 
-const dbPath = path.join(__dirname, '../../database.sqlite');
-const sqlFilePath = path.join(__dirname, 'db.sql');
-
-// Connect to SQLite Database
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error connecting to SQLite database:', err.message);
-  } else {
-    console.log('Connected to SQLite database at:', dbPath);
-    initializeDatabase();
+// Khởi tạo Pool kết nối tới PostgreSQL (Supabase)
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    // Cần cấu hình SSL để kết nối tới Supabase an toàn
+    rejectUnauthorized: false
   }
 });
 
-function initializeDatabase() {
+pool.on('connect', () => {
+  console.log('Connected to Supabase PostgreSQL database.');
+});
+
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle Supabase client:', err.message);
+});
+
+// Hàm hỗ trợ thực thi truy vấn trả về mảng kết quả
+async function query(sql, params = []) {
+  let pgSql = sql;
+  let paramCount = 1;
+  
+  // Tự động chuyển đổi dấu hỏi '?' của SQLite thành '$1, $2, ...' của PostgreSQL
+  while (pgSql.includes('?')) {
+    pgSql = pgSql.replace('?', `$${paramCount++}`);
+  }
+  
+  // Tự động đổi IFNULL (SQLite) thành COALESCE (PostgreSQL)
+  pgSql = pgSql.replace(/IFNULL/gi, 'COALESCE');
+
   try {
-    const sql = fs.readFileSync(sqlFilePath, 'utf8');
-    db.exec(sql, (err) => {
-      if (err) {
-        console.error('Error seeding SQLite database:', err.message);
-      } else {
-        console.log('SQLite database schema initialized and seeded successfully.');
-      }
-    });
+    const res = await pool.query(pgSql, params);
+    return res.rows;
   } catch (err) {
-    console.error('Failed to read SQL seed file:', err.message);
+    console.error('Supabase query error:', err.message, 'SQL:', pgSql);
+    throw err;
   }
 }
 
-// Promisified query helper
-function query(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(rows);
-      }
-    });
-  });
-}
-
-function get(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(row);
-      }
-    });
-  });
+// Hàm hỗ trợ lấy 1 dòng kết quả đầu tiên
+async function get(sql, params = []) {
+  const rows = await query(sql, params);
+  return rows[0];
 }
 
 module.exports = {
-  db,
+  db: pool,
   query,
   get
 };

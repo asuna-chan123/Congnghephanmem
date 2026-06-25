@@ -29,15 +29,17 @@ class CartController {
         return res.status(400).json({ success: false, message: 'Session ID is required' });
       }
 
-      const { productId, comboId, type } = req.body;
-      if (!productId && !comboId) {
-        return res.status(400).json({ success: false, message: 'Product ID or Combo ID is required' });
+      const { productId, comboId, type, quantity, variantId } = req.body;
+      if (!productId && !comboId && !variantId) {
+        return res.status(400).json({ success: false, message: 'Product ID, Variant ID or Combo ID is required' });
       }
       if (!type) {
         return res.status(400).json({ success: false, message: 'Type is required' });
       }
 
-      await CartModel.addItem(sessionId, productId || null, comboId || null, type);
+      const qty = parseInt(quantity, 10) || 1;
+
+      await CartModel.addItem(sessionId, productId || null, comboId || null, type, qty, variantId || null);
       res.json({ success: true, message: 'Added to cart' });
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -73,6 +75,24 @@ class CartController {
       res.json({ success: true, message: 'Cart cleared' });
     } catch (error) {
       console.error('Error clearing cart:', error);
+      res.status(500).json({ success: false, message: 'Server Error' });
+    }
+  }
+
+  static async updateQuantity(req, res) {
+    try {
+      const sessionId = req.headers['x-session-id'];
+      const cartItemId = req.params.id;
+      const { quantity } = req.body;
+
+      if (!sessionId) {
+        return res.status(400).json({ success: false, message: 'Session ID is required' });
+      }
+
+      await CartModel.updateQuantity(sessionId, cartItemId, parseInt(quantity, 10) || 1);
+      res.json({ success: true, message: 'Quantity updated' });
+    } catch (error) {
+      console.error('Error updating quantity:', error);
       res.status(500).json({ success: false, message: 'Server Error' });
     }
   }

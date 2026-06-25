@@ -50,6 +50,17 @@ async function loadProductDetails() {
             product = data.product;
             reviews = data.reviews;
             rentals = data.rentals;
+            
+            // Normalize product.images to always be an array of objects { url, color, isPrimary }
+            if (product.images) {
+                product.images = product.images.map(img => {
+                    if (typeof img === 'string') {
+                        return { url: img, color: null, isPrimary: false };
+                    }
+                    return img;
+                });
+            }
+            
             currentSelectedImage = product.image_url;
             
             // Check favorites via backend API
@@ -57,6 +68,10 @@ async function loadProductDetails() {
             isFavorited = favRes.success && favRes.favorited;
 
             renderDetails();
+            const colorSelect = document.getElementById('selected-color');
+            if (colorSelect) {
+                updateGalleryForColor(colorSelect.value);
+            }
             renderReviews();
             renderRelated(data.related);
             attachPriceListeners();
@@ -74,8 +89,12 @@ function renderDetails() {
     const isOutOfStock = product.stock_quantity <= 0;
     
     // Create standard tech options
-    const colors = ['Xám Không Gian (Space Gray)', 'Bạc (Silver)', 'Vàng (Gold)', 'Đen Huyền Bí (Matte Black)'];
-    const capacities = product.category_id === 1 ? ['128GB', '256GB', '512GB'] : (product.category_id === 2 ? ['256GB', '512GB', '1TB'] : ['Chỉ Body', 'Combo Kèm Lens 18-55mm', 'Combo Kèm Lens 24-70mm']);
+    const colors = product.variants && product.variants.length > 0
+        ? [...new Set(product.variants.map(v => v.color).filter(Boolean))]
+        : ['Đen'];
+    const capacities = product.variants && product.variants.length > 0
+        ? [...new Set(product.variants.map(v => v.capacity).filter(Boolean))]
+        : ['Tiêu chuẩn'];
 
     const colorOptions = colors.map(c => `<option value="${c}">${c}</option>`).join('');
     const capacityOptions = capacities.map(cap => `<option value="${cap}">${cap}</option>`).join('');
@@ -86,16 +105,11 @@ function renderDetails() {
     const minDateStr = tomorrow.toISOString().split('T')[0];
 
     // Secondary Gallery Thumbnails list
-    const galleryThumbnails = [
-        product.image_url,
-        'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=500&auto=format&fit=crop&q=60',
-        'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=500&auto=format&fit=crop&q=60',
-        'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&auto=format&fit=crop&q=60'
-    ];
+    const galleryThumbnails = product.images && product.images.length > 0 ? product.images : [{ url: product.image_url, color: null, isPrimary: true }];
 
-    const thumbnailHtml = galleryThumbnails.map((imgUrl, index) => `
-        <div class="thumbnail-item ${index === 0 ? 'active' : ''}" onclick="changeGalleryImage(this, '${imgUrl}')">
-            <img src="${imgUrl}" alt="Gallery ${index + 1}">
+    const thumbnailHtml = galleryThumbnails.map((img, index) => `
+        <div class="thumbnail-item ${index === 0 ? 'active' : ''}" onclick="changeGalleryImage(this, '${img.url}')">
+            <img src="${img.url}" alt="Gallery ${index + 1}">
         </div>
     `).join('');
 
@@ -109,7 +123,7 @@ function renderDetails() {
                 <img id="main-product-image" src="${currentSelectedImage}" alt="${product.name}">
             </div>
             <!-- Thumbnails List -->
-            <div class="thumbnail-list">
+            <div class="thumbnail-list" id="thumbnail-list-container">
                 ${thumbnailHtml}
             </div>
         </div>
@@ -217,26 +231,28 @@ window.changeGalleryImage = function(element, imageUrl) {
 
 // Calculate and Update displayed prices in UI dynamically
 function updatePrices() {
-    if (!product) return;
+    if (!product || !product.variants || product.variants.length === 0) return;
 
+    const colorSelect = document.getElementById('selected-color');
     const capacitySelect = document.getElementById('selected-capacity');
     const qtySelect = document.getElementById('selected-qty');
     const startInput = document.getElementById('rent-start-date');
     const endInput = document.getElementById('rent-end-date');
 
-    const selectedCapacityIdx = capacitySelect.selectedIndex;
-    const qty = parseInt(qtySelect.value);
+    const selectedColor = colorSelect ? colorSelect.value : null;
+    const selectedCapacity = capacitySelect ? capacitySelect.value : null;
+    const qty = parseInt(qtySelect.value, 10) || 1;
 
-    // Pricing multiplier rules:
-    // Option 0: base price
-    // Option 1: +10%
-    // Option 2: +20%
-    let multiplier = 1.0;
-    if (selectedCapacityIdx === 1) multiplier = 1.1;
-    if (selectedCapacityIdx === 2) multiplier = 1.2;
+    // Tìm variant khớp với color và capacity đã chọn
+    let variant = product.variants.find(v => v.color === selectedColor && v.capacity === selectedCapacity);
+    if (!variant) {
+        // Fallback sang variant đầu tiên
+        variant = product.variants[0];
+    }
 
-    const baseTrialPrice = product.trial_price_per_day * multiplier;
-    const baseBuyPrice = product.price * multiplier;
+    const baseTrialPrice = parseFloat(variant.trial_price_per_day) || 0;
+    const baseBuyPrice = parseFloat(variant.price) || 0;
+    const originalPriceVal = baseBuyPrice * 1.15; // mock 15% discount for display
 
     // Check if valid dates are selected to multiply rental duration
     const startDate = startInput.value;
@@ -268,18 +284,25 @@ function updatePrices() {
     }
 
     buyDisplay.textContent = formatCurrency(baseBuyPrice * qty);
-    if (originalPriceDisplay && product.original_price) {
-        originalPriceDisplay.textContent = formatCurrency(product.original_price * multiplier * qty);
+    if (originalPriceDisplay) {
+        originalPriceDisplay.textContent = formatCurrency(originalPriceVal * qty);
     }
 }
 
 // Attach change event listeners to options selectors
 function attachPriceListeners() {
+    const colorSelect = document.getElementById('selected-color');
     const capacitySelect = document.getElementById('selected-capacity');
     const qtySelect = document.getElementById('selected-qty');
     const startInput = document.getElementById('rent-start-date');
     const endInput = document.getElementById('rent-end-date');
 
+    if (colorSelect) {
+        colorSelect.addEventListener('change', () => {
+            updateGalleryForColor(colorSelect.value);
+            updatePrices();
+        });
+    }
     if (capacitySelect) capacitySelect.addEventListener('change', updatePrices);
     if (qtySelect) qtySelect.addEventListener('change', updatePrices);
     
@@ -295,6 +318,36 @@ function attachPriceListeners() {
             validateRentalDates();
             updatePrices();
         });
+    }
+}
+
+// Cập nhật danh sách ảnh và ảnh chính dựa trên màu được chọn
+function updateGalleryForColor(color) {
+    if (!product || !product.images || product.images.length === 0) return;
+
+    // Lọc ảnh có cùng màu hoặc các ảnh chung (không có màu)
+    let filteredImages = product.images.filter(img => img.color === color || !img.color);
+    
+    if (filteredImages.length === 0) {
+        filteredImages = product.images;
+    }
+
+    const container = document.getElementById('thumbnail-list-container');
+    const mainImg = document.getElementById('main-product-image');
+
+    if (container) {
+        container.innerHTML = filteredImages.map((img, index) => `
+            <div class="thumbnail-item ${index === 0 ? 'active' : ''}" onclick="changeGalleryImage(this, '${img.url}')">
+                <img src="${img.url}" alt="Gallery ${index + 1}">
+            </div>
+        `).join('');
+    }
+
+    // Thiết lập ảnh đại diện chính của màu đó
+    const primaryImg = filteredImages.find(img => img.isPrimary) || filteredImages[0];
+    if (mainImg && primaryImg) {
+        mainImg.src = primaryImg.url;
+        currentSelectedImage = primaryImg.url;
     }
 }
 
@@ -348,27 +401,26 @@ function validateRentalDates() {
 }
 
 // Handle Add to Cart from Detail Screen
-function handleDetailAction(actionType) {
+async function handleDetailAction(actionType) {
     if (product.stock_quantity <= 0) {
         alert('Sản phẩm đã hết hàng!');
         return;
     }
 
-    const color = document.getElementById('selected-color').value;
-    const capacity = document.getElementById('selected-capacity').value;
-    const qty = parseInt(document.getElementById('selected-qty').value);
+    const type = actionType === 'trial' ? 'trial' : 'buy';
+    const qty = parseInt(document.getElementById('selected-qty').value, 10) || 1;
+
+    const colorSelect = document.getElementById('selected-color');
     const capacitySelect = document.getElementById('selected-capacity');
+    const selectedColor = colorSelect ? colorSelect.value : null;
+    const selectedCapacity = capacitySelect ? capacitySelect.value : null;
+
+    let variant = product.variants.find(v => v.color === selectedColor && v.capacity === selectedCapacity);
+    if (!variant) {
+        variant = product.variants[0];
+    }
     
-    const selectedCapacityIdx = capacitySelect.selectedIndex;
-    let multiplier = 1.0;
-    if (selectedCapacityIdx === 1) multiplier = 1.1;
-    if (selectedCapacityIdx === 2) multiplier = 1.2;
-
-    let price = product.price * multiplier;
-    let title = `${product.name} (${color}, ${capacity})`;
-    let typeLabel = 'Mua đứt';
-
-    if (actionType === 'trial') {
+    if (type === 'trial') {
         const startInput = document.getElementById('rent-start-date');
         const endInput = document.getElementById('rent-end-date');
         
@@ -381,30 +433,22 @@ function handleDetailAction(actionType) {
             alert('Lịch chọn không hợp lệ hoặc đã bị trùng!');
             return;
         }
-
-        // Calculate days
-        const diffTime = Math.abs(new Date(endInput.value) - new Date(startInput.value));
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-        price = product.trial_price_per_day * multiplier * diffDays;
-        title = `Thuê ${product.name} (${color}, ${capacity}) - ${diffDays} ngày [Từ ${startInput.value} đến ${endInput.value}]`;
-        typeLabel = 'Dùng thử';
     }
 
-    // Add to cart state
-    const cartItem = {
-        uniqueId: Date.now() + Math.random().toString(36).substr(2, 9),
-        id: product.id,
-        name: title,
-        price: price * qty,
-        image: currentSelectedImage,
-        type: typeLabel
-    };
-
-    cart.push(cartItem);
-    saveCart();
-    updateCartUI();
-    openCart();
+    try {
+        const res = await apiFetch('/api/cart/add', {
+            method: 'POST',
+            body: JSON.stringify({ variantId: variant.id, type, quantity: qty })
+        });
+        if (res.success) {
+            window.location.href = '/cart.html';
+        } else {
+            alert('Lỗi: ' + res.message);
+        }
+    } catch (e) {
+        console.error('Error adding to cart:', e);
+        alert('Lỗi thêm vào giỏ hàng');
+    }
 }
 
 // Favorites Toggle

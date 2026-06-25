@@ -40,12 +40,12 @@ async function loadCartPage() {
                 <div class="cart-item-stock"><i class="fa-solid fa-check"></i> Còn hàng</div>
                 
                 <div class="cart-item-actions">
-                    <select>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
+                    <select onchange="updateCartItemQuantity('${item.uniqueId}', this.value)">
+                        <option value="1" ${item.quantity === 1 ? 'selected' : ''}>1</option>
+                        <option value="2" ${item.quantity === 2 ? 'selected' : ''}>2</option>
+                        <option value="3" ${item.quantity === 3 ? 'selected' : ''}>3</option>
+                        <option value="4" ${item.quantity === 4 ? 'selected' : ''}>4</option>
+                        <option value="5" ${item.quantity === 5 ? 'selected' : ''}>5</option>
                     </select>
                     <button>Chỉnh sửa</button>
                     <button>Lưu lại sau</button>
@@ -145,3 +145,18 @@ async function loadRelatedItems() {
         console.error('Error loading related items:', error);
     }
 }
+
+window.updateCartItemQuantity = async function(cartItemId, newQty) {
+    try {
+        const res = await apiFetch(`/api/cart/${cartItemId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ quantity: newQty })
+        });
+        if (res.success) {
+            loadCart(); // update header badge
+            loadCartPage(); // refresh cart list
+        }
+    } catch (e) {
+        console.error('Error updating quantity:', e);
+    }
+};

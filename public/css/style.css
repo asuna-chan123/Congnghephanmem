@@ -1,6 +1,7 @@
 /* Variables & Theme System */
 :root {
-    --primary: #f1641e; /* Etsy Orange */
+    --primary: #f1641e;
+    /* Etsy Orange */
     --primary-hover: #d84f10;
     --primary-light: #fef0e6;
     --dark: #0f172a;
@@ -16,7 +17,8 @@
     --radius-md: 12px;
     --radius-lg: 20px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --bg-main: #faf9f6; /* Etsy-like soft background */
+    --bg-main: #faf9f6;
+    /* Etsy-like soft background */
 }
 
 /* Dark Theme Variables */
@@ -55,7 +57,12 @@ body {
     transition: var(--transition);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: 'Outfit', sans-serif;
     color: var(--text-main);
 }
@@ -414,12 +421,14 @@ ul {
     gap: 20px;
     overflow-x: auto;
     scroll-behavior: smooth;
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    scrollbar-width: none;
+    /* Hide scrollbar for Firefox */
     padding: 10px 5px;
 }
 
 .carousel-container::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for Chrome/Safari */
+    display: none;
+    /* Hide scrollbar for Chrome/Safari */
 }
 
 /* Navigation Buttons for Carousels */
@@ -497,7 +506,8 @@ ul {
     position: absolute;
     top: 10px;
     left: 10px;
-    background-color: #059669; /* Green badge */
+    background-color: #059669;
+    /* Green badge */
     color: white;
     font-size: 11px;
     font-weight: 700;
@@ -521,7 +531,8 @@ ul {
 }
 
 .stock-badge.out-of-stock {
-    background-color: #ef4444; /* Red badge */
+    background-color: #ef4444;
+    /* Red badge */
 }
 
 .product-info {
@@ -966,7 +977,8 @@ ul {
     color: white;
 }
 
-.footer-links h4, .footer-subscribe h4 {
+.footer-links h4,
+.footer-subscribe h4 {
     font-size: 15px;
     text-transform: uppercase;
     font-weight: 700;
@@ -1041,29 +1053,36 @@ ul {
     .header-container {
         flex-wrap: wrap;
     }
+
     .search-area-wrapper {
         order: 3;
         width: 100%;
         max-width: 100%;
         margin-top: 10px;
     }
+
     .search-bar-container {
         max-width: 100%;
     }
+
     .category-dropdown-menu {
         width: 600px;
         left: 0;
     }
+
     .footer-container {
         grid-template-columns: 1fr 1fr;
     }
+
     .promo-grid {
         grid-template-columns: 1fr;
     }
+
     .hero-container {
         flex-direction: column;
         padding: 40px;
     }
+
     .hero-image {
         display: none;
     }
@@ -1076,19 +1095,24 @@ ul {
         max-height: 400px;
         overflow-y: auto;
     }
+
     .dropdown-grid {
         grid-template-columns: 1fr;
         gap: 15px;
     }
+
     .header-actions {
         gap: 10px;
     }
+
     .action-link.sign-in-btn {
         display: none;
     }
+
     .footer-container {
         grid-template-columns: 1fr;
     }
+
     .footer-bottom {
         flex-direction: column;
         gap: 10px;
@@ -1266,6 +1290,7 @@ ul {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1300,7 +1325,8 @@ ul {
     transition: var(--transition);
 }
 
-.thumbnail-item:hover, .thumbnail-item.active {
+.thumbnail-item:hover,
+.thumbnail-item.active {
     border-color: var(--primary);
     transform: scale(1.05);
 }
@@ -1310,4 +1336,3 @@ ul {
     height: 100%;
     object-fit: cover;
 }
-

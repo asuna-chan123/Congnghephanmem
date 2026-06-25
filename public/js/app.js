@@ -26,12 +26,6 @@ async function apiFetch(url, options = {}) {
 const dynamicCategories = document.getElementById('dynamic-categories');
 const combosContainer = document.getElementById('combos-container');
 const tryBeforeBuyContainer = document.getElementById('try-before-buy-container');
-const themeToggle = document.getElementById('theme-toggle');
-const cartToggleBtn = document.getElementById('cart-toggle-btn');
-
-const cartCountBadges = document.querySelectorAll('.cart-count');
-const categoryDropdownBtn = document.getElementById('category-dropdown-btn');
-const categoryDropdownMenu = document.getElementById('category-dropdown-menu');
 
 // Helper to format currency
 function formatCurrency(value) {
@@ -72,7 +66,7 @@ async function loadHomeData() {
     try {
         const response = await fetch('/api/home-data');
         const data = await response.json();
-        
+
         if (data.success) {
             homeData = data;
             renderCategories(data.categories);
@@ -92,14 +86,14 @@ async function loadHomeData() {
 // Render Category Carousels with Filter Pills
 function renderCategories(categories) {
     dynamicCategories.innerHTML = '';
-    
+
     categories.forEach(cat => {
         if (!cat.products || cat.products.length === 0) return;
-        
+
         const categorySection = document.createElement('div');
         categorySection.className = 'category-carousel-section';
         categorySection.id = `category-${cat.slug}`;
-        
+
         // Title block
         const titleWrapper = document.createElement('div');
         titleWrapper.className = 'section-title-wrapper';
@@ -118,19 +112,19 @@ function renderCategories(categories) {
         const filtersContainer = document.createElement('div');
         filtersContainer.className = 'category-filters-container';
         filtersContainer.id = `filters-cat-${cat.id}`;
-        
+
         const tagsList = categoryTagLabels[cat.id] || [];
         tagsList.forEach(item => {
             const btn = document.createElement('button');
             btn.className = `tag-filter-btn ${item.tag === 'all' ? 'active' : ''}`;
             btn.setAttribute('data-tag', item.tag);
             btn.textContent = item.label;
-            
+
             btn.addEventListener('click', () => {
                 // Remove active class from sibling buttons
                 filtersContainer.querySelectorAll('.tag-filter-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
+
                 // Perform product card filtering
                 filterCategoryProducts(cat.id, item.tag);
             });
@@ -141,19 +135,19 @@ function renderCategories(categories) {
         // Carousel Slider
         const carouselWrapper = document.createElement('div');
         carouselWrapper.className = 'carousel-wrapper';
-        
+
         const prevBtn = document.createElement('button');
         prevBtn.className = 'carousel-nav-btn carousel-prev';
         prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
-        
+
         const nextBtn = document.createElement('button');
         nextBtn.className = 'carousel-nav-btn carousel-next';
         nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
-        
+
         const carouselContainer = document.createElement('div');
         carouselContainer.className = 'carousel-container';
         carouselContainer.id = `carousel-cat-${cat.id}`;
-        
+
         cat.products.forEach(prod => {
             const isOutOfStock = prod.stock_quantity <= 0;
             const card = document.createElement('div');
@@ -161,7 +155,7 @@ function renderCategories(categories) {
             card.style.cursor = 'pointer';
             // Save tags as datasets for quick filtering
             card.setAttribute('data-product-tags', prod.tags || '');
-            
+
             card.innerHTML = `
                 <div class="product-image-container" onclick="goToDetails(${prod.id})">
                     ${prod.is_try_before_buy ? '<span class="trial-badge" style="background-color: #059669;">Thuê trước</span>' : ''}
@@ -192,13 +186,13 @@ function renderCategories(categories) {
             `;
             carouselContainer.appendChild(card);
         });
-        
+
         carouselWrapper.appendChild(prevBtn);
         carouselWrapper.appendChild(carouselContainer);
         carouselWrapper.appendChild(nextBtn);
         categorySection.appendChild(carouselWrapper);
         dynamicCategories.appendChild(categorySection);
-        
+
         // Scroll button actions
         prevBtn.addEventListener('click', () => {
             carouselContainer.scrollBy({ left: -300, behavior: 'smooth' });
@@ -223,7 +217,7 @@ function filterCategoryProducts(categoryId, activeTag) {
 
         const tagsAttr = card.getAttribute('data-product-tags') || '';
         const productTags = tagsAttr.split(',').map(t => t.trim());
-        
+
         if (productTags.includes(activeTag)) {
             card.style.display = 'flex';
         } else {
@@ -239,7 +233,7 @@ function goToDetails(productId) {
 // Render Combos ("Gói Nhu Cầu")
 function renderCombos(combos) {
     combosContainer.innerHTML = '';
-    
+
     combos.forEach(combo => {
         const isOutOfStock = combo.stock_quantity <= 0;
         const itemsLi = combo.products.map(p => `
@@ -280,7 +274,7 @@ function renderCombos(combos) {
 // Render Try Before Buy Products
 function renderTryBeforeBuy(products) {
     tryBeforeBuyContainer.innerHTML = '';
-    
+
     products.forEach(prod => {
         const isOutOfStock = prod.stock_quantity <= 0;
         const card = document.createElement('div');
@@ -317,22 +311,14 @@ function renderTryBeforeBuy(products) {
     });
 }
 
-// Category Dropdown Toggle
-categoryDropdownBtn.addEventListener('click', (e) => {
-    if (e.target.tagName === 'A' || e.target.closest('#category-dropdown-menu a')) {
-        return;
-    }
-    e.stopPropagation();
-    categoryDropdownMenu.classList.toggle('show');
-});
+// Note: Category Dropdown Toggle is handled by the custom-header element in components.js
 
-document.addEventListener('click', () => {
-    categoryDropdownMenu.classList.remove('show');
-});
 
 // Category Dropdown Subcategory Navigation Handler
 function initDropdownScrolls() {
-    const links = categoryDropdownMenu.querySelectorAll('a');
+    const dropdownMenu = document.getElementById('category-dropdown-menu');
+    if (!dropdownMenu) return;
+    const links = dropdownMenu.querySelectorAll('a');
     links.forEach(link => {
         link.addEventListener('click', (e) => {
             const targetHash = link.getAttribute('href');
@@ -340,7 +326,7 @@ function initDropdownScrolls() {
                 e.preventDefault();
                 const targetId = targetHash.split('#')[1];
                 const targetTag = link.getAttribute('data-tag');
-                
+
                 const targetElement = document.getElementById(targetId);
                 if (targetElement) {
                     const headerHeight = document.querySelector('.main-header').offsetHeight;
@@ -369,7 +355,7 @@ function initDropdownScrolls() {
                     }
                 }
             }
-            categoryDropdownMenu.classList.remove('show');
+            dropdownMenu.classList.remove('show');
         });
     });
 }
@@ -435,61 +421,22 @@ async function addComboToCart(comboId) {
 }
 
 function updateCartUI(count) {
-    if (cartCountBadges) {
-        cartCountBadges.forEach(badge => {
+    const header = document.querySelector('custom-header');
+    if (header && typeof header.updateCartCount === 'function') {
+        header.updateCartCount(count);
+    } else {
+        const badges = document.querySelectorAll('.cart-count');
+        badges.forEach(badge => {
             badge.textContent = count;
         });
     }
 }
 
-// Theme Switcher (Light / Dark)
-function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeIcon(savedTheme);
-}
+// Note: Theme toggling and header scrolling are managed inside components.js or automatically by custom elements.
 
-function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeIcon(newTheme);
-}
-
-function updateThemeIcon(theme) {
-    const icon = themeToggle.querySelector('i');
-    if (theme === 'dark') {
-        icon.className = 'fa-solid fa-sun';
-    } else {
-        icon.className = 'fa-solid fa-moon';
-    }
-}
-
-// Sticky header on scroll (adds static shadow only)
-window.addEventListener('scroll', () => {
-    const header = document.querySelector('.main-header');
-    if (window.scrollY > 80) {
-        header.classList.add('shrunk');
-    } else {
-        header.classList.remove('shrunk');
-    }
-});
-
-// Event Listeners
-if (themeToggle) {
-    themeToggle.addEventListener('click', toggleTheme);
-}
-if (cartToggleBtn) {
-    cartToggleBtn.addEventListener('click', () => {
-        window.location.href = '/cart.html';
-    });
-}
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
     loadCart();
     loadHomeData();
 });

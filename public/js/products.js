@@ -12,7 +12,7 @@ let showInStockOnly = false;
 let currentSort = 'default';
 
 // Tag configurations matching homepage tags
-const categoryTagLabels = {
+const productCategoryTagLabels = {
     'dien-thoai': [
         { tag: 'gia-re', label: 'Giá rẻ' },
         { tag: 'chup-anh', label: 'Chụp ảnh đẹp' },
@@ -48,7 +48,9 @@ const filterTrialOnly = document.getElementById('filter-trial-only');
 const filterInStock = document.getElementById('filter-in-stock');
 const activeFiltersRow = document.getElementById('active-filters-row');
 const clearAllFiltersBtn = document.getElementById('clear-all-filters-btn');
-const headerSearchInput = document.getElementById('header-search-input');
+function getHeaderSearchInput() {
+    return document.getElementById('header-search-input');
+}
 
 // Helper to format currency
 function formatCurrency(value) {
@@ -107,7 +109,8 @@ function parseQueryParams() {
     const searchParam = params.get('search');
     if (searchParam) {
         searchKeyword = searchParam.trim();
-        headerSearchInput.value = searchKeyword;
+        const input = getHeaderSearchInput();
+        if (input) input.value = searchKeyword;
     }
 }
 
@@ -155,7 +158,8 @@ function setupEventListeners() {
         showInStockOnly = false;
         currentSort = 'default';
         
-        headerSearchInput.value = '';
+        const input = getHeaderSearchInput();
+        if (input) input.value = '';
         filterTrialOnly.checked = false;
         filterInStock.checked = false;
         sortSelect.value = 'default';
@@ -170,10 +174,13 @@ function setupEventListeners() {
     });
 
     // Header search input change
-    headerSearchInput.addEventListener('input', (e) => {
-        searchKeyword = e.target.value.trim();
-        renderAll();
-    });
+    const input = getHeaderSearchInput();
+    if (input) {
+        input.addEventListener('input', (e) => {
+            searchKeyword = e.target.value.trim();
+            renderAll();
+        });
+    }
 }
 
 // Update URL parameters without reload
@@ -204,7 +211,7 @@ function updateUrlParams() {
 function renderSidebarTags() {
     dynamicTagsList.innerHTML = '';
     
-    const tags = categoryTagLabels[currentCategory];
+    const tags = productCategoryTagLabels[currentCategory];
     if (tags && tags.length > 0) {
         tagsFilterGroup.style.display = 'block';
         
@@ -265,7 +272,7 @@ function renderActiveChips() {
     }
     
     if (currentTag) {
-        const tagList = categoryTagLabels[currentCategory] || [];
+        const tagList = productCategoryTagLabels[currentCategory] || [];
         const tagObj = tagList.find(t => t.tag === currentTag);
         const label = tagObj ? tagObj.label : currentTag;
         createChip(`Bộ lọc: ${label}`, () => {
@@ -279,7 +286,8 @@ function renderActiveChips() {
     if (searchKeyword) {
         createChip(`Tìm: "${searchKeyword}"`, () => {
             searchKeyword = '';
-            headerSearchInput.value = '';
+            const input = getHeaderSearchInput();
+            if (input) input.value = '';
             updateUrlParams();
             renderAll();
         });

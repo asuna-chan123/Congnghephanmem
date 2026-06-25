@@ -16,71 +16,7 @@
 </head>
 <body>
     <!-- Header Navigation (Etsy Inspired) -->
-    <header class="main-header">
-        <div class="header-container">
-            <div class="logo-area">
-                <a href="/" class="logo">E-Tech<span>Store</span></a>
-            </div>
-            
-            <div class="search-area-wrapper">
-                <div class="search-bar-container">
-                    <div class="category-dropdown-btn" id="category-dropdown-btn">
-                        Danh mục <i class="fa-solid fa-chevron-down"></i>
-                        <div class="category-dropdown-menu" id="category-dropdown-menu">
-                            <div class="dropdown-grid">
-                                <div class="dropdown-col">
-                                    <h4><i class="fa-solid fa-mobile-screen-button"></i> Điện thoại</h4>
-                                    <a href="/products.html?category=dien-thoai">Tất cả điện thoại</a>
-                                    <a href="/products.html?category=dien-thoai&tag=gia-re">Giá rẻ</a>
-                                    <a href="/products.html?category=dien-thoai&tag=chup-anh">Chụp ảnh đẹp</a>
-                                    <a href="/products.html?category=dien-thoai&tag=hieu-nang">Hiệu năng cao</a>
-                                    <a href="/products.html?category=dien-thoai&tag=pin-trau">Pin trâu</a>
-                                    <a href="/products.html?category=dien-thoai&tag=mong-nhe">Mỏng nhẹ</a>
-                                </div>
-                                <div class="dropdown-col">
-                                    <h4><i class="fa-solid fa-laptop"></i> Laptop</h4>
-                                    <a href="/products.html?category=laptop">Tất cả laptop</a>
-                                    <a href="/products.html?category=laptop&tag=van-phong">Văn phòng</a>
-                                    <a href="/products.html?category=laptop&tag=sang-trong">Sang trọng</a>
-                                    <a href="/products.html?category=laptop&tag=mong-nhe">Mỏng nhẹ</a>
-                                    <a href="/products.html?category=laptop&tag=do-hoa">Đồ họa</a>
-                                    <a href="/products.html?category=laptop&tag=choi-game">Chơi game</a>
-                                </div>
-                                <div class="dropdown-col">
-                                    <h4><i class="fa-solid fa-camera"></i> Máy ảnh</h4>
-                                    <a href="/products.html?category=may-anh">Tất cả máy ảnh</a>
-                                    <a href="/products.html?category=may-anh&tag=du-lich">Du lịch</a>
-                                    <a href="/products.html?category=may-anh&tag=chuyen-nghiep">Chuyên nghiệp</a>
-                                    <a href="/products.html?category=may-anh&tag=vlog">Vlog</a>
-                                    <a href="/products.html?category=may-anh&tag=action-cam">Action Cam</a>
-                                    <a href="/products.html?category=may-anh&tag=compact">Compact</a>
-                                </div>
-                            </div>
-                            <div class="dropdown-footer-row">
-                                <a href="/products.html" class="view-all-categories-btn">Hiển thị tất cả thiết bị công nghệ</a>
-                            </div>
-                        </div>
-                    </div>
-                    <form class="search-form" action="/products.html" method="GET">
-                        <input type="text" name="search" id="header-search-input" placeholder="Tìm kiếm bất kỳ thiết bị công nghệ nào..." aria-label="Search">
-                        <button type="submit" class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="header-actions">
-                <button class="action-btn" id="theme-toggle" title="Đổi giao diện">
-                    <i class="fa-solid fa-moon"></i>
-                </button>
-                <a href="#" class="action-link sign-in-btn">Đăng nhập</a>
-                <a href="/favorites.html" class="action-btn favorite-btn"><i class="fa-regular fa-heart"></i></a>
-                <a href="/cart.html" class="action-btn cart-btn-toggle" id="cart-toggle-btn">
-                    <i class="fa-solid fa-bag-shopping"></i>
-                    <span class="cart-count">0</span>
-                </a>
-            </div>
-        </div>
-    </header>
+    <custom-header></custom-header>
 
     <!-- Cart Page Layout -->
     <main class="cart-page-wrapper">
@@ -181,16 +117,10 @@
     </main>
 
     <!-- Footer -->
-    <footer class="main-footer">
-        <div class="footer-container">
-            <div class="footer-brand">
-                <a href="/" class="logo">E-Tech<span>Store</span></a>
-                <p>&copy; 2026 E-Tech Store. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <custom-footer></custom-footer>
 
     <!-- Scripts -->
+    <script src="js/components.js"></script>
     <script src="js/app.js"></script>
     <script src="js/cart.js"></script>
 </body>

@@ -1448,3 +1448,106 @@ button {
     .carousel-container { gap: var(--space-md); }
     .product-card { min-width: 200px; }
 }
+
+/* ============================================================
+   Bento Grid Layout
+   ============================================================ */
+.bento-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1.5fr 1.2fr;
+    grid-gap: 24px;
+    margin: 40px 0;
+}
+
+.bento-item {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    background-color: #f5f5f7;
+    border: 1px solid var(--border);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease;
+    cursor: pointer;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.bento-item:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.bento-item.wide {
+    grid-column: span 2;
+    grid-row: span 1;
+}
+
+.bento-item.tall {
+    grid-column: span 1;
+    grid-row: span 2;
+    min-height: 624px; /* wide height + gap + standard height */
+}
+
+.bento-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.bento-item:hover img {
+    transform: scale(1.03);
+}
+
+.bento-info {
+    position: relative;
+    z-index: 2;
+    padding: 30px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0) 100%);
+    width: 100%;
+    color: white;
+    box-sizing: border-box;
+}
+
+.bento-info h3 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #ffffff !important;
+}
+
+.bento-info p {
+    font-size: 14px;
+    opacity: 0.9;
+    color: #ffffff !important;
+    margin: 0;
+}
+
+/* Bento Responsive styling */
+@media (max-width: 900px) {
+    .bento-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .bento-item.tall {
+        grid-column: span 1;
+        grid-row: span 1;
+        min-height: 300px;
+    }
+}
+
+@media (max-width: 600px) {
+    .bento-grid {
+        grid-template-columns: 1fr;
+        grid-gap: 16px;
+    }
+    .bento-item.wide,
+    .bento-item.tall {
+        grid-column: span 1;
+        grid-row: span 1;
+        min-height: 280px;
+    }
+}

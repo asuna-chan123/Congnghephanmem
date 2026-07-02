@@ -120,82 +120,76 @@ async function loadHomeData() {
 function renderCategories(categories) {
     dynamicCategories.innerHTML = '';
 
-    categories.forEach(cat => {
-        if (!cat.products || cat.products.length === 0) return;
+    const bentoGrid = document.createElement('div');
+    bentoGrid.className = 'bento-grid';
 
-        const section = document.createElement('section');
-        section.className = 'category-carousel-section';
-        section.id = `category-${cat.slug}`;
-        section.setAttribute('aria-label', cat.name);
+    // 1. Laptop (Wide)
+    const laptopTile = document.createElement('div');
+    laptopTile.className = 'bento-item wide';
+    laptopTile.innerHTML = `
+        <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&auto=format&fit=crop" alt="Laptop" loading="lazy">
+        <div class="bento-info">
+            <h3>Laptop</h3>
+            <p>Power your workflow.</p>
+        </div>
+    `;
+    laptopTile.addEventListener('click', () => {
+        window.location.href = '/products.html?category=laptop';
+    });
+    bentoGrid.appendChild(laptopTile);
 
-        /* Title row */
-        const titleRow = document.createElement('div');
-        titleRow.className = 'section-title-wrapper reveal';
-        titleRow.innerHTML = `
-            <div>
-                <h3 class="section-title" style="font-size:clamp(22px,2.5vw,32px);">${cat.name}</h3>
-            </div>
-            <a href="/products.html?category=${cat.slug}" class="view-all-link">
-                Xem tất cả <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-            </a>
-        `;
-        section.appendChild(titleRow);
-        observeReveal(titleRow);
+    // 2. SkyPods Max (Tall)
+    const headphoneTile = document.createElement('div');
+    headphoneTile.className = 'bento-item tall';
+    headphoneTile.innerHTML = `
+        <img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&auto=format&fit=crop" alt="SkyPods Max" loading="lazy">
+        <div class="bento-info">
+            <h3>SkyPods Max</h3>
+            <p>Elevate your audio experience.</p>
+        </div>
+    `;
+    headphoneTile.addEventListener('click', () => {
+        window.location.href = '/products.html';
+    });
+    bentoGrid.appendChild(headphoneTile);
 
-        /* Filter pills */
-        const filters = document.createElement('div');
-        filters.className = 'category-filters-container';
-        filters.id = `filters-cat-${cat.id}`;
-        (categoryTagLabels[cat.id] || []).forEach(item => {
-            const btn = document.createElement('button');
-            btn.className = `tag-filter-btn ${item.tag === 'all' ? 'active' : ''}`;
-            btn.setAttribute('data-tag', item.tag);
-            btn.textContent = item.label;
-            btn.addEventListener('click', () => {
-                filters.querySelectorAll('.tag-filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                filterCategoryProducts(cat.id, item.tag);
-            });
-            filters.appendChild(btn);
-        });
-        section.appendChild(filters);
+    // 3. Tablet (Standard)
+    const tabletTile = document.createElement('div');
+    tabletTile.className = 'bento-item';
+    tabletTile.innerHTML = `
+        <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=800&auto=format&fit=crop" alt="Tablet" loading="lazy">
+        <div class="bento-info">
+            <h3>Tablet</h3>
+            <p>Creativity on the go.</p>
+        </div>
+    `;
+    tabletTile.addEventListener('click', () => {
+        window.location.href = '/products.html';
+    });
+    bentoGrid.appendChild(tabletTile);
 
-        /* Carousel */
-        const carouselWrap = document.createElement('div');
-        carouselWrap.className = 'carousel-wrapper';
+    // 4. Camera (Standard)
+    const cameraTile = document.createElement('div');
+    cameraTile.className = 'bento-item';
+    cameraTile.innerHTML = `
+        <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop" alt="Camera" loading="lazy">
+        <div class="bento-info">
+            <h3>Camera</h3>
+            <p>Cinema quality gear.</p>
+        </div>
+    `;
+    cameraTile.addEventListener('click', () => {
+        window.location.href = '/products.html?category=may-anh';
+    });
+    bentoGrid.appendChild(cameraTile);
 
-        const prevBtn = document.createElement('button');
-        prevBtn.className = 'carousel-nav-btn carousel-prev';
-        prevBtn.setAttribute('aria-label', 'Cuộn trái');
-        prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left" aria-hidden="true"></i>';
-
-        const nextBtn = document.createElement('button');
-        nextBtn.className = 'carousel-nav-btn carousel-next';
-        nextBtn.setAttribute('aria-label', 'Cuộn phải');
-        nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';
-
-        const carousel = document.createElement('div');
-        carousel.className = 'carousel-container';
-        carousel.id = `carousel-cat-${cat.id}`;
-
-        cat.products.forEach((prod, idx) => {
-            carousel.appendChild(buildProductCard(prod, idx));
-        });
-
-        carouselWrap.appendChild(prevBtn);
-        carouselWrap.appendChild(carousel);
-        carouselWrap.appendChild(nextBtn);
-        section.appendChild(carouselWrap);
-        dynamicCategories.appendChild(section);
-
-        prevBtn.addEventListener('click', () => carousel.scrollBy({ left: -280, behavior: 'smooth' }));
-        nextBtn.addEventListener('click', () => carousel.scrollBy({ left:  280, behavior: 'smooth' }));
-
-        /* Staggered reveal for cards */
-        carousel.querySelectorAll('.product-card').forEach((card, i) => {
-            card.style.transitionDelay = `${i * 0.06}s`;
-            observeReveal(card);
-        });
+    dynamicCategories.appendChild(bentoGrid);
+    
+    // Animate bento items
+    bentoGrid.querySelectorAll('.bento-item').forEach((item, i) => {
+        item.classList.add('reveal');
+        item.style.transitionDelay = `${i * 0.08}s`;
+        observeReveal(item);
     });
 }
 

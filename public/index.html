@@ -3,95 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Tech Store - Trải nghiệm mua sắm & Dùng thử công nghệ</title>
-    <!-- Google Fonts -->
+    <title>E-Tech Store — Trải nghiệm công nghệ đỉnh cao trước khi sở hữu</title>
+    <meta name="description" content="Mua sắm và dùng thử thiết bị công nghệ cao cấp: Phone, Laptop, Camera chính hãng. Thử trước, quyết định sau.">
+    <meta property="og:title" content="E-Tech Store — Công nghệ đỉnh cao">
+    <meta property="og:description" content="Trải nghiệm công nghệ trước khi sở hữu. Dùng thử iPhone, MacBook, máy ảnh cao cấp với giá cực rẻ.">
+    <meta property="og:type" content="website">
+
+    <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
+
+    <!-- Geist Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
+
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/cart.css">
+    <link rel="stylesheet" href="css/favorites.css">
 </head>
 <body>
 
-    <!-- Header Navigation (Etsy Inspired) -->
+    <!-- Skip to content -->
+    <a href="#main-content" class="skip-link">Bỏ qua đến nội dung chính</a>
+
+    <!-- Header -->
     <custom-header></custom-header>
 
-    <!-- Hero Banner Section -->
-    <section class="hero-section">
-        <div class="hero-container">
-            <div class="hero-content">
-                <span class="badge">Độc quyền tại E-Tech</span>
-                <h1>Trải nghiệm công nghệ đỉnh cao trước khi sở hữu</h1>
-                <p>Mua sắm các thiết bị Phone, Laptop, Camera chính hãng hoặc dùng thử ngắn hạn với mức phí cực rẻ. Dùng thử trước khi đưa ra quyết định mua hàng chính thức.</p>
-                <div class="hero-cta">
-                    <a href="#try-before-buy" class="btn btn-primary">Dùng thử ngay</a>
-                </div>
+    <!-- ============================================================
+         Hero — Full-screen Video
+         ============================================================ -->
+    <section class="hero-video-section" aria-label="Giới thiệu E-Tech Store">
+        <video
+            class="hero-video"
+            id="hero-video"
+            autoplay
+            muted
+            playsinline
+            preload="auto"
+            aria-hidden="true"
+        >
+            <source src="/videos/hero.webm" type="video/webm">
+        </video>
+
+        <div class="hero-content-wrap" id="hero-content-wrap" style="opacity: 0; transform: translateY(20px); transition: opacity 1.2s var(--ease-out), transform 1.2s var(--ease-out);">
+            <p class="hero-eyebrow" style="animation: none; opacity: 1; transform: none;">Độc quyền tại E-Tech Store</p>
+
+            <h1 class="hero-title" style="animation: none; opacity: 1; transform: none;">Thử trước.<br>Sở hữu sau.</h1>
+
+            <p class="hero-subtitle" style="animation: none; opacity: 1; transform: none;">
+                Trải nghiệm Phone, Laptop, Camera chính hãng hàng đầu
+                chỉ với vài nghìn đồng mỗi ngày — trước khi đưa ra quyết định.
+            </p>
+
+            <div class="hero-cta" style="animation: none; opacity: 1; transform: none;">
+                <a href="#try-before-buy" class="btn btn-primary-hero" id="hero-cta-try">
+                    Dùng thử ngay
+                </a>
+                <a href="/products.html" class="btn btn-outline-hero" id="hero-cta-browse">
+                    Khám phá sản phẩm
+                </a>
             </div>
-            <div class="hero-image">
-                <div class="image-glow"></div>
-                <img src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=800&auto=format&fit=crop&q=60" alt="Premium Tech Setup">
-            </div>
+        </div>
+
+        <div class="hero-scroll-hint" aria-hidden="true">
+            <span>Cuộn để khám phá</span>
+            <div class="scroll-arrow"></div>
         </div>
     </section>
 
-    <!-- Main Content Container -->
-    <main class="main-content">
-        
-        <!-- Category Carousels Container -->
-        <section class="categories-section">
-            <div class="section-title-wrapper">
+    <!-- ============================================================
+         Main Content
+         ============================================================ -->
+    <main class="main-content" id="main-content">
+
+        <!-- Category Carousels -->
+        <section class="categories-section" aria-label="Danh mục sản phẩm">
+            <div class="section-title-wrapper reveal">
                 <div>
                     <span class="section-subtitle">Khám phá theo danh mục</span>
-                    <h2 class="section-title">Thiết Bị Công Nghệ Mới Nhất</h2>
+                    <h2 class="section-title">Thiết bị công nghệ mới nhất</h2>
                 </div>
             </div>
 
-            <!-- Dynamic Category Carousels will be injected here -->
             <div id="dynamic-categories">
-                <!-- Skeleton loader or spinner while fetching -->
-                <div class="loading-spinner">
-                    <i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu sản phẩm...
+                <!-- Skeleton loading -->
+                <div class="loading-spinner" id="skeleton-loader">
+                    <i class="fa-solid fa-spinner" style="animation: spin 1s linear infinite; font-size: 28px; color: var(--accent);"></i>
+                    <span>Đang tải sản phẩm...</span>
                 </div>
             </div>
         </section>
 
-        <!-- Banner Middle (Etsy-like Promotional Banner) -->
-        <section class="promo-banner-section">
-            <div class="promo-grid" style="grid-template-columns: 1fr;">
-                <div class="promo-card promo-left" style="background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(88, 28, 135, 0.8)), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=60');">
-                    <div class="promo-content">
-                        <h3>Dịch vụ Dùng thử đặc biệt</h3>
-                        <p>Bạn băn khoăn về chất lượng máy ảnh hay tốc độ của chiếc Laptop? Hãy đăng ký dùng thử 3-7 ngày trước khi đưa ra quyết định mua hàng chính thức.</p>
-                        <a href="#try-before-buy" class="btn btn-white">Tìm hiểu thêm <i class="fa-solid fa-arrow-right"></i></a>
-                    </div>
+        <!-- Promo Banner (Apple-style sleek card redesign) -->
+        <section class="promo-banner-section reveal" aria-label="Dịch vụ dùng thử" style="max-width: 1020px; margin: 80px auto;">
+            <div
+                class="promo-card"
+                style="background: #f5f5f7; border: 1px solid var(--border); border-radius: 24px; padding: 60px 40px; text-align: center; justify-content: center; box-shadow: none; min-height: auto;"
+            >
+                <div class="promo-content" style="max-width: 580px; margin: 0 auto; display: flex; flex-direction: column; align-items: center;">
+                    <span class="badge" style="margin-bottom: 20px; background: rgba(0,0,0,0.04); color: #1d1d1f; font-weight: 500; font-size: 11px;">
+                        Dùng thử dịch vụ
+                    </span>
+                    <h3 style="font-size: 32px; font-weight: 600; line-height: 1.25; color: #1d1d1f !important; margin-bottom: 16px; letter-spacing: -0.02em;">Hãy dùng thử trước khi đưa ra quyết định.</h3>
+                    <p style="font-size: 15px; color: #6e6e73 !important; line-height: 1.6; margin-bottom: 30px; font-weight: 400; max-width: 460px; opacity: 1;">Đăng ký dùng thử máy ảnh, laptop hay smartphone từ 3–7 ngày với mức phí hợp lý. Thuận tiện, an tâm, đơn giản.</p>
+                    <a href="#try-before-buy" class="btn btn-primary" id="promo-cta" style="background: #1d1d1f; color: #ffffff; font-size: 13px; font-weight: 500; padding: 10px 24px;">
+                        Tìm hiểu thêm <i class="fa-solid fa-chevron-right" style="font-size: 10px; margin-left: 4px;"></i>
+                    </a>
                 </div>
             </div>
         </section>
 
-        <!-- Try Before Buy Section -->
-        <section class="try-section" id="try-before-buy">
-            <div class="section-title-wrapper">
+        <!-- Try Before Buy -->
+        <section class="try-section" id="try-before-buy" aria-label="Dùng thử trước khi mua">
+            <div class="section-title-wrapper reveal">
                 <div>
-                    <span class="section-subtitle">Tiết kiệm & An tâm</span>
-                    <h2 class="section-title">Dùng Thử Trước Khi Mua</h2>
+                    <span class="section-subtitle">Tiết kiệm &amp; an tâm</span>
+                    <h2 class="section-title">Dùng thử trước khi mua</h2>
                 </div>
             </div>
 
             <div class="try-grid" id="try-before-buy-container">
-                <!-- Dynamic Try Before Buy Products Injected Here -->
+                <!-- Injected by app.js -->
             </div>
         </section>
 
     </main>
 
-
-    <!-- Footer Section -->
+    <!-- Footer -->
     <custom-footer></custom-footer>
 
-    <!-- Custom JS -->
+    <!-- Scripts -->
     <script src="js/components.js"></script>
     <script src="js/app.js"></script>
+
+    <!-- Video event listener & hero content reveal on end -->
+    <script>
+        (function () {
+            const video = document.getElementById('hero-video');
+            const content = document.getElementById('hero-content-wrap');
+            if (video) {
+                video.addEventListener('canplay', () => {
+                    video.classList.add('loaded');
+                });
+                // Fallback loaded
+                setTimeout(() => video.classList.add('loaded'), 1500);
+
+                // Khi video chạy xong:
+                video.addEventListener('ended', () => {
+                    // Áp dụng filter làm tối nhẹ/mờ nhẹ trực tiếp lên video để chữ dễ đọc hơn một cách sang trọng
+                    video.style.filter = 'brightness(0.65) blur(2px)';
+                    video.style.transition = 'filter 1.5s ease';
+                    
+                    // Hiển thị chữ
+                    if (content) {
+                        content.style.opacity = '1';
+                        content.style.transform = 'translateY(0)';
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 </html>

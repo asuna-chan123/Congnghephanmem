@@ -1,4 +1,9 @@
-/* favorites.css */
+/* favorites.css — updated to Apple design tokens */
+:root {
+    --text-main:  var(--text-primary);
+    --text-muted: var(--text-secondary);
+    --primary:    var(--accent);
+}
 .favorites-page-wrapper {
     max-width: 1400px;
     margin: 40px auto;

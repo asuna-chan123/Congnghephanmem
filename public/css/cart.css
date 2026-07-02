@@ -1,4 +1,10 @@
-/* cart.css */
+/* cart.css — updated to Apple design tokens */
+/* Map legacy vars */
+:root {
+    --text-main:  var(--text-primary);
+    --text-muted: var(--text-secondary);
+    --primary:    var(--accent);
+}
 .cart-page-wrapper {
     max-width: 1200px;
     margin: 40px auto;

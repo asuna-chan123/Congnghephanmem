@@ -15,7 +15,6 @@ class ProductModel {
           ELSE LOWER(REPLACE(category_name, ' ', '-'))
         END AS slug
       FROM equipment_categories
-      WHERE parent_category_id IS NOT NULL
     `;
     return db.query(sql);
   }

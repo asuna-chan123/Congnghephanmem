@@ -17,16 +17,12 @@ class HomeController {
         });
       }
 
-      // Fetch combos
-      const combos = await ProductModel.getAllCombos();
-
       // Fetch try before buy products
       const tryBeforeBuy = await ProductModel.getTryBeforeBuyProducts();
 
       res.json({
         success: true,
         categories: categoriesWithProducts,
-        combos,
         tryBeforeBuy
       });
     } catch (error) {

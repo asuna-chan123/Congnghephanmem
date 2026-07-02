@@ -63,9 +63,9 @@ class CustomHeader extends HTMLElement {
                     </div>
                     <div class="search-suggestions" id="search-suggestions">
                         <span class="suggestion-title-label">Đề xuất:</span>
-                        <a href="/#try-before-buy"><i class="fa-solid fa-gift"></i> Quà tặng</a>
-                        <a href="/#combo-packages"><i class="fa-solid fa-cubes"></i> Gói theo nhu cầu</a>
-                        <a href="/#category-dien-thoai"><i class="fa-solid fa-fire"></i> Sản phẩm hot</a>
+                        <a href="/#try-before-buy"><i class="fa-solid fa-gift"></i> Dùng thử trước</a>
+                        <a href="/#category-dien-thoai"><i class="fa-solid fa-fire"></i> Điện thoại hot</a>
+                        <a href="/#category-laptop"><i class="fa-solid fa-laptop"></i> Laptop cao cấp</a>
                         <a href="/#try-before-buy"><i class="fa-solid fa-circle-check"></i> Phù hợp với bạn</a>
                     </div>
                 </div>

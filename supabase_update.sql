@@ -661,9 +661,9 @@ INSERT INTO reviews
 
 -- 11.18 Cart / Favorites
 INSERT INTO cart_items
-(cart_item_id, session_id, customer_id, variant_id, type, quantity) VALUES
-(1, NULL, 1, 13, 'buy', 1),
-(2, 'guest-session-001', NULL, 14, 'buy', 1);
+(cart_item_id, session_id, customer_id, variant_id, quantity) VALUES
+(1, NULL, 1, 13, 1),
+(2, 'guest-session-001', NULL, 14, 1);
 
 INSERT INTO favorites
 (favorite_id, session_id, customer_id, variant_id) VALUES

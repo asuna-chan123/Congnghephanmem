@@ -24,7 +24,6 @@ async function apiFetch(url, options = {}) {
 
 // DOM Elements
 const dynamicCategories = document.getElementById('dynamic-categories');
-const combosContainer = document.getElementById('combos-container');
 const tryBeforeBuyContainer = document.getElementById('try-before-buy-container');
 
 // Helper to format currency
@@ -70,7 +69,6 @@ async function loadHomeData() {
         if (data.success) {
             homeData = data;
             renderCategories(data.categories);
-            renderCombos(data.combos);
             renderTryBeforeBuy(data.tryBeforeBuy);
             initDropdownScrolls();
             checkUrlHashFilter();
@@ -230,47 +228,6 @@ function goToDetails(productId) {
     window.location.href = `product.html?id=${productId}`;
 }
 
-// Render Combos ("Gói Nhu Cầu")
-function renderCombos(combos) {
-    combosContainer.innerHTML = '';
-
-    combos.forEach(combo => {
-        const isOutOfStock = combo.stock_quantity <= 0;
-        const itemsLi = combo.products.map(p => `
-            <li><i class="fa-solid fa-check"></i> ${p.name}</li>
-        `).join('');
-
-        const comboCard = document.createElement('div');
-        comboCard.className = 'combo-card';
-        comboCard.innerHTML = `
-            <div class="combo-image-box">
-                <span class="combo-stock">Kho: ${combo.stock_quantity}</span>
-                <img src="${combo.image_url || 'https://images.unsplash.com/photo-1547082299-de196ea013d6?w=500'}" alt="${combo.name}">
-            </div>
-            <div class="combo-info">
-                <h4 class="combo-title">${combo.name}</h4>
-                <p class="combo-desc">${combo.description}</p>
-                <div class="combo-items-list">
-                    <h5>Sản phẩm trong gói:</h5>
-                    <ul>
-                        ${itemsLi}
-                    </ul>
-                </div>
-                <div class="combo-pricing">
-                    <div class="combo-price-details">
-                        ${combo.original_price ? `<span class="combo-original-price">${formatCurrency(combo.original_price)}</span>` : ''}
-                        <span class="combo-current-price">${formatCurrency(combo.price)}</span>
-                    </div>
-                    <button class="btn btn-primary" onclick="addComboToCart(${combo.id})" ${isOutOfStock ? 'disabled' : ''}>
-                        ${isOutOfStock ? 'Hết hàng' : 'Chọn Gói Nhu Cầu'}
-                    </button>
-                </div>
-            </div>
-        `;
-        combosContainer.appendChild(comboCard);
-    });
-}
-
 // Render Try Before Buy Products
 function renderTryBeforeBuy(products) {
     tryBeforeBuyContainer.innerHTML = '';
@@ -391,23 +348,6 @@ async function addToCart(productId, type = 'buy') {
         const res = await apiFetch('/api/cart/add', {
             method: 'POST',
             body: JSON.stringify({ productId, type })
-        });
-        if (res.success) {
-            window.location.href = '/cart.html';
-        } else {
-            alert('Lỗi: ' + res.message);
-        }
-    } catch (e) {
-        console.error('Error adding to cart', e);
-        alert('Lỗi thêm vào giỏ hàng');
-    }
-}
-
-async function addComboToCart(comboId) {
-    try {
-        const res = await apiFetch('/api/cart/add', {
-            method: 'POST',
-            body: JSON.stringify({ comboId, type: 'combo' })
         });
         if (res.success) {
             window.location.href = '/cart.html';

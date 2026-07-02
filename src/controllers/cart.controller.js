@@ -29,9 +29,9 @@ class CartController {
         return res.status(400).json({ success: false, message: 'Session ID is required' });
       }
 
-      const { productId, comboId, type, quantity, variantId } = req.body;
-      if (!productId && !comboId && !variantId) {
-        return res.status(400).json({ success: false, message: 'Product ID, Variant ID or Combo ID is required' });
+      const { productId, type, quantity, variantId } = req.body;
+      if (!productId && !variantId) {
+        return res.status(400).json({ success: false, message: 'Product ID or Variant ID is required' });
       }
       if (!type) {
         return res.status(400).json({ success: false, message: 'Type is required' });
@@ -39,7 +39,7 @@ class CartController {
 
       const qty = parseInt(quantity, 10) || 1;
 
-      await CartModel.addItem(sessionId, productId || null, comboId || null, type, qty, variantId || null);
+      await CartModel.addItem(sessionId, productId || null, type, qty, variantId || null);
       res.json({ success: true, message: 'Added to cart' });
     } catch (error) {
       console.error('Error adding to cart:', error);

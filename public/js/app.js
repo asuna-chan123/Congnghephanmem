@@ -35,34 +35,34 @@ function formatCurrency(value) {
 }
 
 // ── DOM References ─────────────────────────────────────────────
-const dynamicCategories    = document.getElementById('dynamic-categories');
+const dynamicCategories = document.getElementById('dynamic-categories');
 const tryBeforeBuyContainer = document.getElementById('try-before-buy-container');
 
 // ── Tag Labels ─────────────────────────────────────────────────
 const categoryTagLabels = {
     1: [
-        { tag: 'all',        label: 'Tất cả' },
-        { tag: 'gia-re',     label: 'Giá rẻ' },
-        { tag: 'chup-anh',   label: 'Chụp ảnh đẹp' },
-        { tag: 'hieu-nang',  label: 'Hiệu năng cao' },
-        { tag: 'pin-trau',   label: 'Pin trâu' },
-        { tag: 'mong-nhe',   label: 'Mỏng nhẹ' }
+        { tag: 'all', label: 'Tất cả' },
+        { tag: 'gia-re', label: 'Giá rẻ' },
+        { tag: 'chup-anh', label: 'Chụp ảnh đẹp' },
+        { tag: 'hieu-nang', label: 'Hiệu năng cao' },
+        { tag: 'pin-trau', label: 'Pin trâu' },
+        { tag: 'mong-nhe', label: 'Mỏng nhẹ' }
     ],
     2: [
-        { tag: 'all',        label: 'Tất cả' },
-        { tag: 'van-phong',  label: 'Văn phòng' },
+        { tag: 'all', label: 'Tất cả' },
+        { tag: 'van-phong', label: 'Văn phòng' },
         { tag: 'sang-trong', label: 'Sang trọng' },
-        { tag: 'mong-nhe',   label: 'Mỏng nhẹ' },
-        { tag: 'do-hoa',     label: 'Đồ họa' },
-        { tag: 'choi-game',  label: 'Chơi game' }
+        { tag: 'mong-nhe', label: 'Mỏng nhẹ' },
+        { tag: 'do-hoa', label: 'Đồ họa' },
+        { tag: 'choi-game', label: 'Chơi game' }
     ],
     3: [
-        { tag: 'all',           label: 'Tất cả' },
-        { tag: 'du-lich',       label: 'Du lịch' },
+        { tag: 'all', label: 'Tất cả' },
+        { tag: 'du-lich', label: 'Du lịch' },
         { tag: 'chuyen-nghiep', label: 'Chuyên nghiệp' },
-        { tag: 'vlog',          label: 'Vlog' },
-        { tag: 'action-cam',    label: 'Action Cam' },
-        { tag: 'compact',       label: 'Compact' }
+        { tag: 'vlog', label: 'Vlog' },
+        { tag: 'action-cam', label: 'Action Cam' },
+        { tag: 'compact', label: 'Compact' }
     ]
 };
 
@@ -89,25 +89,24 @@ document.querySelectorAll('.reveal').forEach(observeReveal);
    Load Home Data
    ============================================================ */
 async function loadHomeData() {
-    if (!dynamicCategories) return;
+    if (!tryBeforeBuyContainer) return;
     try {
         const data = await fetch('/api/home-data').then(r => r.json());
         if (data.success) {
             homeData = data;
             document.getElementById('skeleton-loader')?.remove();
-            renderCategories(data.categories);
             renderTryBeforeBuy(data.tryBeforeBuy);
             initDropdownScrolls();
             checkUrlHashFilter();
         } else {
-            dynamicCategories.innerHTML =
+            tryBeforeBuyContainer.innerHTML =
                 `<p style="color:var(--text-secondary);padding:40px;text-align:center;">
                     Không thể tải dữ liệu: ${data.message}
                  </p>`;
         }
     } catch (err) {
         console.error('Error fetching home data:', err);
-        dynamicCategories.innerHTML =
+        tryBeforeBuyContainer.innerHTML =
             `<p style="color:var(--text-secondary);padding:40px;text-align:center;">
                 Lỗi kết nối máy chủ. Vui lòng thử lại sau.
              </p>`;
@@ -117,81 +116,7 @@ async function loadHomeData() {
 /* ============================================================
    Render Categories
    ============================================================ */
-function renderCategories(categories) {
-    dynamicCategories.innerHTML = '';
-
-    const bentoGrid = document.createElement('div');
-    bentoGrid.className = 'bento-grid';
-
-    // 1. Laptop (Wide)
-    const laptopTile = document.createElement('div');
-    laptopTile.className = 'bento-item wide';
-    laptopTile.innerHTML = `
-        <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&auto=format&fit=crop" alt="Laptop" loading="lazy">
-        <div class="bento-info">
-            <h3>Laptop</h3>
-            <p>Power your workflow.</p>
-        </div>
-    `;
-    laptopTile.addEventListener('click', () => {
-        window.location.href = '/products.html?category=laptop';
-    });
-    bentoGrid.appendChild(laptopTile);
-
-    // 2. SkyPods Max (Tall)
-    const headphoneTile = document.createElement('div');
-    headphoneTile.className = 'bento-item tall';
-    headphoneTile.innerHTML = `
-        <img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&auto=format&fit=crop" alt="SkyPods Max" loading="lazy">
-        <div class="bento-info">
-            <h3>SkyPods Max</h3>
-            <p>Elevate your audio experience.</p>
-        </div>
-    `;
-    headphoneTile.addEventListener('click', () => {
-        window.location.href = '/products.html';
-    });
-    bentoGrid.appendChild(headphoneTile);
-
-    // 3. Tablet (Standard)
-    const tabletTile = document.createElement('div');
-    tabletTile.className = 'bento-item';
-    tabletTile.innerHTML = `
-        <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=800&auto=format&fit=crop" alt="Tablet" loading="lazy">
-        <div class="bento-info">
-            <h3>Tablet</h3>
-            <p>Creativity on the go.</p>
-        </div>
-    `;
-    tabletTile.addEventListener('click', () => {
-        window.location.href = '/products.html';
-    });
-    bentoGrid.appendChild(tabletTile);
-
-    // 4. Camera (Standard)
-    const cameraTile = document.createElement('div');
-    cameraTile.className = 'bento-item';
-    cameraTile.innerHTML = `
-        <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop" alt="Camera" loading="lazy">
-        <div class="bento-info">
-            <h3>Camera</h3>
-            <p>Cinema quality gear.</p>
-        </div>
-    `;
-    cameraTile.addEventListener('click', () => {
-        window.location.href = '/products.html?category=may-anh';
-    });
-    bentoGrid.appendChild(cameraTile);
-
-    dynamicCategories.appendChild(bentoGrid);
-    
-    // Animate bento items
-    bentoGrid.querySelectorAll('.bento-item').forEach((item, i) => {
-        item.classList.add('reveal');
-        item.style.transitionDelay = `${i * 0.08}s`;
-        observeReveal(item);
-    });
-}
+/* Bento categories rendering moved to components-bento.js Custom Element */
 
 /* ============================================================
    Build Product Card
@@ -206,8 +131,8 @@ function buildProductCard(prod, idx = 0) {
     card.innerHTML = `
         <div class="product-image-container" role="img" aria-label="${prod.name}">
             ${prod.is_try_before_buy
-                ? `<span class="trial-badge">Thuê trước</span>`
-                : ''}
+            ? `<span class="trial-badge">Thuê trước</span>`
+            : ''}
             <span class="stock-badge ${outOfStock ? 'out-of-stock' : ''}">
                 ${outOfStock ? 'Hết hàng' : `Kho: ${prod.stock_quantity}`}
             </span>
@@ -282,61 +207,31 @@ function goToDetails(productId) {
 /* ============================================================
    Render Try Before Buy
    ============================================================ */
+/* ============================================================
+   Render Try Before Buy
+   ============================================================ */
 function renderTryBeforeBuy(products) {
     if (!tryBeforeBuyContainer) return;
     tryBeforeBuyContainer.innerHTML = '';
 
     products.forEach((prod, idx) => {
-        const outOfStock = prod.stock_quantity <= 0;
-        const card = document.createElement('article');
-        card.className = 'product-card';
+        const card = document.createElement('product-card');
+        card.setAttribute('product-id', prod.id);
+        card.setAttribute('name', prod.name);
+        card.setAttribute('price', prod.price);
+        card.setAttribute('image-url', prod.image_url || 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=500&auto=format&fit=crop');
+        card.setAttribute('tags', prod.tags || '');
         card.style.minWidth = 'unset';
         card.style.maxWidth = '100%';
         card.style.transitionDelay = `${idx * 0.07}s`;
-        card.setAttribute('data-product-tags', prod.tags || '');
-        card.setAttribute('aria-label', prod.name);
-
-        card.innerHTML = `
-            <div class="product-image-container" role="img" aria-label="${prod.name}">
-                <span class="trial-badge">Dùng thử trước</span>
-                <span class="stock-badge ${outOfStock ? 'out-of-stock' : ''}">
-                    ${outOfStock ? 'Hết hàng' : `Kho: ${prod.stock_quantity}`}
-                </span>
-                <img
-                    src="${prod.image_url || 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=500&auto=format&fit=crop'}"
-                    alt="${prod.name}"
-                    loading="lazy"
-                    onclick="goToDetails(${prod.id})"
-                    style="cursor:pointer;"
-                >
-            </div>
-            <div class="product-info">
-                <h4 class="product-name" onclick="goToDetails(${prod.id})" style="cursor:pointer;" title="${prod.name}">
-                    ${prod.name}
-                </h4>
-                <div class="product-pricing">
-                    <div class="trial-price-row">
-                        ${formatCurrency(prod.trial_price_per_day)}
-                        <span style="font-size:12px;font-weight:400;color:var(--text-tertiary)"> / ngày</span>
-                    </div>
-                    <div class="price-row">Giá mua: ${formatCurrency(prod.price)}</div>
-                </div>
-                <div class="product-actions">
-                    <button
-                        class="btn btn-primary btn-block"
-                        style="background:var(--success);"
-                        onclick="goToDetails(${prod.id})"
-                        ${outOfStock ? 'disabled' : ''}
-                        aria-label="${outOfStock ? 'Hết hàng' : 'Đăng ký dùng thử ' + prod.name}"
-                    >
-                        ${outOfStock ? 'Hết hàng' : 'Đăng ký dùng thử'}
-                    </button>
-                </div>
-            </div>
-        `;
 
         tryBeforeBuyContainer.appendChild(card);
-        observeReveal(card);
+        
+        // Wait for Custom Element rendering to observe internal .product-card
+        setTimeout(() => {
+            const innerCard = card.querySelector('.product-card');
+            if (innerCard) observeReveal(innerCard);
+        }, 50);
     });
 }
 
@@ -361,8 +256,8 @@ function initDropdownScrolls() {
                     const tag = link.getAttribute('data-tag');
                     if (tag) {
                         const catId = id === 'category-dien-thoai' ? 1
-                                    : id === 'category-laptop'     ? 2
-                                    : id === 'category-may-anh'    ? 3 : null;
+                            : id === 'category-laptop' ? 2
+                                : id === 'category-may-anh' ? 3 : null;
                         if (catId) {
                             const btn = document.querySelector(`#filters-cat-${catId} [data-tag="${tag}"]`);
                             btn?.click();

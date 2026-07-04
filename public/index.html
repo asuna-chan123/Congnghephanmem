@@ -50,16 +50,18 @@
             <source src="/videos/hero.webm" type="video/webm">
         </video>
 
+
         <div class="hero-content-wrap" id="hero-content-wrap"
-            style="opacity: 0; transform: translateY(20px); transition: opacity 1.2s var(--ease-out), transform 1.2s var(--ease-out);">
+            style="opacity: 0; transform: translateY(-20px); transition: opacity 1.2s var(--ease-out), transform 1.2s var(--ease-out); z-index: 10;">
+            <!--
             <p class="hero-eyebrow" style="animation: none; opacity: 1; transform: none;">Độc quyền tại E-Tech Store</p>
 
             <h1 class="hero-title" style="animation: none; opacity: 1; transform: none;">Thử trước <br>Sở hữu sau.</h1>
 
             <p class="hero-subtitle" style="animation: none; opacity: 1; transform: none;">
-                Trải nghiệm Phone, Laptop, Camera chính hãng hàng đầu
-                chỉ với vài nghìn đồng mỗi ngày — trước khi đưa ra quyết định.
+                Huawei Mate XT
             </p>
+            -->
 
             <div class="hero-cta" style="animation: none; opacity: 1; transform: none;">
                 <a href="#try-before-buy" class="btn btn-primary" id="hero-cta-try">
@@ -70,6 +72,7 @@
                 </a>
             </div>
         </div>
+
 
         <div class="hero-scroll-hint" aria-hidden="true">
             <span>Cuộn để khám phá</span>
@@ -160,10 +163,9 @@
 
                 // Khi video chạy xong:
                 video.addEventListener('ended', () => {
-                    // Hiển thị chữ — giữ video rõ ràng, không làm mờ
                     if (content) {
                         content.style.opacity = '1';
-                        content.style.transform = 'translateY(0)';
+                        content.style.transform = 'translateY(0) translateX(-50%)';
                     }
                 });
             }

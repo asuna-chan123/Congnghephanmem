@@ -553,12 +553,15 @@ button {
 }
 
 .hero-content-wrap {
-    position: relative;
+    position: absolute;
+    top: 15vh;
+    left: 50%;
+    transform: translateX(-50%) !important;
     z-index: 2;
     text-align: center;
     max-width: 860px;
+    width: 100%;
     padding: 0 var(--space-lg);
-    padding-top: var(--nav-height);
 }
 
 .hero-eyebrow {
@@ -566,7 +569,8 @@ button {
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--accent); /* Changed to Action Blue */
+    color: var(--accent);
+    /* Changed to Action Blue */
     margin-bottom: var(--space-md);
     opacity: 0;
     transform: translateY(20px);
@@ -576,7 +580,8 @@ button {
 .hero-title {
     font-size: clamp(48px, 7vw, 96px);
     font-weight: 700;
-    color: var(--text-primary); /* Changed to dark ink */
+    color: var(--text-primary);
+    /* Changed to dark ink */
     letter-spacing: -0.04em;
     line-height: 1.0;
     margin-bottom: var(--space-lg);
@@ -588,7 +593,8 @@ button {
 .hero-subtitle {
     font-size: clamp(17px, 2.2vw, 23px);
     font-weight: 300;
-    color: var(--text-secondary); /* Changed to muted ink */
+    color: var(--text-secondary);
+    /* Changed to muted ink */
     line-height: 1.5;
     max-width: 560px;
     margin: 0 auto var(--space-xl);
@@ -616,21 +622,27 @@ button {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: auto;
     gap: 6px;
-    color: var(--text-secondary); /* Changed to dark */
+    color: var(--text-secondary);
+    /* Changed to dark */
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     opacity: 0;
-    animation: heroReveal 1s var(--ease-out) 1.5s forwards;
+    animation: scrollHintReveal 1s var(--ease-out) 1.5s forwards;
 }
 
 .scroll-arrow {
     width: 24px;
     height: 24px;
-    border-right: 2px solid var(--text-secondary); /* Changed to dark */
-    border-bottom: 2px solid var(--text-secondary); /* Changed to dark */
+    border-right: 2px solid var(--text-secondary);
+    /* Changed to dark */
+    border-bottom: 2px solid var(--text-secondary);
+    /* Changed to dark */
     transform: rotate(45deg);
     animation: scrollBounce 2s ease-in-out infinite;
 }
@@ -1533,6 +1545,17 @@ button {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes scrollHintReveal {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
     }
 }
 

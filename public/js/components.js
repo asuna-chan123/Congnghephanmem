@@ -26,33 +26,25 @@ class CustomHeader extends HTMLElement {
 
                 <!-- Category and Search Area (Apple minimal style) -->
                 <div class="search-area-wrapper" style="flex: 0 1 auto; max-width: 480px; flex-direction: row; align-items: center; gap: 20px;">
-                    <!-- Dropdown Button -->
-                    <div class="category-dropdown-btn" id="category-dropdown-btn" role="button" aria-haspopup="true" aria-expanded="false" tabindex="0" style="font-size: 12px; opacity: 0.8; border-right: none; padding-right: 0;">
-                        Danh mục <i class="fa-solid fa-chevron-down" style="font-size: 8px; margin-left: 4px;" aria-hidden="true"></i>
-                        <div class="category-dropdown-menu" id="category-dropdown-menu" role="menu" style="top: calc(100% + 15px); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); width: 600px; padding: 30px; background: rgba(255,255,255,0.98); backdrop-filter: blur(20px);">
-                            <div class="dropdown-grid">
-                                <div class="dropdown-col">
-                                    <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 15px; border-bottom: none;"><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i> Điện thoại</h4>
-                                    <a href="/products.html?category=dien-thoai" style="font-size: 13px; font-weight: 400; padding: 6px 0;">Tất cả điện thoại</a>
-                                    <a href="/products.html?category=dien-thoai&tag=gia-re" style="font-size: 13px; font-weight: 400; padding: 6px 0;">Giá rẻ</a>
-                                    <a href="/products.html?category=dien-thoai&tag=chup-anh" style="font-size: 13px; font-weight: 400; padding: 6px 0;">Chụp ảnh đẹp</a>
-                                    <a href="/products.html?category=dien-thoai&tag=hieu-nang" style="font-size: 13px; font-weight: 400; padding: 6px 0;">Hiệu năng cao</a>
-                                </div>
-                                <div class="dropdown-col">
-                                    <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 15px; border-bottom: none;"><i class="fa-solid fa-laptop" aria-hidden="true"></i> Laptop</h4>
-                                    <a href="/products.html?category=laptop" style="font-size: 13px; font-weight: 400; padding: 6px 0;">Tất cả laptop</a>
-                                    <a href="/products.html?category=laptop&tag=van-phong" style="font-size: 13px; font-weight: 400; padding: 6px 0;">Văn phòng</a>
-                                    <a href="/products.html?category=laptop&tag=sang-trong" style="font-size: 13px; font-weight: 400; padding: 6px 0;">Sang trọng</a>
-                                </div>
-                                <div class="dropdown-col">
-                                    <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 15px; border-bottom: none;"><i class="fa-solid fa-camera" aria-hidden="true"></i> Máy ảnh</h4>
-                                    <a href="/products.html?category=may-anh" style="font-size: 13px; font-weight: 400; padding: 6px 0;">Tất cả máy ảnh</a>
-                                    <a href="/products.html?category=may-anh&tag=du-lich" style="font-size: 13px; font-weight: 400; padding: 6px 0;">Du lịch</a>
-                                    <a href="/products.html?category=may-anh&tag=chuyen-nghiep" style="font-size: 13px; font-weight: 400; padding: 6px 0;">Chuyên nghiệp</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Staggered Menu Toggle Button -->
+                    <button
+                      id="sm-toggle-btn"
+                      class="sm-toggle"
+                      aria-label="Open menu"
+                      aria-expanded="false"
+                      aria-controls="staggered-menu-panel"
+                      type="button"
+                    >
+                      <span class="sm-toggle-textWrap" aria-hidden="true">
+                        <span id="sm-toggle-text-inner" class="sm-toggle-textInner">
+                          <span class="sm-toggle-line">Danh mục</span>
+                        </span>
+                      </span>
+                      <span id="sm-toggle-icon" class="sm-icon" aria-hidden="true">
+                        <span id="sm-plus-h" class="sm-icon-line"></span>
+                        <span id="sm-plus-v" class="sm-icon-line sm-icon-line-v"></span>
+                      </span>
+                    </button>
 
                     <!-- Apple-like Search Box (extremely sleek and borders-free) -->
                     <form class="search-form" action="/products.html" method="GET" role="search" style="height: 32px; background: rgba(0,0,0,0.04); border-radius: 8px; align-items: center; padding: 0 10px; width: 220px; transition: width 0.3s ease;">
@@ -72,8 +64,10 @@ class CustomHeader extends HTMLElement {
                 </div>
 
                 <!-- Actions -->
-                <nav class="header-actions" aria-label="Tài khoản và giỏ hàng" style="gap: 16px;">
+                <nav class="header-actions" aria-label="Tài khoản và giỏ hàng" style="gap: 12px; align-items: center;">
                     <a href="#" class="action-link sign-in-btn" id="signin-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng nhập</a>
+                    <span style="font-size: 11px; opacity: 0.3; color: var(--text-primary);">|</span>
+                    <a href="#" class="action-link sign-up-btn" id="signup-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng ký</a>
                     <button class="action-btn" id="theme-toggle" aria-label="Đổi giao diện sáng/tối" style="width: auto; height: auto; font-size: 13px; opacity: 0.8; background: none;">
                         <i class="fa-solid fa-moon" aria-hidden="true"></i>
                     </button>
@@ -88,6 +82,56 @@ class CustomHeader extends HTMLElement {
 
             </div>
         </header>
+
+        <!-- Staggered Menu Overlay DOM -->
+        <div id="staggered-menu-wrapper" class="staggered-menu-wrapper" data-position="right">
+          <div id="sm-prelayers" class="sm-prelayers" aria-hidden="true"></div>
+          <aside id="staggered-menu-panel" class="staggered-menu-panel" aria-hidden="true">
+            <div class="sm-panel-inner">
+              <ul class="sm-panel-list" role="list" data-numbering="true">
+                <li class="sm-panel-itemWrap">
+                  <a class="sm-panel-item" href="/" aria-label="Trang chủ">
+                    <span class="sm-panel-itemLabel">Trang chủ</span>
+                  </a>
+                </li>
+                <li class="sm-panel-itemWrap">
+                  <a class="sm-panel-item" href="/products.html?category=dien-thoai" aria-label="Điện thoại">
+                    <span class="sm-panel-itemLabel">Điện thoại</span>
+                  </a>
+                </li>
+                <li class="sm-panel-itemWrap">
+                  <a class="sm-panel-item" href="/products.html?category=laptop" aria-label="Laptop">
+                    <span class="sm-panel-itemLabel">Laptop</span>
+                  </a>
+                </li>
+                <li class="sm-panel-itemWrap">
+                  <a class="sm-panel-item" href="/products.html?category=may-anh" aria-label="Máy ảnh">
+                    <span class="sm-panel-itemLabel">Máy ảnh</span>
+                  </a>
+                </li>
+                <li class="sm-panel-itemWrap">
+                  <a class="sm-panel-item" href="/cart.html" aria-label="Giỏ hàng">
+                    <span class="sm-panel-itemLabel">Giỏ hàng</span>
+                  </a>
+                </li>
+              </ul>
+              <div class="sm-socials" aria-label="Mạng xã hội">
+                <h3 class="sm-socials-title">Mạng xã hội</h3>
+                <ul class="sm-socials-list" role="list">
+                  <li class="sm-socials-item">
+                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="sm-socials-link">Twitter</a>
+                  </li>
+                  <li class="sm-socials-item">
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="sm-socials-link">GitHub</a>
+                  </li>
+                  <li class="sm-socials-item">
+                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="sm-socials-link">LinkedIn</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </aside>
+        </div>
         `;
     }
 
@@ -114,53 +158,314 @@ class CustomHeader extends HTMLElement {
         this._updateThemeIcon(next);
     }
 
-    setupEventListeners() {
-        const dropdownBtn  = this.querySelector('#category-dropdown-btn');
-        const dropdownMenu = this.querySelector('#category-dropdown-menu');
-        const themeBtn     = this.querySelector('#theme-toggle');
-        const header       = this.querySelector('.main-header');
+    setupStaggeredLayers() {
+        this.menuOpen = false;
+        this.menuPosition = 'right';
+        this.busy = false;
+        this.colors = ['#B497CF', '#5227FF'];
 
-        /* ---- Category dropdown ---- */
-        if (dropdownBtn && dropdownMenu) {
-            dropdownBtn.addEventListener('click', (e) => {
-                if (e.target.tagName === 'A' || e.target.closest('a')) return;
+        const preContainer = this.querySelector('#sm-prelayers');
+        if (preContainer) {
+            preContainer.innerHTML = this.colors.map((c, i) => `<div class="sm-prelayer" style="background: ${c}"></div>`).join('');
+        }
+
+        // Initialize GSAP states
+        if (typeof gsap !== 'undefined') {
+            const panel = this.querySelector('#staggered-menu-panel');
+            const preLayers = Array.from(this.querySelectorAll('.sm-prelayer'));
+            const plusH = this.querySelector('#sm-plus-h');
+            const plusV = this.querySelector('#sm-plus-v');
+            const icon = this.querySelector('#sm-toggle-icon');
+            const textInner = this.querySelector('#sm-toggle-text-inner');
+
+            if (panel) {
+                const offscreen = this.menuPosition === 'left' ? -100 : 100;
+                gsap.set([panel, ...preLayers], { xPercent: offscreen, opacity: 1 });
+                gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
+                gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
+                gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
+                gsap.set(textInner, { yPercent: 0 });
+            }
+        }
+    }
+
+    animateIcon(opening) {
+        const icon = this.querySelector('#sm-toggle-icon');
+        if (!icon || typeof gsap === 'undefined') return;
+        if (this.spinTween) this.spinTween.kill();
+        if (opening) {
+            this.spinTween = gsap.to(icon, { rotate: 225, duration: 0.8, ease: 'power4.out', overwrite: 'auto' });
+        } else {
+            this.spinTween = gsap.to(icon, { rotate: 0, duration: 0.35, ease: 'power3.inOut', overwrite: 'auto' });
+        }
+    }
+
+    animateText(opening) {
+        const inner = this.querySelector('#sm-toggle-text-inner');
+        if (!inner || typeof gsap === 'undefined') return;
+        if (this.textCycleAnim) this.textCycleAnim.kill();
+
+        const currentLabel = opening ? 'Danh mục' : 'Đóng';
+        const targetLabel = opening ? 'Đóng' : 'Danh mục';
+        const cycles = 3;
+        const seq = [currentLabel];
+        let last = currentLabel;
+        for (let i = 0; i < cycles; i++) {
+            last = last === 'Danh mục' ? 'Đóng' : 'Danh mục';
+            seq.push(last);
+        }
+        if (last !== targetLabel) seq.push(targetLabel);
+        seq.push(targetLabel);
+
+        inner.innerHTML = seq.map(l => `<span class="sm-toggle-line">${l}</span>`).join('');
+
+        gsap.set(inner, { yPercent: 0 });
+        const lineCount = seq.length;
+        const finalShift = ((lineCount - 1) / lineCount) * 100;
+        this.textCycleAnim = gsap.to(inner, {
+            yPercent: -finalShift,
+            duration: 0.5 + lineCount * 0.07,
+            ease: 'power4.out'
+        });
+    }
+
+    playOpen() {
+        if (this.busy || typeof gsap === 'undefined') return;
+        this.busy = true;
+
+        const wrapper = this.querySelector('#staggered-menu-wrapper');
+        if (wrapper) {
+            wrapper.classList.add('fixed-wrapper');
+            wrapper.setAttribute('data-open', 'true');
+        }
+
+        const panel = this.querySelector('#staggered-menu-panel');
+        const layers = Array.from(this.querySelectorAll('.sm-prelayer'));
+        if (!panel) {
+            this.busy = false;
+            return;
+        }
+
+        if (this.openTl) this.openTl.kill();
+        if (this.closeTween) {
+            this.closeTween.kill();
+            this.closeTween = null;
+        }
+
+        const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel'));
+        const numberEls = Array.from(panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item'));
+        const socialTitle = panel.querySelector('.sm-socials-title');
+        const socialLinks = Array.from(panel.querySelectorAll('.sm-socials-link'));
+
+        const offscreen = this.menuPosition === 'left' ? -100 : 100;
+        const layerStates = layers.map(el => ({ el, start: offscreen }));
+        const panelStart = offscreen;
+
+        if (itemEls.length) {
+            gsap.set(itemEls, { yPercent: 140, rotate: 10 });
+        }
+        if (numberEls.length) {
+            gsap.set(numberEls, { '--sm-num-opacity': 0 });
+        }
+        if (socialTitle) {
+            gsap.set(socialTitle, { opacity: 0 });
+        }
+        if (socialLinks.length) {
+            gsap.set(socialLinks, { y: 25, opacity: 0 });
+        }
+
+        const tl = gsap.timeline();
+
+        layerStates.forEach((ls, i) => {
+            tl.fromTo(ls.el, { xPercent: ls.start, opacity: 1 }, { xPercent: 0, duration: 0.5, ease: 'power4.out' }, i * 0.07);
+        });
+        const lastTime = layerStates.length ? (layerStates.length - 1) * 0.07 : 0;
+        const panelInsertTime = lastTime + (layerStates.length ? 0.08 : 0);
+        const panelDuration = 0.65;
+        tl.fromTo(
+            panel,
+            { xPercent: panelStart, opacity: 1 },
+            { xPercent: 0, duration: panelDuration, ease: 'power4.out' },
+            panelInsertTime
+        );
+
+        if (itemEls.length) {
+            const itemsStartRatio = 0.15;
+            const itemsStart = panelInsertTime + panelDuration * itemsStartRatio;
+            tl.to(
+                itemEls,
+                {
+                    yPercent: 0,
+                    rotate: 0,
+                    duration: 1,
+                    ease: 'power4.out',
+                    stagger: { each: 0.1, from: 'start' }
+                },
+                itemsStart
+            );
+            if (numberEls.length) {
+                tl.to(
+                    numberEls,
+                    {
+                        duration: 0.6,
+                        ease: 'power2.out',
+                        '--sm-num-opacity': 1,
+                        stagger: { each: 0.08, from: 'start' }
+                    },
+                    itemsStart + 0.1
+                );
+            }
+        }
+
+        if (socialTitle || socialLinks.length) {
+            const socialsStart = panelInsertTime + panelDuration * 0.4;
+            if (socialTitle) {
+                tl.to(
+                    socialTitle,
+                    {
+                        opacity: 1,
+                        duration: 0.5,
+                        ease: 'power2.out'
+                    },
+                    socialsStart
+                );
+            }
+            if (socialLinks.length) {
+                tl.to(
+                    socialLinks,
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.55,
+                        ease: 'power3.out',
+                        stagger: { each: 0.08, from: 'start' },
+                        onComplete: () => {
+                            gsap.set(socialLinks, { clearProps: 'opacity' });
+                        }
+                    },
+                    socialsStart + 0.04
+                );
+            }
+        }
+
+        tl.eventCallback('onComplete', () => {
+            this.busy = false;
+        });
+
+        this.openTl = tl;
+    }
+
+    playClose() {
+        if (typeof gsap === 'undefined') return;
+        
+        if (this.openTl) {
+            this.openTl.kill();
+            this.openTl = null;
+        }
+
+        const panel = this.querySelector('#staggered-menu-panel');
+        const layers = Array.from(this.querySelectorAll('.sm-prelayer'));
+        if (!panel) return;
+
+        const all = [...layers, panel];
+        if (this.closeTween) this.closeTween.kill();
+        const offscreen = this.menuPosition === 'left' ? -100 : 100;
+
+        this.closeTween = gsap.to(all, {
+            xPercent: offscreen,
+            duration: 0.32,
+            ease: 'power3.in',
+            overwrite: 'auto',
+            onComplete: () => {
+                const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel'));
+                if (itemEls.length) {
+                    gsap.set(itemEls, { yPercent: 140, rotate: 10 });
+                }
+                const numberEls = Array.from(panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item'));
+                if (numberEls.length) {
+                    gsap.set(numberEls, { '--sm-num-opacity': 0 });
+                }
+                const socialTitle = panel.querySelector('.sm-socials-title');
+                const socialLinks = Array.from(panel.querySelectorAll('.sm-socials-link'));
+                if (socialTitle) gsap.set(socialTitle, { opacity: 0 });
+                if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
+                this.busy = false;
+
+                const wrapper = this.querySelector('#staggered-menu-wrapper');
+                if (wrapper) {
+                    wrapper.classList.remove('fixed-wrapper');
+                    wrapper.removeAttribute('data-open');
+                }
+            }
+        });
+    }
+
+    toggleMenu() {
+        const target = !this.menuOpen;
+        this.menuOpen = target;
+        const toggleBtn = this.querySelector('#sm-toggle-btn');
+        if (toggleBtn) {
+            toggleBtn.setAttribute('aria-expanded', String(target));
+        }
+
+        if (target) {
+            this.playOpen();
+        } else {
+            this.playClose();
+        }
+
+        this.animateIcon(target);
+        this.animateText(target);
+    }
+
+    closeMenu() {
+        if (this.menuOpen) {
+            this.menuOpen = false;
+            const toggleBtn = this.querySelector('#sm-toggle-btn');
+            if (toggleBtn) {
+                toggleBtn.setAttribute('aria-expanded', 'false');
+            }
+            this.playClose();
+            this.animateIcon(false);
+            this.animateText(false);
+        }
+    }
+
+    setupEventListeners() {
+        const toggleBtn  = this.querySelector('#sm-toggle-btn');
+        const themeBtn   = this.querySelector('#theme-toggle');
+        const header     = this.querySelector('.main-header');
+        const panel      = this.querySelector('#staggered-menu-panel');
+
+        this.setupStaggeredLayers();
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const isOpen = dropdownMenu.classList.toggle('show');
-                dropdownBtn.classList.toggle('open', isOpen);
-                dropdownBtn.setAttribute('aria-expanded', String(isOpen));
+                this.toggleMenu();
             });
 
-            dropdownBtn.addEventListener('keydown', (e) => {
+            toggleBtn.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    dropdownBtn.click();
+                    toggleBtn.click();
                 }
             });
+        }
 
-            document.addEventListener('click', () => {
-                dropdownMenu.classList.remove('show');
-                dropdownBtn.classList.remove('open');
-                dropdownBtn.setAttribute('aria-expanded', 'false');
-            });
+        // Close on click outside
+        document.addEventListener('mousedown', (event) => {
+            if (!this.menuOpen) return;
+            if (panel && !panel.contains(event.target) && toggleBtn && !toggleBtn.contains(event.target)) {
+                this.closeMenu();
+            }
+        });
 
-            /* Smooth scroll for hash links inside dropdown */
-            dropdownMenu.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    const href = link.getAttribute('href');
-                    if (href && href.startsWith('/#')) {
-                        const onHome = window.location.pathname === '/' || window.location.pathname.endsWith('index.html');
-                        if (onHome) {
-                            e.preventDefault();
-                            const id = href.split('#')[1];
-                            const el = document.getElementById(id);
-                            if (el) {
-                                const offset = (header ? header.offsetHeight : 52) + 20;
-                                window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior: 'smooth' });
-                            }
-                        }
-                    }
-                    dropdownMenu.classList.remove('show');
-                    dropdownBtn.classList.remove('open');
+        // Handle navigation inside menu
+        if (panel) {
+            panel.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    this.closeMenu();
                 });
             });
         }

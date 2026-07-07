@@ -5,7 +5,7 @@ let cart = [];
 
 // Filters State
 let currentCategory = 'all'; // 'all', 'dien-thoai', 'laptop', 'may-anh'
-let currentTag = null;
+let selectedTags = new Set();
 let selectedBrands = new Set();
 let searchKeyword = '';
 let showTrialOnly = false;
@@ -13,15 +13,15 @@ let showInStockOnly = false;
 let currentSort = 'default';
 
 // Category Cards Collapsible State
-let showAllCategories = false;
-const categoriesLimit = 3; // Number of category cards to show initially (including "All")
+let showAllCategories = true;
+const categoriesLimit = 999; // Show all category cards (Apple-style single row)
 
 // Category UI configurations
 const categoryMetadata = {
     'all': {
         title: 'Tất cả thiết bị công nghệ',
         desc: 'Khám phá và trải nghiệm các thiết bị công nghệ đỉnh cao trước khi quyết định sở hữu',
-        image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=300&auto=format&fit=crop&q=80'
+        image: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mac-card-50-compare-models-202603?wid=960&hei=1000&fmt=p-jpg&qlt=95&.v=VVlYUmhtQ01FUnVZSm9ubk84akVKQVhDbGhXa21pNVNBVURtbkZ6K0ZoSHpIR0l0TVpNQnJZb1NNY29pWWhnM1pwRE93ZVBDaGlEa25QZUpFTG9OUTY2TXlIZTdvcW0vUW90dllTQklLcUJ0VktRME9sRTEwdS8xcGRlRVdEOFc'
     },
     'dien-thoai': {
         title: 'Điện thoại thông minh',
@@ -108,17 +108,17 @@ async function fetchCatalogData() {
     try {
         const response = await fetch('/api/products');
         const data = await response.json();
-        
+
         if (data.success) {
             products = data.products;
             categories = data.categories;
-            
+
             // Read query params
             parseQueryParams();
-            
+
             // Setup events
             setupEventListeners();
-            
+
             // Initial render
             renderAll();
         } else {
@@ -133,23 +133,24 @@ async function fetchCatalogData() {
 // Parse Query Parameters
 function parseQueryParams() {
     const params = new URLSearchParams(window.location.search);
-    
+
     const catParam = params.get('category');
     if (catParam) {
         currentCategory = catParam;
     }
-    
+
     const tagParam = params.get('tag');
+    selectedTags.clear();
     if (tagParam) {
-        currentTag = tagParam;
+        tagParam.split(',').forEach(t => selectedTags.add(t.trim()));
     }
-    
+
     const brandParam = params.get('brand');
     selectedBrands.clear();
     if (brandParam) {
         brandParam.split(',').forEach(b => selectedBrands.add(b.trim()));
     }
-    
+
     const searchParam = params.get('search');
     if (searchParam) {
         searchKeyword = searchParam.trim();
@@ -160,13 +161,49 @@ function parseQueryParams() {
 
 // Listeners
 function setupEventListeners() {
-    // Show/Hide More Categories click handler
-    if (showMoreCategoriesBtn) {
-        showMoreCategoriesBtn.addEventListener('click', () => {
-            showAllCategories = !showAllCategories;
-            renderCategoryCards();
+    // Dropdown Toggling - Samsung Style
+    const dropdownTriggers = [
+        { btnId: 'btn-filter-brand', menuId: 'menu-filter-brand' },
+        { btnId: 'btn-filter-tag', menuId: 'menu-filter-tag' },
+        { btnId: 'btn-filter-status', menuId: 'menu-filter-status' },
+        { btnId: 'btn-filter-sort', menuId: 'menu-filter-sort' }
+    ];
+
+    dropdownTriggers.forEach(({ btnId, menuId }) => {
+        const btn = document.getElementById(btnId);
+        const menu = document.getElementById(menuId);
+        if (btn && menu) {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close other menus
+                dropdownTriggers.forEach(other => {
+                    if (other.btnId !== btnId) {
+                        const otherMenu = document.getElementById(other.menuId);
+                        if (otherMenu) otherMenu.classList.remove('show');
+                    }
+                });
+                menu.classList.toggle('show');
+            });
+        }
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', () => {
+        dropdownTriggers.forEach(({ menuId }) => {
+            const menu = document.getElementById(menuId);
+            if (menu) menu.classList.remove('show');
         });
-    }
+    });
+
+    // Stop propagation inside dropdown menus to prevent closing
+    dropdownTriggers.forEach(({ menuId }) => {
+        const menu = document.getElementById(menuId);
+        if (menu) {
+            menu.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+    });
 
     // Checkboxes
     filterTrialOnly.addEventListener('change', (e) => {
@@ -179,28 +216,58 @@ function setupEventListeners() {
         renderAll();
     });
 
-    // Sort select
-    sortSelect.addEventListener('change', (e) => {
-        currentSort = e.target.value;
-        renderAll();
+    // Sort radio buttons handler
+    const sortRadios = document.querySelectorAll('input[name="sort-option"]');
+    sortRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            
+            // Update button label
+            const btnSort = document.getElementById('btn-filter-sort');
+            if (btnSort) {
+                const labelText = e.target.nextElementSibling.textContent;
+                btnSort.innerHTML = `Sắp xếp: ${labelText} <i class="fa-solid fa-chevron-down"></i>`;
+                
+                if (currentSort !== 'default') {
+                    btnSort.classList.add('active');
+                } else {
+                    btnSort.classList.remove('active');
+                }
+            }
+            
+            // Close dropdown
+            const menuSort = document.getElementById('menu-filter-sort');
+            if (menuSort) menuSort.classList.remove('show');
+            
+            renderAll();
+        });
     });
 
     // Clear filters button
     clearAllFiltersBtn.addEventListener('click', () => {
         currentCategory = 'all';
-        currentTag = null;
+        selectedTags.clear();
         selectedBrands.clear();
         searchKeyword = '';
         showTrialOnly = false;
         showInStockOnly = false;
         currentSort = 'default';
-        
+
         const input = getHeaderSearchInput();
         if (input) input.value = '';
         filterTrialOnly.checked = false;
         filterInStock.checked = false;
-        sortSelect.value = 'default';
         
+        // Reset sort radio option
+        const defaultRadio = document.querySelector('input[name="sort-option"][value="default"]');
+        if (defaultRadio) defaultRadio.checked = true;
+        
+        const btnSort = document.getElementById('btn-filter-sort');
+        if (btnSort) {
+            btnSort.innerHTML = `Sắp xếp: Mặc định <i class="fa-solid fa-chevron-down"></i>`;
+            btnSort.classList.remove('active');
+        }
+
         updateUrlParams();
         renderAll();
     });
@@ -223,25 +290,25 @@ function updateUrlParams() {
     } else {
         url.searchParams.delete('category');
     }
-    
-    if (currentTag) {
-        url.searchParams.set('tag', currentTag);
+
+    if (selectedTags.size > 0) {
+        url.searchParams.set('tag', Array.from(selectedTags).join(','));
     } else {
         url.searchParams.delete('tag');
     }
-    
+
     if (selectedBrands.size > 0) {
         url.searchParams.set('brand', Array.from(selectedBrands).join(','));
     } else {
         url.searchParams.delete('brand');
     }
-    
+
     if (searchKeyword) {
         url.searchParams.set('search', searchKeyword);
     } else {
         url.searchParams.delete('search');
     }
-    
+
     window.history.pushState({}, '', url);
 }
 
@@ -249,39 +316,40 @@ function updateUrlParams() {
 function renderCategoryCards() {
     if (!categoryCardsGrid) return;
     categoryCardsGrid.innerHTML = '';
-    
+
     const allCategoriesList = [
         { id: 'all', name: 'Tất cả thiết bị', slug: 'all' },
         ...categories
     ];
-    
+
     const visibleCount = showAllCategories ? allCategoriesList.length : Math.min(categoriesLimit, allCategoriesList.length);
-    
+
     for (let i = 0; i < visibleCount; i++) {
         const cat = allCategoriesList[i];
         const meta = getCategoryMeta(cat.slug, cat.name);
-        
+
         const card = document.createElement('div');
         card.className = `category-card ${currentCategory === cat.slug ? 'active' : ''}`;
+        const cardImage = cat.image_url || meta.image;
         card.innerHTML = `
             <div class="category-card-image-box">
-                <img src="${meta.image}" alt="${cat.name}">
+                <img src="${cardImage}" alt="${cat.name}">
             </div>
             <div class="category-card-title">${cat.name}</div>
         `;
-        
+
         card.addEventListener('click', () => {
             currentCategory = cat.slug;
-            currentTag = null; // reset tag on category switch
-            
+            selectedTags.clear(); // reset tags on category switch
+
             // update URL & Render All
             updateUrlParams();
             renderAll();
         });
-        
+
         categoryCardsGrid.appendChild(card);
     }
-    
+
     // Toggle show-more visibility
     if (allCategoriesList.length > categoriesLimit) {
         showMoreWrapper.style.display = 'block';
@@ -294,7 +362,7 @@ function renderCategoryCards() {
     } else {
         showMoreWrapper.style.display = 'none';
     }
-    
+
     // Update Hero Title & Description
     const currentMeta = getCategoryMeta(currentCategory, (categories.find(c => c.slug === currentCategory) || {}).name);
     if (catHeroTitle) catHeroTitle.textContent = currentMeta.title;
@@ -312,17 +380,30 @@ function getUniqueBrands() {
     return Array.from(brandsSet).sort();
 }
 
-// Render brand checklist sidebar
+// Render brand checklist
 function renderBrandFilter() {
     if (!brandFilterList) return;
     brandFilterList.innerHTML = '';
-    
+
     const uniqueBrands = getUniqueBrands();
+    const btnBrand = document.getElementById('btn-filter-brand');
+
+    // Update button text to reflect selection count
+    if (btnBrand) {
+        if (selectedBrands.size > 0) {
+            btnBrand.innerHTML = `Hãng: ${selectedBrands.size} <i class="fa-solid fa-chevron-down"></i>`;
+            btnBrand.classList.add('active');
+        } else {
+            btnBrand.innerHTML = `Hãng sản xuất <i class="fa-solid fa-chevron-down"></i>`;
+            btnBrand.classList.remove('active');
+        }
+    }
+
     if (uniqueBrands.length === 0) {
         brandFilterList.innerHTML = '<div class="filter-item-muted">Không có hãng nào</div>';
         return;
     }
-    
+
     uniqueBrands.forEach(brand => {
         // Calculate count under current category filter
         const count = products.filter(p => {
@@ -332,13 +413,13 @@ function renderBrandFilter() {
             }
             return p.manufacturer === brand;
         }).length;
-        
+
         // Hide manufacturer from list if it has no products under the currently selected category
         if (count === 0 && currentCategory !== 'all') return;
-        
+
         const label = document.createElement('label');
-        label.className = 'filter-item';
-        
+        label.className = 'filter-dropdown-item';
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = selectedBrands.has(brand);
@@ -351,54 +432,65 @@ function renderBrandFilter() {
             updateUrlParams();
             renderAll();
         });
-        
+
         const span = document.createElement('span');
         span.textContent = `${brand} (${count})`;
-        
+
         label.appendChild(checkbox);
         label.appendChild(span);
         brandFilterList.appendChild(label);
     });
 }
 
-// Render dynamic tags sidebar group
+// Render dynamic tags dropdown
 function renderSidebarTags() {
-    if (!dynamicTagsList) return;
+    const wrapper = document.getElementById('tags-filter-dropdown-wrapper');
+    if (!dynamicTagsList || !wrapper) return;
     dynamicTagsList.innerHTML = '';
-    
+
     const tags = productCategoryTagLabels[currentCategory];
+    const btnTag = document.getElementById('btn-filter-tag');
+
+    // Update button text to reflect tag selection count
+    if (btnTag) {
+        if (selectedTags.size > 0) {
+            btnTag.innerHTML = `Đặc tính: ${selectedTags.size} <i class="fa-solid fa-chevron-down"></i>`;
+            btnTag.classList.add('active');
+        } else {
+            btnTag.innerHTML = `Đặc tính thiết bị <i class="fa-solid fa-chevron-down"></i>`;
+            btnTag.classList.remove('active');
+        }
+    }
+
     if (tags && tags.length > 0) {
-        tagsFilterGroup.style.display = 'block';
-        
-        // Add "Tất cả tag" button
-        const allBtn = document.createElement('button');
-        allBtn.className = `category-filter-btn ${!currentTag ? 'active' : ''}`;
-        allBtn.style.padding = '8px 12px';
-        allBtn.style.fontSize = '13px';
-        allBtn.innerHTML = `<i class="fa-solid fa-tags"></i> Tất cả đặc tính`;
-        allBtn.addEventListener('click', () => {
-            currentTag = null;
-            updateUrlParams();
-            renderAll();
-        });
-        dynamicTagsList.appendChild(allBtn);
-        
-        // Add category-specific tag buttons
+        wrapper.style.display = 'block';
+
         tags.forEach(t => {
-            const btn = document.createElement('button');
-            btn.className = `category-filter-btn ${currentTag === t.tag ? 'active' : ''}`;
-            btn.style.padding = '8px 12px';
-            btn.style.fontSize = '13px';
-            btn.innerHTML = `<i class="fa-solid fa-tag"></i> ${t.label}`;
-            btn.addEventListener('click', () => {
-                currentTag = t.tag;
+            const label = document.createElement('label');
+            label.className = 'filter-dropdown-item';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = selectedTags.has(t.tag);
+            checkbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    selectedTags.add(t.tag);
+                } else {
+                    selectedTags.delete(t.tag);
+                }
                 updateUrlParams();
                 renderAll();
             });
-            dynamicTagsList.appendChild(btn);
+
+            const span = document.createElement('span');
+            span.textContent = t.label;
+
+            label.appendChild(checkbox);
+            label.appendChild(span);
+            dynamicTagsList.appendChild(label);
         });
     } else {
-        tagsFilterGroup.style.display = 'none';
+        wrapper.style.display = 'none';
     }
 }
 
@@ -407,33 +499,35 @@ function renderActiveChips() {
     // clear previous chips except clear button
     const chips = activeFiltersRow.querySelectorAll('.active-filter-pill');
     chips.forEach(c => c.remove());
-    
+
     let activeCount = 0;
-    
+
     if (currentCategory !== 'all') {
         const catObj = categories.find(c => c.slug === currentCategory);
         const name = catObj ? catObj.name : currentCategory;
         createChip(`Danh mục: ${name}`, () => {
             currentCategory = 'all';
-            currentTag = null;
+            selectedTags.clear();
             updateUrlParams();
             renderAll();
         });
         activeCount++;
     }
-    
-    if (currentTag) {
-        const tagList = productCategoryTagLabels[currentCategory] || [];
-        const tagObj = tagList.find(t => t.tag === currentTag);
-        const label = tagObj ? tagObj.label : currentTag;
-        createChip(`Bộ lọc: ${label}`, () => {
-            currentTag = null;
-            updateUrlParams();
-            renderAll();
+
+    if (selectedTags.size > 0) {
+        selectedTags.forEach(tag => {
+            const tagList = productCategoryTagLabels[currentCategory] || [];
+            const tagObj = tagList.find(t => t.tag === tag);
+            const label = tagObj ? tagObj.label : tag;
+            createChip(`Đặc tính: ${label}`, () => {
+                selectedTags.delete(tag);
+                updateUrlParams();
+                renderAll();
+            });
+            activeCount++;
         });
-        activeCount++;
     }
-    
+
     if (selectedBrands.size > 0) {
         selectedBrands.forEach(brand => {
             createChip(`Hãng: ${brand}`, () => {
@@ -444,7 +538,7 @@ function renderActiveChips() {
             activeCount++;
         });
     }
-    
+
     if (searchKeyword) {
         createChip(`Tìm: "${searchKeyword}"`, () => {
             searchKeyword = '';
@@ -455,7 +549,7 @@ function renderActiveChips() {
         });
         activeCount++;
     }
-    
+
     if (showTrialOnly) {
         createChip(`Có dùng thử`, () => {
             showTrialOnly = false;
@@ -473,7 +567,7 @@ function renderActiveChips() {
         });
         activeCount++;
     }
-    
+
     if (activeCount > 0) {
         activeFiltersRow.style.display = 'flex';
     } else {
@@ -486,13 +580,13 @@ function createChip(text, onRemove) {
     chip.className = 'active-filter-pill';
     chip.innerHTML = `${text} <i class="fa-solid fa-xmark"></i>`;
     chip.addEventListener('click', onRemove);
-    activeFiltersRow.insertBefore(chip, clearAllFiltersBtn);
+    activeFiltersRow.appendChild(chip);
 }
 
 // Render Products Grid matching filters & sort
 function renderProducts() {
     catalogGrid.innerHTML = '';
-    
+
     // 1. Filter
     let filtered = products.filter(p => {
         // Category Filter
@@ -500,33 +594,34 @@ function renderProducts() {
             const catObj = categories.find(c => c.slug === currentCategory);
             if (!catObj || p.category_id !== catObj.id) return false;
         }
-        
+
         // Brand Filter
         if (selectedBrands.size > 0 && !selectedBrands.has(p.manufacturer)) return false;
-        
-        // Tag Filter
-        if (currentTag) {
+
+        // Tag Filter (Multi-condition: OR logic, matches any selected tag)
+        if (selectedTags.size > 0) {
             const prodTags = p.tags ? p.tags.split(',') : [];
-            if (!prodTags.includes(currentTag)) return false;
+            const hasMatchingTag = prodTags.some(t => selectedTags.has(t));
+            if (!hasMatchingTag) return false;
         }
-        
+
         // Search Filter
         if (searchKeyword) {
             if (!p.name.toLowerCase().includes(searchKeyword.toLowerCase())) return false;
         }
-        
+
         // Trial Only
         if (showTrialOnly && !p.is_try_before_buy) return false;
-        
+
         // In Stock Only
         if (showInStockOnly && p.stock_quantity <= 0) return false;
-        
+
         return true;
     });
-    
+
     // Update count labels
     resultsCountLabel.textContent = `Tìm thấy ${filtered.length} sản phẩm`;
-    
+
     // Title updating
     if (currentCategory !== 'all') {
         const catObj = categories.find(c => c.slug === currentCategory);
@@ -534,7 +629,7 @@ function renderProducts() {
     } else {
         catalogTitle.textContent = 'Tất cả thiết bị công nghệ';
     }
-    
+
     // 2. Sort
     if (currentSort === 'rent-asc') {
         filtered.sort((a, b) => a.trial_price_per_day - b.trial_price_per_day);
@@ -545,7 +640,7 @@ function renderProducts() {
     } else if (currentSort === 'buy-desc') {
         filtered.sort((a, b) => b.price - a.price);
     }
-    
+
     // 3. Render
     if (filtered.length === 0) {
         catalogGrid.innerHTML = `
@@ -557,7 +652,7 @@ function renderProducts() {
         `;
         return;
     }
-    
+
     filtered.forEach(p => {
         const isOutOfStock = p.stock_quantity <= 0;
         const card = document.createElement('div');

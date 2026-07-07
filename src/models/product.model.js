@@ -6,6 +6,7 @@ class ProductModel {
       SELECT 
         category_id AS id, 
         category_name AS name,
+        category_image AS image_url,
         CASE 
           WHEN category_id = 2 THEN 'dien-thoai'
           WHEN category_id = 3 THEN 'laptop'

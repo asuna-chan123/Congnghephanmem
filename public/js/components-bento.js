@@ -17,7 +17,7 @@ class BentoGrid extends HTMLElement {
             <div class="bento-grid bento-section">
                 <!-- Laptop -->
                 <div class="bento-item wide bento-item--text-autohide bento-item--border-glow reveal" data-link="/products.html?category=laptop">
-                    <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&auto=format&fit=crop" alt="Laptop" loading="lazy">
+                    <img src="https://www.apple.com/v/home/images/macbook-air-m5/a/hero_macbook_air_m5__eb1idggd120y_large.jpg?w=800&auto=format&fit=crop" alt="Laptop" loading="lazy">
                     <div class="bento-info">
                         <h3>Laptop</h3>
                         <p>Power your workflow.</p>
@@ -25,7 +25,7 @@ class BentoGrid extends HTMLElement {
                 </div>
                 <!-- SkyPods Max -->
                 <div class="bento-item tall bento-item--text-autohide bento-item--border-glow reveal" data-link="/products.html">
-                    <img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&auto=format&fit=crop" alt="SkyPods Max" loading="lazy">
+                    <img src="https://www.apple.com/v/airpods/ae/images/overview/consider/card_noise_cancellation__bcl69t06noci_large_2x.jpg?w=800&auto=format&fit=crop" alt="SkyPods Max" loading="lazy">
                     <div class="bento-info">
                         <h3>SkyPods Max</h3>
                         <p>Elevate your audio experience.</p>
@@ -33,7 +33,7 @@ class BentoGrid extends HTMLElement {
                 </div>
                 <!-- Tablet -->
                 <div class="bento-item bento-item--text-autohide bento-item--border-glow reveal" data-link="/products.html">
-                    <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=800&auto=format&fit=crop" alt="Tablet" loading="lazy">
+                    <img src="https://www.apple.com/v/home/images/ipad-air-m4/a/hero_ipad_air_m4__gc1zddfs5tiu_large.jpg?w=800&auto=format&fit=crop" alt="Tablet" loading="lazy">
                     <div class="bento-info">
                         <h3>Tablet</h3>
                         <p>Creativity on the go.</p>
@@ -41,7 +41,7 @@ class BentoGrid extends HTMLElement {
                 </div>
                 <!-- Camera -->
                 <div class="bento-item bento-item--text-autohide bento-item--border-glow reveal" data-link="/products.html?category=may-anh">
-                    <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop" alt="Camera" loading="lazy">
+                    <img src="https://www.apple.com/v/home/images/iphone-family/a/hero_iphone_family__be5jkzxszb1e_large.jpg?w=800&auto=format&fit=crop" alt="Camera" loading="lazy">
                     <div class="bento-info">
                         <h3>Camera</h3>
                         <p>Cinema quality gear.</p>

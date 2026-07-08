@@ -373,11 +373,8 @@ function renderDetails() {
             </div>
 
             <div class="detail-actions">
-                <button class="btn btn-primary btn-try-prominent btn-block" onclick="handleDetailAction('trial')" ${isOutOfStock ? 'disabled' : ''}>
+                <button class="btnn btn-primary btn-block" onclick="handleDetailAction('trial')" ${isOutOfStock ? 'disabled' : ''}>
                     <i class="fa-solid fa-rotate"></i> ${isOutOfStock ? 'Hết hàng trong kho' : 'Thuê Dùng Thử'}
-                </button>
-                <button class="btn btn-outline btn-block" onclick="handleDetailAction('buy')" ${isOutOfStock ? 'disabled' : ''}>
-                    <i class="fa-solid fa-cart-shopping"></i> Mua Đứt Sản Phẩm
                 </button>
             </div>
         </div>
@@ -713,7 +710,7 @@ function validateRentalDates() {
 // Handle Add to Cart from Detail Screen
 async function handleDetailAction() {
     if (product.stock_quantity <= 0) {
-        alert('Sản phẩm đã hết hàng!');
+        showStatusPopup(false, 'Sản phẩm đã hết hàng!');
         return;
     }
 
@@ -731,19 +728,19 @@ async function handleDetailAction() {
     const endInput = document.getElementById('rent-end-date');
 
     if (!startInput.value || !endInput.value) {
-        alert('Vui lòng chọn ngày bắt đầu và kết thúc thuê!');
+        showStatusPopup(false, 'Vui lòng chọn ngày bắt đầu và kết thúc thuê!');
         return;
     }
 
     if (!validateRentalDates()) {
-        alert('Lịch chọn không hợp lệ hoặc đã bị trùng!');
+        showStatusPopup(false, 'Lịch chọn không hợp lệ hoặc đã bị trùng!');
         return;
     }
 
     try {
         const res = await apiFetch('/api/cart/add', {
             method: 'POST',
-            body: JSON.stringify({ variantId: variant.id, type, quantity: qty })
+            body: JSON.stringify({ variantId: variant.id, quantity: qty })
         });
         if (res.success) {
             showStatusPopup(true, 'Đã thêm vào giỏ hàng thành công.', true);

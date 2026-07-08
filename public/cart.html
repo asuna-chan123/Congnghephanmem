@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,9 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
@@ -16,6 +19,7 @@
     <link rel="stylesheet" href="css/StaggeredMenu.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
+
 <body>
     <!-- Header Navigation -->
     <custom-header></custom-header>
@@ -32,9 +36,10 @@
                         <span class="xiaomi-checkbox-mark"></span>
                         <span class="select-all-label">Tất cả</span>
                     </label>
-                    <button class="cart-delete-selected-btn" onclick="deleteSelectedItems()">Xóa các mục đã chọn</button>
+                    <button class="cart-delete-selected-btn" onclick="deleteSelectedItems()">Xóa các mục đã
+                        chọn</button>
                 </div>
-                
+
                 <!-- Items Container -->
                 <div id="cart-items-container">
                     <div class="cart-loading">Đang tải giỏ hàng...</div>
@@ -56,7 +61,8 @@
                             <span id="summary-subtotal">0 đ</span>
                         </div>
                         <div class="summary-row">
-                            <span>Phí vận chuyển <i class="fa-regular fa-circle-question" title="Phí giao hàng nội địa Việt Nam"></i></span>
+                            <span>Phí vận chuyển <i class="fa-regular fa-circle-question"
+                                    title="Phí giao hàng nội địa Việt Nam"></i></span>
                             <span id="summary-delivery" class="text-free">Miễn phí</span>
                         </div>
                     </div>
@@ -65,11 +71,13 @@
                     <div class="coupon-section">
                         <div class="coupon-link-wrapper">
                             <i class="fa-solid fa-ticket icon-ticket"></i>
-                            <a href="#" class="coupon-link">Phiếu giảm giá <span class="coupon-hint">Đăng nhập để xem phiếu giảm giá của bạn ></span></a>
+                            <a href="#" class="coupon-link">Phiếu giảm giá <span class="coupon-hint">Đăng nhập để xem
+                                    phiếu giảm giá của bạn ></span></a>
                         </div>
                     </div>
 
-                    <button class="checkout-submit-btn" id="checkout-submit-btn">Thanh toán</button>
+                    <button class="checkout-submit-btn" id="checkout-submit-btn" style="border-radius:10px">Thanh
+                        toán</button>
                 </div>
 
                 <!-- Why E-Tech Store Box -->
@@ -83,14 +91,16 @@
                             <i class="fa-solid fa-truck-fast benefit-icon"></i>
                             <div class="benefit-content">
                                 <strong>Giao hàng nhanh</strong>
-                                <p>HCM và khu vực phía Nam: Dự kiến giao hàng trong vòng 1-3 ngày làm việc. Các khu vực khác: Dự kiến 3-6 ngày làm việc.</p>
+                                <p>HCM và khu vực phía Nam: Dự kiến giao hàng trong vòng 1-3 ngày làm việc. Các khu vực
+                                    khác: Dự kiến 3-6 ngày làm việc.</p>
                             </div>
                         </div>
                         <div class="benefit-item">
                             <i class="fa-solid fa-rotate-left benefit-icon"></i>
                             <div class="benefit-content">
                                 <strong>Dịch vụ sau bán hàng</strong>
-                                <p>Hỗ trợ Đổi hoặc Trả hàng trong vòng 14 ngày nếu phát sinh lỗi sản xuất từ nhà cung cấp.</p>
+                                <p>Hỗ trợ Đổi hoặc Trả hàng trong vòng 14 ngày nếu phát sinh lỗi sản xuất từ nhà cung
+                                    cấp.</p>
                             </div>
                         </div>
                         <div class="benefit-item">
@@ -119,14 +129,17 @@
                 <i class="fa-solid fa-cart-shopping"></i>
             </div>
             <h2>Giỏ hàng của bạn đang trống.</h2>
-            <p style="margin-bottom: 25px; color: var(--text-secondary);">Khám phá các sản phẩm công nghệ tuyệt vời ngay.</p>
-            <a href="/products.html" class="btn btn-primary" style="padding: 12px 30px; text-decoration: none; border-radius: 99px;">Tiếp tục mua sắm</a>
+            <p style="margin-bottom: 25px; color: var(--text-secondary);">Khám phá các sản phẩm công nghệ tuyệt vời
+                ngay.</p>
+            <a href="/products.html" class="btn btn-primary"
+                style="padding: 12px 30px; text-decoration: none; border-radius: 99px;">Tiếp tục mua sắm</a>
         </div>
 
         <!-- Related Items Section -->
         <section class="related-items-section" style="margin-top: 60px;">
             <h2 class="section-title">Sản phẩm có thể bạn sẽ thích</h2>
-            <div class="catalog-grid" id="related-items-grid" style="display: flex; gap: 24px; overflow-x: auto; padding-bottom: 20px;">
+            <div class="catalog-grid" id="related-items-grid"
+                style="display: flex; gap: 24px; overflow-x: auto; padding-bottom: 20px;">
                 <!-- Products injected dynamically -->
             </div>
         </section>
@@ -140,4 +153,5 @@
     <script src="js/app.js"></script>
     <script src="js/cart.js"></script>
 </body>
+
 </html>

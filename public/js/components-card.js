@@ -91,7 +91,7 @@ class ProductCard extends HTMLElement {
 
                     <!-- Pricing Info -->
                     <div class="apple-card-price-box">
-                        <div class="apple-price-buy">Giá mua đứt: ${formattedPrice}</div>
+                        <div class="apple-price-buy">Tiền đặt cọc: ${formattedPrice}</div>
                         ${isTry ? `<div class="apple-price-rent">Hoặc dùng thử chỉ từ <span>${formattedTrialPrice}</span>/ngày</div>` : ''}
                     </div>
 
@@ -99,9 +99,6 @@ class ProductCard extends HTMLElement {
                     <div class="apple-card-actions">
                         <button class="apple-btn-primary" onclick="window.location.href='/product.html?id=${id}'" ${isOutOfStock ? 'disabled' : ''}>
                             ${isOutOfStock ? 'Hết hàng' : 'Dùng thử'}
-                        </button>
-                        <button class="apple-btn-link" onclick="window.location.href='/product.html?id=${id}'">
-                            Mua ngay &gt;
                         </button>
                     </div>
                 </div>

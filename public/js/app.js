@@ -18,13 +18,25 @@ function getSessionId() {
 
 // ── API Helper ─────────────────────────────────────────────────
 async function apiFetch(url, options = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-Session-Id': getSessionId(),
+        ...(options.headers || {})
+    };
+    const currentUserJson = localStorage.getItem('currentUser');
+    if (currentUserJson) {
+        try {
+            const user = JSON.parse(currentUserJson);
+            if (user && user.id) {
+                headers['X-Customer-Id'] = user.id.toString();
+            }
+        } catch (e) {
+            console.error('Error parsing user from localStorage', e);
+        }
+    }
     const res = await fetch(url, {
         ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Session-Id': getSessionId(),
-            ...(options.headers || {})
-        }
+        headers
     });
     return res.json();
 }
@@ -226,7 +238,7 @@ function renderTryBeforeBuy(products) {
         card.style.transitionDelay = `${idx * 0.07}s`;
 
         tryBeforeBuyContainer.appendChild(card);
-        
+
         // Wait for Custom Element rendering to observe internal card element
         setTimeout(() => {
             const innerCard = card.querySelector('.product-card, .apple-product-card');
@@ -294,11 +306,11 @@ async function loadCart() {
     }
 }
 
-async function addToCart(productId, type = 'buy') {
+async function addToCart(productId) {
     try {
         const res = await apiFetch('/api/cart/add', {
             method: 'POST',
-            body: JSON.stringify({ productId, type })
+            body: JSON.stringify({ productId })
         });
         if (res.success) {
             window.location.href = '/cart.html';

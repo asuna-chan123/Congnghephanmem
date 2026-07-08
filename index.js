@@ -4,6 +4,7 @@ const homeRoutes = require('./src/routes/home.route');
 const productRoutes = require('./src/routes/product.route');
 const cartRoutes = require('./src/routes/cart.route');
 const favoriteRoutes = require('./src/routes/favorite.route');
+const authRoutes = require('./src/routes/auth.route');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +21,7 @@ app.use('/api', homeRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/favorites', favoriteRoutes);
+app.use('/api/auth', authRoutes);
 
 // Clean routes
 app.get('/products', (req, res) => {

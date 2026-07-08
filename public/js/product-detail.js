@@ -369,8 +369,6 @@ function renderDetails() {
                     </div>
                     
                     <div id="booking-validation-msg" style="margin-top: 8px;"></div>
-                    
-                    ${renderSeededBlockedDates()}
                 </div>
             </div>
 
@@ -518,11 +516,11 @@ window.selectCapacityCard = function (element, capacity) {
 function updateColorSwatches() {
     const swatchesContainer = document.getElementById('color-swatches-container');
     if (!swatchesContainer) return;
-    
+
     const activeVariants = product.variants && product.variants.length > 0
         ? product.variants.filter(v => v.capacity === activeCapacity)
         : [];
-    
+
     const colorMapDb = {};
     activeVariants.forEach(v => {
         if (v.color && v.hex) {
@@ -572,7 +570,11 @@ window.adjustQty = function (change) {
     let newVal = currentVal + change;
     if (newVal < 1) return;
     if (newVal > maxQty) {
-        alert(`Rất tiếc, kho hàng chỉ còn lại ${maxQty} sản phẩm này.`);
+        if (typeof showStatusPopup === 'function') {
+            showStatusPopup(false, `Rất tiếc, kho hàng chỉ còn lại ${maxQty} sản phẩm này.`);
+        } else {
+            alert(`Rất tiếc, kho hàng chỉ còn lại ${maxQty} sản phẩm này.`);
+        }
         return;
     }
 
@@ -668,22 +670,7 @@ function updateGalleryForColor(color) {
     }
 }
 
-// Generate human readable blocked dates info
-function renderSeededBlockedDates() {
-    if (rentals.length === 0) return '';
 
-    const datesLi = rentals.map(r => {
-        const formattedStart = formatDateString(r.start_date);
-        const formattedEnd = formatDateString(r.end_date);
-        return `<strong>${formattedStart}</strong> đến <strong>${formattedEnd}</strong>`;
-    }).join(', ');
-    return `
-        <div class="blocked-dates-info" style="color: #dc2626; border-top: 1px solid rgba(239, 68, 68, 0.1); padding-top: 10px; margin-top: 15px;">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span>Đã có người thuê trong khoảng: ${datesLi}. Vui lòng tránh các ngày này.</span>
-        </div>
-    `;
-}
 
 // Validate Datepicker selection against booked ranges
 function validateRentalDates() {
@@ -724,13 +711,12 @@ function validateRentalDates() {
 }
 
 // Handle Add to Cart from Detail Screen
-async function handleDetailAction(actionType) {
+async function handleDetailAction() {
     if (product.stock_quantity <= 0) {
         alert('Sản phẩm đã hết hàng!');
         return;
     }
 
-    const type = actionType === 'trial' ? 'trial' : 'buy';
     const qty = activeQty;
 
     const selectedColor = activeColor;
@@ -741,19 +727,17 @@ async function handleDetailAction(actionType) {
         variant = product.variants[0];
     }
 
-    if (type === 'trial') {
-        const startInput = document.getElementById('rent-start-date');
-        const endInput = document.getElementById('rent-end-date');
+    const startInput = document.getElementById('rent-start-date');
+    const endInput = document.getElementById('rent-end-date');
 
-        if (!startInput.value || !endInput.value) {
-            alert('Vui lòng chọn ngày bắt đầu và kết thúc thuê!');
-            return;
-        }
+    if (!startInput.value || !endInput.value) {
+        alert('Vui lòng chọn ngày bắt đầu và kết thúc thuê!');
+        return;
+    }
 
-        if (!validateRentalDates()) {
-            alert('Lịch chọn không hợp lệ hoặc đã bị trùng!');
-            return;
-        }
+    if (!validateRentalDates()) {
+        alert('Lịch chọn không hợp lệ hoặc đã bị trùng!');
+        return;
     }
 
     try {

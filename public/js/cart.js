@@ -69,7 +69,6 @@ function renderCartItems() {
             <!-- Details & Price -->
             <div class="cart-item-info-col">
                 <a href="/product.html?id=${item.productId}" class="cart-item-title-link">${item.name}</a>
-                <span class="cart-item-variant">Phân loại: ${item.type === 'trial' ? 'Thuê dùng thử' : 'Mua đứt'}</span>
                 <span class="cart-item-price">${formatCurrency(item.price)}</span>
             </div>
 
@@ -229,11 +228,33 @@ window.toggleWhyMi = function () {
 
 document.getElementById('checkout-submit-btn')?.addEventListener('click', async () => {
     if (selectedItemIds.length === 0) {
-        alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
+        if (typeof showStatusPopup === 'function') {
+            showStatusPopup(false, 'Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
+        } else {
+            alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
+        }
         return;
     }
 
-    alert('Đang tiến hành đặt hàng & thanh toán các mục đã chọn...');
+    const currentUserJson = localStorage.getItem('currentUser');
+    if (!currentUserJson) {
+        if (typeof showStatusPopup === 'function') {
+            showStatusPopup(false, 'Vui lòng đăng nhập trước khi thanh toán.');
+        } else {
+            alert('Vui lòng đăng nhập trước khi thanh toán.');
+        }
+        if (typeof window.openSignInModal === 'function') {
+            window.openSignInModal();
+        }
+        return;
+    }
+
+    if (typeof showStatusPopup === 'function') {
+        showStatusPopup(true, 'Đang tiến hành đặt hàng & thanh toán các mục đã chọn...');
+    } else {
+        alert('Đang tiến hành đặt hàng & thanh toán các mục đã chọn...');
+    }
+
     try {
         // Clear only selected items from server cart
         for (const id of selectedItemIds) {
@@ -244,7 +265,11 @@ document.getElementById('checkout-submit-btn')?.addEventListener('click', async 
         window.location.href = '/';
     } catch (e) {
         console.error('Error checkout:', e);
-        alert('Lỗi đặt hàng.');
+        if (typeof showStatusPopup === 'function') {
+            showStatusPopup(false, 'Lỗi đặt hàng.');
+        } else {
+            alert('Lỗi đặt hàng.');
+        }
     }
 });
 
@@ -290,7 +315,7 @@ async function loadRelatedItems() {
 
 // Global format currency fallback if not defined
 if (typeof formatCurrency !== 'function') {
-    window.formatCurrency = function(value) {
+    window.formatCurrency = function (value) {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     }
 }

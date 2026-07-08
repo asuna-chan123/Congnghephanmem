@@ -1,18 +1,20 @@
 const { query, get } = require('./db');
 
 class CartModel {
-  static async getCartBySessionId(sessionId) {
+  static async getCartBySessionId(sessionId, customerId = null) {
+    const whereClause = customerId ? 'ci.customer_id = ?' : 'ci.session_id = ?';
+    const paramVal = customerId ? customerId : sessionId;
+
     const sql = `
       SELECT 
         ci.cart_item_id,
         ci.session_id,
-        ci.type,
         ci.quantity,
         ci.variant_id,
         d.device_name as product_name,
         c.color_name as color,
         sc.capacity_value as capacity,
-        dv.deposit_amount as product_price,
+        (dv.daily_rental_price * 10) as product_price,
         dv.daily_rental_price as product_trial_price,
         d.default_image as product_image_url,
         COALESCE((SELECT COUNT(*) FROM device_units du WHERE du.variant_id = dv.variant_id AND du.current_status = 'available'), 0) AS stock_quantity
@@ -21,28 +23,16 @@ class CartModel {
       LEFT JOIN devices d ON dv.device_id = d.device_id
       LEFT JOIN colors c ON dv.color_id = c.color_id
       LEFT JOIN storage_capacities sc ON dv.capacity_id = sc.capacity_id
-      WHERE ci.session_id = ?
+      WHERE ${whereClause}
       ORDER BY ci.created_at DESC
     `;
-    const items = await query(sql, [sessionId]);
-    
-    return items.map(item => {
-      let price = 0;
-      let name = '';
-      let image = '';
-      let typeName = '';
+    const items = await query(sql, [paramVal]);
 
-      if (item.type === 'trial' && item.variant_id) {
-        price = item.product_trial_price;
-        name = `Thuê ${item.product_name} (${item.color}, ${item.capacity})`;
-        image = item.product_image_url;
-        typeName = 'Dùng thử';
-      } else {
-        price = item.product_price;
-        name = `${item.product_name} (${item.color}, ${item.capacity})`;
-        image = item.product_image_url;
-        typeName = 'Mua đứt';
-      }
+    return items.map(item => {
+      const price = item.product_trial_price;
+      const name = `Thuê ${item.product_name} (${item.color}, ${item.capacity})`;
+      const image = item.product_image_url;
+      const typeName = 'Thuê thiết bị';
 
       return {
         cart_item_id: item.cart_item_id,
@@ -51,14 +41,14 @@ class CartModel {
         name,
         price: parseFloat(price) || 0,
         image,
-        type: item.type,
+        type: 'trial',
         quantity: item.quantity,
         stock_quantity: item.stock_quantity
       };
     });
   }
 
-  static async addItem(sessionId, productId, type, quantity = 1, variantId = null) {
+  static async addItem(sessionId, customerId, productId, quantity = 1, variantId = null) {
     let targetVariantId = variantId;
 
     // Nếu chỉ nhận được productId (ví dụ từ Trang chủ), tự động lấy Variant đầu tiên làm mặc định
@@ -81,13 +71,19 @@ class CartModel {
     const stock = stockRes ? stockRes.stock : 0;
 
     // Check if it already exists to increment quantity
-    const existing = await get(
-      `SELECT cart_item_id as id, quantity FROM cart_items 
-       WHERE session_id = ? 
-         AND variant_id = ? 
-         AND type = ?`,
-      [sessionId, targetVariantId, type]
-    );
+    const existing = customerId
+      ? await get(
+        `SELECT cart_item_id as id, quantity FROM cart_items 
+           WHERE customer_id = ? 
+             AND variant_id = ?`,
+        [customerId, targetVariantId]
+      )
+      : await get(
+        `SELECT cart_item_id as id, quantity FROM cart_items 
+           WHERE session_id = ? AND customer_id IS NULL
+             AND variant_id = ?`,
+        [sessionId, targetVariantId]
+      );
 
     const totalRequestedQty = (existing ? existing.quantity : 0) + quantity;
     if (totalRequestedQty > stock) {
@@ -100,27 +96,36 @@ class CartModel {
       return existing.id;
     } else {
       const sql = `
-        INSERT INTO cart_items (session_id, variant_id, type, quantity)
+        INSERT INTO cart_items (session_id, customer_id, variant_id, quantity)
         VALUES (?, ?, ?, ?)
       `;
-      const result = await query(sql, [sessionId, targetVariantId, type, quantity]);
+      const result = await query(sql, [sessionId, customerId, targetVariantId, quantity]);
       return true;
     }
   }
 
-  static async getCartItem(sessionId, cartItemId) {
-    const sql = `SELECT cart_item_id, variant_id, quantity FROM cart_items WHERE session_id = ? AND cart_item_id = ?`;
-    return await get(sql, [sessionId, cartItemId]);
+  static async getCartItem(sessionId, customerId, cartItemId) {
+    const sql = customerId
+      ? `SELECT cart_item_id, variant_id, quantity FROM cart_items WHERE customer_id = ? AND cart_item_id = ?`
+      : `SELECT cart_item_id, variant_id, quantity FROM cart_items WHERE session_id = ? AND cart_item_id = ?`;
+    const params = customerId ? [customerId, cartItemId] : [sessionId, cartItemId];
+    return await get(sql, params);
   }
 
-  static async removeItem(sessionId, cartItemId) {
-    const sql = `DELETE FROM cart_items WHERE session_id = ? AND cart_item_id = ?`;
-    return await query(sql, [sessionId, cartItemId]);
+  static async removeItem(sessionId, customerId, cartItemId) {
+    const sql = customerId
+      ? `DELETE FROM cart_items WHERE customer_id = ? AND cart_item_id = ?`
+      : `DELETE FROM cart_items WHERE session_id = ? AND cart_item_id = ?`;
+    const params = customerId ? [customerId, cartItemId] : [sessionId, cartItemId];
+    return await query(sql, params);
   }
 
-  static async updateQuantity(sessionId, cartItemId, quantity) {
-    const sql = `UPDATE cart_items SET quantity = ? WHERE session_id = ? AND cart_item_id = ?`;
-    return await query(sql, [quantity, sessionId, cartItemId]);
+  static async updateQuantity(sessionId, customerId, cartItemId, quantity) {
+    const sql = customerId
+      ? `UPDATE cart_items SET quantity = ? WHERE customer_id = ? AND cart_item_id = ?`
+      : `UPDATE cart_items SET quantity = ? WHERE session_id = ? AND cart_item_id = ?`;
+    const params = customerId ? [quantity, customerId, cartItemId] : [quantity, sessionId, cartItemId];
+    return await query(sql, params);
   }
 
   static async checkVariantStock(variantId) {
@@ -129,9 +134,12 @@ class CartModel {
     return res ? res.stock : 0;
   }
 
-  static async clearCart(sessionId) {
-    const sql = `DELETE FROM cart_items WHERE session_id = ?`;
-    return await query(sql, [sessionId]);
+  static async clearCart(sessionId, customerId) {
+    const sql = customerId
+      ? `DELETE FROM cart_items WHERE customer_id = ?`
+      : `DELETE FROM cart_items WHERE session_id = ?`;
+    const params = customerId ? [customerId] : [sessionId];
+    return await query(sql, params);
   }
 }
 

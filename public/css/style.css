@@ -1907,3 +1907,173 @@ product-card {
 [data-theme="dark"] .apple-btn-link {
     color: #2997ff;
 }
+
+/* ============================================================
+   17. Simple Apple-Style Auth Modal
+   ============================================================ */
+.auth-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.auth-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.auth-modal {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    width: 90%;
+    max-width: 400px;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    position: relative;
+}
+
+.auth-modal-overlay.active .auth-modal {
+    transform: translateY(0) scale(1);
+}
+
+.auth-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--bg-secondary);
+    border: none;
+    color: var(--text-secondary);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.auth-modal-close:hover {
+    background: var(--border);
+    color: var(--text-primary);
+}
+
+.auth-modal-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.auth-modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+.auth-modal-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auth-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.auth-field-group label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding-left: 2px;
+}
+
+.auth-input {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.auth-input:focus {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+}
+
+[data-theme="dark"] .auth-input:focus {
+    border-color: #2997ff;
+    box-shadow: 0 0 0 3px rgba(41, 151, 255, 0.2);
+}
+
+.auth-submit-btn {
+    background: #0066cc;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    margin-top: 8px;
+}
+
+.auth-submit-btn:hover {
+    background-color: #0077ed;
+}
+
+.auth-submit-btn:active {
+    transform: scale(0.98);
+}
+
+.auth-modal-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.auth-modal-footer button {
+    background: none;
+    border: none;
+    color: #0066cc;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 4px;
+}
+
+.auth-modal-footer button:hover {
+    text-decoration: underline;
+}
+
+[data-theme="dark"] .auth-modal-footer button {
+    color: #2997ff;
+}

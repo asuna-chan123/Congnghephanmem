@@ -319,7 +319,6 @@ CREATE TABLE cart_items (
     session_id VARCHAR(255),
     customer_id INT REFERENCES customers(customer_id) ON DELETE CASCADE,
     variant_id INT NOT NULL REFERENCES device_variants(variant_id) ON DELETE CASCADE,
-    type VARCHAR(50) NOT NULL DEFAULT 'buy',
     quantity INT DEFAULT 1 CHECK (quantity > 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -338,8 +337,8 @@ CREATE TABLE favorites (
 );
 
 -- Partial Unique Index
-CREATE UNIQUE INDEX unique_cart_guest ON cart_items (session_id, variant_id, type) WHERE customer_id IS NULL;
-CREATE UNIQUE INDEX unique_cart_customer ON cart_items (customer_id, variant_id, type) WHERE customer_id IS NOT NULL;
+CREATE UNIQUE INDEX unique_cart_guest ON cart_items (session_id, variant_id) WHERE customer_id IS NULL;
+CREATE UNIQUE INDEX unique_cart_customer ON cart_items (customer_id, variant_id) WHERE customer_id IS NOT NULL;
 CREATE UNIQUE INDEX unique_favorite_guest ON favorites (session_id, variant_id) WHERE customer_id IS NULL;
 CREATE UNIQUE INDEX unique_favorite_customer ON favorites (customer_id, variant_id) WHERE customer_id IS NOT NULL;
 

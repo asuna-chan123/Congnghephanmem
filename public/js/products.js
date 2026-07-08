@@ -221,24 +221,24 @@ function setupEventListeners() {
     sortRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
             currentSort = e.target.value;
-            
+
             // Update button label
             const btnSort = document.getElementById('btn-filter-sort');
             if (btnSort) {
                 const labelText = e.target.nextElementSibling.textContent;
                 btnSort.innerHTML = `Sắp xếp: ${labelText} <i class="fa-solid fa-chevron-down"></i>`;
-                
+
                 if (currentSort !== 'default') {
                     btnSort.classList.add('active');
                 } else {
                     btnSort.classList.remove('active');
                 }
             }
-            
+
             // Close dropdown
             const menuSort = document.getElementById('menu-filter-sort');
             if (menuSort) menuSort.classList.remove('show');
-            
+
             renderAll();
         });
     });
@@ -257,11 +257,11 @@ function setupEventListeners() {
         if (input) input.value = '';
         filterTrialOnly.checked = false;
         filterInStock.checked = false;
-        
+
         // Reset sort radio option
         const defaultRadio = document.querySelector('input[name="sort-option"][value="default"]');
         if (defaultRadio) defaultRadio.checked = true;
-        
+
         const btnSort = document.getElementById('btn-filter-sort');
         if (btnSort) {
             btnSort.innerHTML = `Sắp xếp: Mặc định <i class="fa-solid fa-chevron-down"></i>`;
@@ -665,7 +665,7 @@ function renderProducts() {
         card.setAttribute('is-try', p.is_try_before_buy ? '1' : '0');
         card.setAttribute('tags', p.tags || '');
         card.className = 'visible';
-        
+
         catalogGrid.appendChild(card);
     });
 }

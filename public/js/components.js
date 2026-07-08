@@ -13,6 +13,28 @@ class CustomHeader extends HTMLElement {
     }
 
     render() {
+        const currentUserJson = localStorage.getItem('currentUser');
+        let userSectionHtml = '';
+        if (currentUserJson) {
+            try {
+                const user = JSON.parse(currentUserJson);
+                userSectionHtml = `
+                    <span style="font-size: 12px; color: var(--text-primary); opacity: 0.9; font-weight: 500;">Hi, ${user.fullName}</span>
+                    <span style="font-size: 11px; opacity: 0.3; color: var(--text-primary);">|</span>
+                    <a href="#" class="action-link" id="signout-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng xuất</a>
+                `;
+            } catch(e) {
+                localStorage.removeItem('currentUser');
+            }
+        }
+        if (!userSectionHtml) {
+            userSectionHtml = `
+                <a href="#" class="action-link sign-in-btn" id="signin-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng nhập</a>
+                <span style="font-size: 11px; opacity: 0.3; color: var(--text-primary);">|</span>
+                <a href="#" class="action-link sign-up-btn" id="signup-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng ký</a>
+            `;
+        }
+
         this.innerHTML = `
         <header class="main-header" role="banner">
             <div class="header-container" style="max-width: 1020px; padding: 0 22px;">
@@ -65,9 +87,7 @@ class CustomHeader extends HTMLElement {
 
                 <!-- Actions -->
                 <nav class="header-actions" aria-label="Tài khoản và giỏ hàng" style="gap: 12px; align-items: center;">
-                    <a href="#" class="action-link sign-in-btn" id="signin-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng nhập</a>
-                    <span style="font-size: 11px; opacity: 0.3; color: var(--text-primary);">|</span>
-                    <a href="#" class="action-link sign-up-btn" id="signup-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng ký</a>
+                    ${userSectionHtml}
                     <button class="action-btn" id="theme-toggle" aria-label="Đổi giao diện sáng/tối" style="width: auto; height: auto; font-size: 13px; opacity: 0.8; background: none;">
                         <i class="fa-solid fa-moon" aria-hidden="true"></i>
                     </button>
@@ -439,6 +459,38 @@ class CustomHeader extends HTMLElement {
 
         this.setupStaggeredLayers();
 
+        // Initialize auth modals on the page
+        if (typeof initAuthModals === 'function') {
+            initAuthModals();
+        }
+
+        const signinLink = this.querySelector('#signin-link');
+        const signupLink = this.querySelector('#signup-link');
+        const signoutLink = this.querySelector('#signout-link');
+
+        if (signinLink) {
+            signinLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.openSignInModal();
+            });
+        }
+        if (signupLink) {
+            signupLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.openSignUpModal();
+            });
+        }
+        if (signoutLink) {
+            signoutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('currentUser');
+                if (typeof window.showStatusPopup === 'function') {
+                    window.showStatusPopup(true, 'Đã đăng xuất thành công.');
+                }
+                setTimeout(() => window.location.reload(), 1000);
+            });
+        }
+
         if (toggleBtn) {
             toggleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -546,3 +598,179 @@ class CustomFooter extends HTMLElement {
 
 customElements.define('custom-header', CustomHeader);
 customElements.define('custom-footer', CustomFooter);
+
+// Simple Apple-Style Auth Modals DOM structure and handlers
+function initAuthModals() {
+    if (document.getElementById('auth-modal-overlay')) return;
+    
+    const overlayHtml = `
+    <div id="auth-modal-overlay" class="auth-modal-overlay">
+        <!-- Sign In Modal -->
+        <div id="signin-modal" class="auth-modal" style="display: none;">
+            <button class="auth-modal-close" id="close-signin">&times;</button>
+            <div class="auth-modal-header">
+                <h3 class="auth-modal-title">Đăng nhập</h3>
+                <p class="auth-modal-subtitle">Chào mừng bạn quay lại với E-Tech</p>
+            </div>
+            <form id="signin-form" class="auth-form">
+                <div class="auth-field-group">
+                    <label for="signin-email">Email</label>
+                    <input type="email" id="signin-email" class="auth-input" required placeholder="nhap@email.com">
+                </div>
+                <div class="auth-field-group">
+                    <label for="signin-password">Mật khẩu</label>
+                    <input type="password" id="signin-password" class="auth-input" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="auth-submit-btn">Đăng nhập</button>
+            </form>
+            <div class="auth-modal-footer">
+                Chưa có tài khoản? <button id="switch-to-signup">Đăng ký ngay</button>
+            </div>
+        </div>
+
+        <!-- Sign Up Modal -->
+        <div id="signup-modal" class="auth-modal" style="display: none;">
+            <button class="auth-modal-close" id="close-signup">&times;</button>
+            <div class="auth-modal-header">
+                <h3 class="auth-modal-title">Đăng ký</h3>
+                <p class="auth-modal-subtitle">Tạo tài khoản để trải nghiệm dịch vụ</p>
+            </div>
+            <form id="signup-form" class="auth-form">
+                <div class="auth-field-group">
+                    <label for="signup-fullname">Họ và tên</label>
+                    <input type="text" id="signup-fullname" class="auth-input" required placeholder="Nguyễn Văn A">
+                </div>
+                <div class="auth-field-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" class="auth-input" required placeholder="nhap@email.com">
+                </div>
+                <div class="auth-field-group">
+                    <label for="signup-phone">Số điện thoại</label>
+                    <input type="tel" id="signup-phone" class="auth-input" placeholder="0912345678">
+                </div>
+                <div class="auth-field-group">
+                    <label for="signup-address">Địa chỉ</label>
+                    <input type="text" id="signup-address" class="auth-input" placeholder="Hà Nội, Việt Nam">
+                </div>
+                <div class="auth-field-group">
+                    <label for="signup-password">Mật khẩu</label>
+                    <input type="password" id="signup-password" class="auth-input" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="auth-submit-btn">Đăng ký</button>
+            </form>
+            <div class="auth-modal-footer">
+                Đã có tài khoản? <button id="switch-to-signin">Đăng nhập</button>
+            </div>
+        </div>
+    </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', overlayHtml);
+    
+    const overlay = document.getElementById('auth-modal-overlay');
+    const signinM = document.getElementById('signin-modal');
+    const signupM = document.getElementById('signup-modal');
+    
+    window.openSignInModal = function() {
+        overlay.classList.add('active');
+        signinM.style.display = 'block';
+        signupM.style.display = 'none';
+    };
+    
+    window.openSignUpModal = function() {
+        overlay.classList.add('active');
+        signinM.style.display = 'none';
+        signupM.style.display = 'block';
+    };
+    
+    window.closeAuthModal = function() {
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            signinM.style.display = 'none';
+            signupM.style.display = 'none';
+        }, 400);
+    };
+    
+    document.getElementById('close-signin').onclick = window.closeAuthModal;
+    document.getElementById('close-signup').onclick = window.closeAuthModal;
+    document.getElementById('switch-to-signup').onclick = window.openSignUpModal;
+    document.getElementById('switch-to-signin').onclick = window.openSignInModal;
+    
+    overlay.onclick = function(e) {
+        if (e.target === overlay) window.closeAuthModal();
+    };
+    
+    document.getElementById('signin-form').onsubmit = async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('signin-email').value;
+        const password = document.getElementById('signin-password').value;
+        const sessionId = localStorage.getItem('sessionId');
+        
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Session-Id': sessionId
+                },
+                body: JSON.stringify({ email, password })
+            }).then(r => r.json());
+            
+            if (res.success) {
+                localStorage.setItem('currentUser', JSON.stringify(res.user));
+                window.closeAuthModal();
+                if (typeof window.showStatusPopup === 'function') {
+                    window.showStatusPopup(true, 'Đăng nhập thành công!');
+                }
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                if (typeof window.showStatusPopup === 'function') {
+                    window.showStatusPopup(false, res.message || 'Đăng nhập thất bại.');
+                }
+            }
+        } catch(err) {
+            console.error(err);
+            if (typeof window.showStatusPopup === 'function') {
+                window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');
+            }
+        }
+    };
+    
+    document.getElementById('signup-form').onsubmit = async function(e) {
+        e.preventDefault();
+        const fullName = document.getElementById('signup-fullname').value;
+        const email = document.getElementById('signup-email').value;
+        const phoneNumber = document.getElementById('signup-phone').value;
+        const address = document.getElementById('signup-address').value;
+        const password = document.getElementById('signup-password').value;
+        const sessionId = localStorage.getItem('sessionId');
+        
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Session-Id': sessionId
+                },
+                body: JSON.stringify({ fullName, email, phoneNumber, address, password })
+            }).then(r => r.json());
+            
+            if (res.success) {
+                localStorage.setItem('currentUser', JSON.stringify(res.user));
+                window.closeAuthModal();
+                if (typeof window.showStatusPopup === 'function') {
+                    window.showStatusPopup(true, 'Đăng ký thành công!');
+                }
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                if (typeof window.showStatusPopup === 'function') {
+                    window.showStatusPopup(false, res.message || 'Đăng ký thất bại.');
+                }
+            }
+        } catch(err) {
+            console.error(err);
+            if (typeof window.showStatusPopup === 'function') {
+                window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');
+            }
+        }
+    };
+}

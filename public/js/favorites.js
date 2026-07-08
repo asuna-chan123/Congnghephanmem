@@ -8,10 +8,10 @@ async function loadFavoritesPage() {
 
     try {
         const data = await apiFetch('/api/favorites');
-        
+
         if (data.success && data.products) {
             const favoritedProducts = data.products;
-            
+
             if (favoritedProducts.length === 0) {
                 grid.style.display = 'none';
                 emptyView.style.display = 'block';
@@ -87,9 +87,9 @@ async function loadFavoritesPage() {
     }
 }
 
-window.removeFavorite = async function(productId, event) {
+window.removeFavorite = async function (productId, event) {
     if (event) event.stopPropagation();
-    
+
     try {
         await apiFetch('/api/favorites/toggle', {
             method: 'POST',
@@ -101,13 +101,13 @@ window.removeFavorite = async function(productId, event) {
     }
 };
 
-window.addToCartDirect = async function(productId, type, event) {
+window.addToCartDirect = async function (productId, type, event) {
     if (event) event.stopPropagation();
-    
+
     try {
         const productRes = await fetch(`/api/products/${productId}`);
         const productData = await productRes.json();
-        
+
         if (productData.success && productData.product) {
             const variant = productData.product.variants[0];
             if (variant) {
@@ -115,7 +115,7 @@ window.addToCartDirect = async function(productId, type, event) {
                     method: 'POST',
                     body: JSON.stringify({ variantId: variant.id, type, quantity: 1 })
                 });
-                
+
                 if (addRes.success) {
                     loadCart(); // update header badge counter
                     alert(type === 'trial' ? 'Đã thêm đăng ký thuê thử vào giỏ hàng!' : 'Đã thêm sản phẩm mua đứt vào giỏ hàng!');
@@ -136,7 +136,7 @@ window.addToCartDirect = async function(productId, type, event) {
 
 // Global format currency helper if not defined
 if (typeof formatCurrency !== 'function') {
-    window.formatCurrency = function(value) {
+    window.formatCurrency = function (value) {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     }
 }

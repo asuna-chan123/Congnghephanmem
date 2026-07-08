@@ -26,8 +26,8 @@ class ProductModel {
         d.device_id AS id,
         d.device_name AS name,
         d.manufacturer AS manufacturer,
-        MIN(dv.deposit_amount) AS price,
-        CAST(MIN(dv.deposit_amount) * 1.15 AS DECIMAL(12,2)) AS original_price,
+        MIN(dv.daily_rental_price * 10) AS price,
+        CAST(MIN(dv.daily_rental_price * 10) * 1.15 AS DECIMAL(12,2)) AS original_price,
         MIN(dv.daily_rental_price) AS trial_price_per_day,
         d.default_image AS image_url,
         COALESCE((SELECT COUNT(*) FROM device_units du JOIN device_variants dv2 ON du.variant_id = dv2.variant_id WHERE dv2.device_id = d.device_id AND du.current_status = 'available'), 0) AS stock_quantity,
@@ -52,8 +52,8 @@ class ProductModel {
         d.device_id AS id,
         d.device_name AS name,
         d.manufacturer AS manufacturer,
-        MIN(dv.deposit_amount) AS price,
-        CAST(MIN(dv.deposit_amount) * 1.15 AS DECIMAL(12,2)) AS original_price,
+        MIN(dv.daily_rental_price * 10) AS price,
+        CAST(MIN(dv.daily_rental_price * 10) * 1.15 AS DECIMAL(12,2)) AS original_price,
         MIN(dv.daily_rental_price) AS trial_price_per_day,
         d.default_image AS image_url,
         COALESCE((SELECT COUNT(*) FROM device_units du JOIN device_variants dv2 ON du.variant_id = dv2.variant_id WHERE dv2.device_id = d.device_id AND du.current_status = 'available'), 0) AS stock_quantity,
@@ -78,8 +78,8 @@ class ProductModel {
         d.device_id AS id,
         d.device_name AS name,
         d.manufacturer AS manufacturer,
-        MIN(dv.deposit_amount) AS price,
-        CAST(MIN(dv.deposit_amount) * 1.15 AS DECIMAL(12,2)) AS original_price,
+        MIN(dv.daily_rental_price * 10) AS price,
+        CAST(MIN(dv.daily_rental_price * 10) * 1.15 AS DECIMAL(12,2)) AS original_price,
         MIN(dv.daily_rental_price) AS trial_price_per_day,
         d.default_image AS image_url,
         COALESCE((SELECT COUNT(*) FROM device_units du JOIN device_variants dv2 ON du.variant_id = dv2.variant_id WHERE dv2.device_id = d.device_id AND du.current_status = 'available'), 0) AS stock_quantity,
@@ -108,8 +108,8 @@ class ProductModel {
         d.default_image AS image_url,
         d.category_id AS category_id,
         1 AS is_try_before_buy,
-        MIN(dv.deposit_amount) AS price,
-        CAST(MIN(dv.deposit_amount) * 1.15 AS DECIMAL(12,2)) AS original_price,
+        MIN(dv.daily_rental_price * 10) AS price,
+        CAST(MIN(dv.daily_rental_price * 10) * 1.15 AS DECIMAL(12,2)) AS original_price,
         MIN(dv.daily_rental_price) AS trial_price_per_day,
         COALESCE((SELECT COUNT(*) FROM device_units du JOIN device_variants dv2 ON du.variant_id = dv2.variant_id WHERE dv2.device_id = d.device_id AND du.current_status = 'available'), 0) AS stock_quantity
       FROM devices d
@@ -143,13 +143,13 @@ class ProductModel {
           c.hex_code AS hex,
           sc.capacity_value AS capacity,
           dv.daily_rental_price AS trial_price_per_day,
-          dv.deposit_amount AS price,
+          (dv.daily_rental_price * 10) AS price,
           COALESCE((SELECT COUNT(*) FROM device_units du WHERE du.variant_id = dv.variant_id AND du.current_status = 'available'), 0) AS stock_quantity,
           'Available' AS status
         FROM device_variants dv
         LEFT JOIN colors c ON dv.color_id = c.color_id
         LEFT JOIN storage_capacities sc ON dv.capacity_id = sc.capacity_id
-        WHERE dv.device_id = ? AND dv.is_active = TRUE
+        WHERE dv.device_id = ?
         ORDER BY dv.variant_id ASC
       `;
       product.variants = await db.query(variantsSql, [productId]);
@@ -163,8 +163,8 @@ class ProductModel {
         d.device_id AS id,
         d.device_name AS name,
         d.manufacturer AS manufacturer,
-        MIN(dv.deposit_amount) AS price,
-        CAST(MIN(dv.deposit_amount) * 1.15 AS DECIMAL(12,2)) AS original_price,
+        MIN(dv.daily_rental_price * 10) AS price,
+        CAST(MIN(dv.daily_rental_price * 10) * 1.15 AS DECIMAL(12,2)) AS original_price,
         MIN(dv.daily_rental_price) AS trial_price_per_day,
         d.default_image AS image_url,
         COALESCE((SELECT COUNT(*) FROM device_units du JOIN device_variants dv2 ON du.variant_id = dv2.variant_id WHERE dv2.device_id = d.device_id AND du.current_status = 'available'), 0) AS stock_quantity,
@@ -196,7 +196,7 @@ class ProductModel {
 
   static async addRental(productId, startDate, endDate) {
     // Lấy biến thể đầu tiên của thiết bị để tạo đơn thuê mẫu
-    const variant = await db.get('SELECT variant_id, daily_rental_price, deposit_amount FROM device_variants WHERE device_id = ? LIMIT 1', [productId]);
+    const variant = await db.get('SELECT variant_id, daily_rental_price FROM device_variants WHERE device_id = ? LIMIT 1', [productId]);
     if (!variant) throw new Error('No variants found for product');
 
     const orderRes = await db.query(
@@ -212,7 +212,7 @@ class ProductModel {
     return db.query(
       `INSERT INTO rental_order_details (rental_order_id, variant_id, rental_days, unit_rental_price, unit_deposit_amount, rental_quantity)
        VALUES (?, ?, ?, ?, ?, 1)`,
-      [orderId, variant.variant_id, diffDays, variant.daily_rental_price, variant.deposit_amount]
+      [orderId, variant.variant_id, diffDays, variant.daily_rental_price, variant.daily_rental_price * 10]
     );
   }
 }

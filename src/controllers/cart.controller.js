@@ -89,7 +89,22 @@ class CartController {
         return res.status(400).json({ success: false, message: 'Session ID is required' });
       }
 
-      await CartModel.updateQuantity(sessionId, cartItemId, parseInt(quantity, 10) || 1);
+      const cartItem = await CartModel.getCartItem(sessionId, cartItemId);
+      if (!cartItem) {
+        return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm trong giỏ hàng' });
+      }
+
+      const requestedQty = parseInt(quantity, 10) || 1;
+      const stock = await CartModel.checkVariantStock(cartItem.variant_id);
+
+      if (requestedQty > stock) {
+        return res.status(400).json({
+          success: false,
+          message: `Rất tiếc, kho hàng chỉ còn lại ${stock} sản phẩm này.`
+        });
+      }
+
+      await CartModel.updateQuantity(sessionId, cartItemId, requestedQty);
       res.json({ success: true, message: 'Quantity updated' });
     } catch (error) {
       console.error('Error updating quantity:', error);

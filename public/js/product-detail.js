@@ -4,6 +4,26 @@ let reviews = [];
 let rentals = [];
 let isFavorited = false;
 let currentSelectedImage = '';
+let activeColor = '';
+let activeCapacity = '';
+let activeQty = 1;
+
+const colorMap = {
+    'Đen': '#1d1d1f',
+    'Bạc': '#e3e4e5',
+    'Xám': '#5f6062',
+    'Vàng': '#f4e0c8',
+    'Hồng': '#fae0e4',
+    'Xanh': '#a7c7e7',
+    'Trắng': '#fbfbfd',
+    'Titan tự nhiên': '#aba69f',
+    'Titan sa mạc': '#c2b29f',
+    'Titan trắng': '#f2f1ed',
+    'Titan đen': '#232426'
+};
+function getColorHex(colorName) {
+    return colorMap[colorName] || '#8e8e93';
+}
 
 // DOM Elements
 const detailLayout = document.getElementById('product-detail-layout');
@@ -20,6 +40,20 @@ const productId = urlParams.get('id');
 // Formatting Helpers
 function formatCurrency(value) {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+}
+
+function formatDateString(dateStr) {
+    if (!dateStr) return '';
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    } catch (e) {
+        return dateStr;
+    }
 }
 
 function renderStars(rating) {
@@ -50,7 +84,7 @@ async function loadProductDetails() {
             product = data.product;
             reviews = data.reviews;
             rentals = data.rentals;
-            
+
             // Normalize product.images to always be an array of objects { url, color, isPrimary }
             if (product.images) {
                 product.images = product.images.map(img => {
@@ -60,9 +94,9 @@ async function loadProductDetails() {
                     return img;
                 });
             }
-            
+
             currentSelectedImage = product.image_url;
-            
+
             // Check favorites via backend API
             const favRes = await apiFetch(`/api/favorites/check/${product.id}`);
             isFavorited = favRes.success && favRes.favorited;
@@ -87,17 +121,29 @@ async function loadProductDetails() {
 // Render Main Product Info & Booking Section
 function renderDetails() {
     const isOutOfStock = product.stock_quantity <= 0;
-    
+
     // Create standard tech options
-    const colors = product.variants && product.variants.length > 0
-        ? [...new Set(product.variants.map(v => v.color).filter(Boolean))]
-        : ['Đen'];
     const capacities = product.variants && product.variants.length > 0
         ? [...new Set(product.variants.map(v => v.capacity).filter(Boolean))]
         : ['Tiêu chuẩn'];
 
-    const colorOptions = colors.map(c => `<option value="${c}">${c}</option>`).join('');
-    const capacityOptions = capacities.map(cap => `<option value="${cap}">${cap}</option>`).join('');
+    // Set initial active state if not already set
+    if (!activeCapacity) activeCapacity = capacities[0];
+
+    // Filter variants by the currently active capacity to find available colors
+    const activeVariants = product.variants && product.variants.length > 0
+        ? product.variants.filter(v => v.capacity === activeCapacity)
+        : [];
+    const colors = [...new Set(activeVariants.map(v => v.color).filter(Boolean))];
+    if (colors.length === 0) colors.push('Đen');
+
+    // Auto-select a color that has stock > 0 for this capacity, if available
+    const inStockColors = activeVariants.filter(v => v.stock_quantity > 0).map(v => v.color);
+    if (inStockColors.length > 0 && (!activeColor || !inStockColors.includes(activeColor))) {
+        activeColor = inStockColors[0];
+    } else if (!activeColor || !colors.includes(activeColor)) {
+        activeColor = colors[0];
+    }
 
     // Pre-calculate minimum date (tomorrow)
     const tomorrow = new Date();
@@ -113,8 +159,92 @@ function renderDetails() {
         </div>
     `).join('');
 
+    // Highlight specs for Huawei style Model Card
+    let modelHighlights = [
+        "Thiết kế tinh tế mang tính biểu tượng",
+        "Hiệu năng tối ưu đáp ứng mọi nhu cầu làm việc",
+        "Chất lượng hoàn thiện cực kỳ cao cấp"
+    ];
+    if (product.name.toLowerCase().includes('macbook')) {
+        modelHighlights = [
+            "Chip Apple Silicon hiệu năng đột phá",
+            "Màn hình Liquid Retina hiển thị siêu sắc nét",
+            "Thời lượng pin lên đến 18 tiếng sử dụng liên tục"
+        ];
+    } else if (product.name.toLowerCase().includes('iphone')) {
+        modelHighlights = [
+            "Camera Pro chụp ảnh thiếu sáng đỉnh cao",
+            "Khung viền Titan siêu nhẹ và bền bỉ",
+            "Chip A-Series xử lý tác vụ thông minh mượt mà"
+        ];
+    } else if (product.name.toLowerCase().includes('ipad')) {
+        modelHighlights = [
+            "Màn hình Liquid Retina hỗ trợ Apple Pencil",
+            "Thiết kế siêu mỏng nhẹ, tối ưu di động",
+            "Hệ điều hành iPadOS trực quan, đa nhiệm linh hoạt"
+        ];
+    }
+
+    const highlightsHtml = modelHighlights.map(h => `<li>${h}</li>`).join('');
+
+    // Create a database color code mapping
+    const colorMapDb = {};
+    if (product.variants) {
+        product.variants.forEach(v => {
+            if (v.color && v.hex) {
+                colorMapDb[v.color] = v.hex;
+            }
+        });
+    }
+
+    // Color swatches rendering
+    const colorSwatchesHtml = colors.map((c) => {
+        const hex = colorMapDb[c] || getColorHex(c);
+        const isActive = c === activeColor;
+        const colorVar = activeVariants.find(v => v.color === c);
+        const isOutOfStock = !colorVar || colorVar.stock_quantity <= 0;
+        return `
+            <div class="color-swatch-wrapper ${isActive ? 'active' : ''} ${isOutOfStock ? 'disabled' : ''}" 
+                 data-color="${c}" 
+                 onclick="${isOutOfStock ? '' : `selectColorSwatch(this, '${c}')`}">
+                <div class="color-swatch-circle" style="background-color: ${hex};"></div>
+                <span class="color-swatch-label">${c}</span>
+            </div>
+        `;
+    }).join('');
+
+    // Capacity cards rendering
+    const capacityCardsHtml = capacities.map((cap) => {
+        const isActive = cap === activeCapacity;
+        // Find variant for price display
+        let variant = product.variants.find(v => v.color === activeColor && v.capacity === cap);
+        if (!variant) variant = product.variants.find(v => v.capacity === cap) || product.variants[0];
+
+        // Disable capacity card if all variants of this capacity are out of stock
+        const hasStock = product.variants.some(v => v.capacity === cap && v.stock_quantity > 0);
+        const isOutOfStock = !hasStock;
+
+        const priceVal = variant ? variant.price : product.price;
+        const trialPriceVal = variant ? variant.trial_price_per_day : product.trial_price_per_day;
+
+        return `
+            <div class="capacity-card ${isActive ? 'active' : ''} ${isOutOfStock ? 'disabled' : ''}" 
+                 data-capacity="${cap}" 
+                 onclick="${isOutOfStock ? '' : `selectCapacityCard(this, '${cap}')`}" 
+                 style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <span class="capacity-name" style="font-weight: 600;">${cap}</span>
+                    <span class="capacity-price" style="font-weight: 700;">${formatCurrency(priceVal)} <span style="font-size: 11px; font-weight: 500; color: var(--text-secondary);">(Mua đứt)</span></span>
+                </div>
+                <div style="font-size: 12px; color: var(--accent); font-weight: 600;">
+                    Thuê: ${formatCurrency(trialPriceVal)} / ngày
+                </div>
+            </div>
+        `;
+    }).join('');
+
     detailLayout.innerHTML = `
-        <!-- Left Column: Gallery -->
+        <!-- Left Column: Gallery & Description Accordion -->
         <div class="gallery-wrapper">
             <div class="gallery-box">
                 <button class="favorite-toggle-btn ${isFavorited ? 'favorited' : ''}" id="fav-btn" onclick="toggleFavorite()">
@@ -126,18 +256,54 @@ function renderDetails() {
             <div class="thumbnail-list" id="thumbnail-list-container">
                 ${thumbnailHtml}
             </div>
+
+            <!-- Huawei-style Collapsible Description Box -->
+            <div class="collapsible-description-box">
+                <div class="collapsible-description-header" onclick="toggleDescription()">
+                    <h3>Mô tả sản phẩm</h3>
+                    <i class="fa-solid fa-chevron-down toggle-icon" id="desc-chevron"></i>
+                </div>
+                <div class="collapsible-description-body" id="desc-body">
+                    <div class="collapsible-description-text">
+                        ${product.description || 'Thông tin mô tả sản phẩm đang được cập nhật.'}
+                    </div>
+                    <div class="description-overlay" id="desc-overlay"></div>
+                </div>
+                <div class="collapsible-description-footer">
+                    <button class="btn-toggle-description" id="desc-toggle-btn" onclick="toggleDescription()">
+                        <span>Xem thêm</span> <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Right Column: Product Meta & Options -->
         <div class="product-meta">
-            <span class="badge" style="background-color: #059669;">Dùng Thử Trước Khi Mua</span>
-            <h1>${product.name}</h1>
+            <!-- Huawei-style Navigation Tabs -->
+            <div class="huawei-product-nav-tabs">
+                <span class="huawei-tab-item active">Tổng quan</span>
+                <span class="huawei-tab-divider">|</span>
+                <a href="#reviews-list-container" class="huawei-tab-item">Đánh giá</a>
+                <span class="huawei-tab-divider">|</span>
+                <span class="huawei-tab-item" onclick="document.querySelector('.collapsible-description-box').scrollIntoView({behavior: 'smooth'})">Chi tiết</span>
+            </div>
+
+            <span class="badge" style="background-color: white;">Dùng Thử Trước Khi Mua</span>
+            <h1 style="margin-top: 8px;">${product.name}</h1>
             
-            <div class="rating-summary">
+            <div class="rating-summary" style="margin-bottom: 15px;">
                 <div class="stars">${renderStars(calculateAverageRating())}</div>
-                <a href="#reviews-list-container" style="color: var(--text-muted); font-weight: 500;">
+                <a href="#reviews-list-container" style="color: var(--text-secondary); font-weight: 500;">
                     (${reviews.length} đánh giá từ người dùng)
                 </a>
+            </div>
+
+            <!-- Huawei Model Card with highlights -->
+            <div class="huawei-model-card">
+                <div class="huawei-model-card-title">Điểm nổi bật của sản phẩm</div>
+                <ul class="huawei-model-card-features">
+                    ${highlightsHtml}
+                </ul>
             </div>
 
             <!-- Price box emphasizing Rental Price first -->
@@ -155,38 +321,39 @@ function renderDetails() {
             </div>
 
             <div class="product-selection-form">
-                <!-- Color Selector -->
+                <!-- Color Swatches Selector -->
                 <div class="option-group">
-                    <label class="option-label">Chọn Màu Sắc:</label>
-                    <select class="option-select" id="selected-color">
-                        ${colorOptions}
-                    </select>
+                    <label class="option-label">Màu Sắc:</label>
+                    <div class="color-swatches" id="color-swatches-container">
+                        ${colorSwatchesHtml}
+                    </div>
                 </div>
 
-                <!-- Storage / Lens Selector -->
+                <!-- Storage / Lens Selector Cards -->
                 <div class="option-group">
-                    <label class="option-label">${product.category_id === 3 ? 'Cấu Hình Ống Kính:' : 'Chọn Dung Lượng:'}</label>
-                    <select class="option-select" id="selected-capacity">
-                        ${capacityOptions}
-                    </select>
+                    <label class="option-label">${product.category_id === 3 ? 'Cấu Hình Ống Kính:' : 'Cấu Hình Bộ Nhớ:'}</label>
+                    <div class="capacity-grid" id="capacity-cards-container">
+                        ${capacityCardsHtml}
+                    </div>
                 </div>
 
-                <!-- Quantity Selector -->
+                <!-- Quantity Stepper Selector -->
                 <div class="option-group">
                     <label class="option-label">Số Lượng:</label>
-                    <select class="option-select" id="selected-qty" style="width: 100px;">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div class="quantity-stepper">
+                            <button class="stepper-btn" onclick="adjustQty(-1)"><i class="fa-solid fa-minus"></i></button>
+                            <input type="text" class="stepper-val" id="stepper-quantity" value="1" readonly>
+                            <button class="stepper-btn" onclick="adjustQty(1)"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                        <span class="stock-hint" id="stock-qty-display" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;"></span>
+                    </div>
                 </div>
 
                 <!-- Booking Calendar for Rental Selection -->
                 <div class="booking-calendar-box">
-                    <label class="option-label" style="color: #047857;"><i class="fa-regular fa-calendar-days"></i> Đăng Ký Ngày Thuê Dùng Thử:</label>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+                    <label class="option-label" style="color: var(--accent); margin-bottom: 5px;"><i class="fa-regular fa-calendar-days"></i> Đăng Ký Ngày Thuê Dùng Thử:</label>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
                         Chỉ hiển thị các ngày thiết bị còn trống trong kho (chưa có lịch hẹn trước).
                     </p>
                     <div class="calendar-inputs">
@@ -208,7 +375,7 @@ function renderDetails() {
 
             <div class="detail-actions">
                 <button class="btn btn-primary btn-try-prominent btn-block" onclick="handleDetailAction('trial')" ${isOutOfStock ? 'disabled' : ''}>
-                    <i class="fa-solid fa-rotate"></i> ${isOutOfStock ? 'Hết hàng trong kho' : 'Đăng Ký Thuê Dùng Thử Ngay'}
+                    <i class="fa-solid fa-rotate"></i> ${isOutOfStock ? 'Hết hàng trong kho' : 'Thuê Dùng Thử'}
                 </button>
                 <button class="btn btn-outline btn-block" onclick="handleDetailAction('buy')" ${isOutOfStock ? 'disabled' : ''}>
                     <i class="fa-solid fa-cart-shopping"></i> Mua Đứt Sản Phẩm
@@ -219,10 +386,10 @@ function renderDetails() {
 }
 
 // Gallery Image Switcher
-window.changeGalleryImage = function(element, imageUrl) {
+window.changeGalleryImage = function (element, imageUrl) {
     document.getElementById('main-product-image').src = imageUrl;
     currentSelectedImage = imageUrl;
-    
+
     // Toggle active border class
     const thumbnails = document.querySelectorAll('.thumbnail-item');
     thumbnails.forEach(t => t.classList.remove('active'));
@@ -233,21 +400,37 @@ window.changeGalleryImage = function(element, imageUrl) {
 function updatePrices() {
     if (!product || !product.variants || product.variants.length === 0) return;
 
-    const colorSelect = document.getElementById('selected-color');
-    const capacitySelect = document.getElementById('selected-capacity');
-    const qtySelect = document.getElementById('selected-qty');
     const startInput = document.getElementById('rent-start-date');
     const endInput = document.getElementById('rent-end-date');
 
-    const selectedColor = colorSelect ? colorSelect.value : null;
-    const selectedCapacity = capacitySelect ? capacitySelect.value : null;
-    const qty = parseInt(qtySelect.value, 10) || 1;
+    const selectedColor = activeColor;
+    const selectedCapacity = activeCapacity;
+    const qty = activeQty;
 
     // Tìm variant khớp với color và capacity đã chọn
     let variant = product.variants.find(v => v.color === selectedColor && v.capacity === selectedCapacity);
     if (!variant) {
         // Fallback sang variant đầu tiên
         variant = product.variants[0];
+    }
+
+    // Limit quantity selector dynamically based on database stock
+    const maxQty = variant ? variant.stock_quantity : 5;
+    if (activeQty > maxQty) {
+        activeQty = maxQty;
+        const stepperValEl = document.getElementById('stepper-quantity');
+        if (stepperValEl) stepperValEl.value = activeQty;
+    }
+
+    const stockQtyDisplay = document.getElementById('stock-qty-display');
+    if (stockQtyDisplay) {
+        if (maxQty > 0) {
+            stockQtyDisplay.textContent = `(Còn lại ${maxQty} sản phẩm trong kho)`;
+            stockQtyDisplay.style.color = "var(--text-secondary)";
+        } else {
+            stockQtyDisplay.textContent = `(Hết hàng)`;
+            stockQtyDisplay.style.color = "var(--danger)";
+        }
     }
 
     const baseTrialPrice = parseFloat(variant.trial_price_per_day) || 0;
@@ -262,7 +445,11 @@ function updatePrices() {
 
     if (startDate && endDate && startDate <= endDate) {
         // Validate overlaps
-        const overlap = rentals.some(r => startDate <= r.end_date && endDate >= r.start_date);
+        const overlap = rentals.some(r => {
+            const rStart = r.start_date ? r.start_date.substring(0, 10) : '';
+            const rEnd = r.end_date ? r.end_date.substring(0, 10) : '';
+            return startDate <= rEnd && endDate >= rStart;
+        });
         if (!overlap) {
             const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
             daysCount = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
@@ -291,28 +478,16 @@ function updatePrices() {
 
 // Attach change event listeners to options selectors
 function attachPriceListeners() {
-    const colorSelect = document.getElementById('selected-color');
-    const capacitySelect = document.getElementById('selected-capacity');
-    const qtySelect = document.getElementById('selected-qty');
     const startInput = document.getElementById('rent-start-date');
     const endInput = document.getElementById('rent-end-date');
 
-    if (colorSelect) {
-        colorSelect.addEventListener('change', () => {
-            updateGalleryForColor(colorSelect.value);
-            updatePrices();
-        });
-    }
-    if (capacitySelect) capacitySelect.addEventListener('change', updatePrices);
-    if (qtySelect) qtySelect.addEventListener('change', updatePrices);
-    
     if (startInput) {
         startInput.addEventListener('change', () => {
             validateRentalDates();
             updatePrices();
         });
     }
-    
+
     if (endInput) {
         endInput.addEventListener('change', () => {
             validateRentalDates();
@@ -321,13 +496,154 @@ function attachPriceListeners() {
     }
 }
 
+// Callback functions for interactive selectors
+window.selectColorSwatch = function (element, color) {
+    document.querySelectorAll('.color-swatch-wrapper').forEach(w => w.classList.remove('active'));
+    element.classList.add('active');
+    activeColor = color;
+    updateGalleryForColor(color);
+    updateCapacityPrices();
+    updatePrices();
+};
+
+window.selectCapacityCard = function (element, capacity) {
+    document.querySelectorAll('.capacity-card').forEach(c => c.classList.remove('active'));
+    element.classList.add('active');
+    activeCapacity = capacity;
+    updateColorSwatches();
+    updatePrices();
+};
+
+function updateColorSwatches() {
+    const swatchesContainer = document.getElementById('color-swatches-container');
+    if (!swatchesContainer) return;
+    
+    const activeVariants = product.variants && product.variants.length > 0
+        ? product.variants.filter(v => v.capacity === activeCapacity)
+        : [];
+    
+    const colorMapDb = {};
+    activeVariants.forEach(v => {
+        if (v.color && v.hex) {
+            colorMapDb[v.color] = v.hex;
+        }
+    });
+
+    const colors = [...new Set(activeVariants.map(v => v.color).filter(Boolean))];
+    if (colors.length === 0) colors.push('Đen');
+
+    // Auto-select a color that has stock > 0 for this capacity, if available
+    const inStockColors = activeVariants.filter(v => v.stock_quantity > 0).map(v => v.color);
+    if (inStockColors.length > 0 && (!activeColor || !inStockColors.includes(activeColor))) {
+        activeColor = inStockColors[0];
+        updateGalleryForColor(activeColor);
+    } else if (!colors.includes(activeColor)) {
+        activeColor = colors[0];
+        updateGalleryForColor(activeColor);
+    }
+
+    swatchesContainer.innerHTML = colors.map((c) => {
+        const hex = colorMapDb[c] || getColorHex(c);
+        const isActive = c === activeColor;
+        const colorVar = activeVariants.find(v => v.color === c);
+        const isOutOfStock = !colorVar || colorVar.stock_quantity <= 0;
+        return `
+            <div class="color-swatch-wrapper ${isActive ? 'active' : ''} ${isOutOfStock ? 'disabled' : ''}" 
+                 data-color="${c}" 
+                 onclick="${isOutOfStock ? '' : `selectColorSwatch(this, '${c}')`}">
+                <div class="color-swatch-circle" style="background-color: ${hex};"></div>
+                <span class="color-swatch-label">${c}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+window.adjustQty = function (change) {
+    const stepperValEl = document.getElementById('stepper-quantity');
+    if (!stepperValEl) return;
+    let currentVal = parseInt(stepperValEl.value, 10) || 1;
+
+    // Find active variant to check stock limit
+    let variant = product.variants.find(v => v.color === activeColor && v.capacity === activeCapacity);
+    if (!variant) variant = product.variants.find(v => v.capacity === activeCapacity) || product.variants[0];
+    const maxQty = variant ? variant.stock_quantity : 5;
+
+    let newVal = currentVal + change;
+    if (newVal < 1) return;
+    if (newVal > maxQty) {
+        alert(`Rất tiếc, kho hàng chỉ còn lại ${maxQty} sản phẩm này.`);
+        return;
+    }
+
+    stepperValEl.value = newVal;
+    activeQty = newVal;
+    updatePrices();
+};
+
+window.toggleDescription = function () {
+    const body = document.getElementById('desc-body');
+    const chevron = document.getElementById('desc-chevron');
+    const btn = document.getElementById('desc-toggle-btn');
+    const overlay = document.getElementById('desc-overlay');
+    if (!body || !btn) return;
+
+    if (body.classList.contains('expanded')) {
+        body.classList.remove('expanded');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+        btn.innerHTML = `<span>Xem thêm</span> <i class="fa-solid fa-chevron-down"></i>`;
+        if (overlay) overlay.style.opacity = '1';
+    } else {
+        body.classList.add('expanded');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+        btn.innerHTML = `<span>Thu gọn</span> <i class="fa-solid fa-chevron-up"></i>`;
+        if (overlay) overlay.style.opacity = '0';
+    }
+};
+
+function updateCapacityPrices() {
+    const capacities = product.variants && product.variants.length > 0
+        ? [...new Set(product.variants.map(v => v.capacity).filter(Boolean))]
+        : ['Tiêu chuẩn'];
+
+    const container = document.getElementById('capacity-cards-container');
+    if (!container) return;
+
+    container.innerHTML = capacities.map((cap) => {
+        const isActive = cap === activeCapacity;
+        let variant = product.variants.find(v => v.color === activeColor && v.capacity === cap);
+        if (!variant) variant = product.variants.find(v => v.capacity === cap) || product.variants[0];
+
+        // Disable capacity card if all variants of this capacity are out of stock
+        const hasStock = product.variants.some(v => v.capacity === cap && v.stock_quantity > 0);
+        const isOutOfStock = !hasStock;
+
+        const priceVal = variant ? variant.price : product.price;
+        const trialPriceVal = variant ? variant.trial_price_per_day : product.trial_price_per_day;
+
+        return `
+            <div class="capacity-card ${isActive ? 'active' : ''} ${isOutOfStock ? 'disabled' : ''}" 
+                 data-capacity="${cap}" 
+                 onclick="${isOutOfStock ? '' : `selectCapacityCard(this, '${cap}')`}" 
+                 style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <span class="capacity-name" style="font-weight: 600;">${cap}</span>
+                    <span class="capacity-price" style="font-weight: 700;">${formatCurrency(priceVal)} <span style="font-size: 11px; font-weight: 500; color: var(--text-secondary);">(Mua đứt)</span></span>
+                </div>
+                <div style="font-size: 12px; color: var(--accent); font-weight: 600;">
+                    Thuê: ${formatCurrency(trialPriceVal)} / ngày
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 // Cập nhật danh sách ảnh và ảnh chính dựa trên màu được chọn
 function updateGalleryForColor(color) {
     if (!product || !product.images || product.images.length === 0) return;
 
     // Lọc ảnh có cùng màu hoặc các ảnh chung (không có màu)
     let filteredImages = product.images.filter(img => img.color === color || !img.color);
-    
+
     if (filteredImages.length === 0) {
         filteredImages = product.images;
     }
@@ -354,8 +670,12 @@ function updateGalleryForColor(color) {
 // Generate human readable blocked dates info
 function renderSeededBlockedDates() {
     if (rentals.length === 0) return '';
-    
-    const datesLi = rentals.map(r => `<strong>${r.start_date}</strong> đến <strong>${r.end_date}</strong>`).join(', ');
+
+    const datesLi = rentals.map(r => {
+        const formattedStart = formatDateString(r.start_date);
+        const formattedEnd = formatDateString(r.end_date);
+        return `<strong>${formattedStart}</strong> đến <strong>${formattedEnd}</strong>`;
+    }).join(', ');
     return `
         <div class="blocked-dates-info" style="color: #dc2626; border-top: 1px solid rgba(239, 68, 68, 0.1); padding-top: 10px; margin-top: 15px;">
             <i class="fa-solid fa-triangle-exclamation"></i>
@@ -369,7 +689,7 @@ function validateRentalDates() {
     const startInput = document.getElementById('rent-start-date');
     const endInput = document.getElementById('rent-end-date');
     const msgDiv = document.getElementById('booking-validation-msg');
-    
+
     const startDate = startInput.value;
     const endDate = endInput.value;
 
@@ -385,7 +705,9 @@ function validateRentalDates() {
 
     // Check overlap with booked dates
     const overlap = rentals.some(r => {
-        return (startDate <= r.end_date && endDate >= r.start_date);
+        const rStart = r.start_date ? r.start_date.substring(0, 10) : '';
+        const rEnd = r.end_date ? r.end_date.substring(0, 10) : '';
+        return (startDate <= rEnd && endDate >= rStart);
     });
 
     if (overlap) {
@@ -396,7 +718,7 @@ function validateRentalDates() {
     // Calculate rental days
     const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    msgDiv.innerHTML = `<span style="color:#059669; font-size:12px; font-weight:600;"><i class="fa-solid fa-circle-check"></i> Thiết bị sẵn sàng! Tổng số ngày thuê: ${diffDays} ngày.</span>`;
+    msgDiv.innerHTML = `<span style="color:var(--accent); font-size:12px; font-weight:600;"><i class="fa-solid fa-circle-check"></i> Thiết bị sẵn sàng! Tổng số ngày thuê: ${diffDays} ngày.</span>`;
     return true;
 }
 
@@ -408,22 +730,20 @@ async function handleDetailAction(actionType) {
     }
 
     const type = actionType === 'trial' ? 'trial' : 'buy';
-    const qty = parseInt(document.getElementById('selected-qty').value, 10) || 1;
+    const qty = activeQty;
 
-    const colorSelect = document.getElementById('selected-color');
-    const capacitySelect = document.getElementById('selected-capacity');
-    const selectedColor = colorSelect ? colorSelect.value : null;
-    const selectedCapacity = capacitySelect ? capacitySelect.value : null;
+    const selectedColor = activeColor;
+    const selectedCapacity = activeCapacity;
 
     let variant = product.variants.find(v => v.color === selectedColor && v.capacity === selectedCapacity);
     if (!variant) {
         variant = product.variants[0];
     }
-    
+
     if (type === 'trial') {
         const startInput = document.getElementById('rent-start-date');
         const endInput = document.getElementById('rent-end-date');
-        
+
         if (!startInput.value || !endInput.value) {
             alert('Vui lòng chọn ngày bắt đầu và kết thúc thuê!');
             return;
@@ -441,13 +761,13 @@ async function handleDetailAction(actionType) {
             body: JSON.stringify({ variantId: variant.id, type, quantity: qty })
         });
         if (res.success) {
-            window.location.href = '/cart.html';
+            showStatusPopup(true, 'Đã thêm vào giỏ hàng thành công.', true);
         } else {
-            alert('Lỗi: ' + res.message);
+            showStatusPopup(false, 'Bổ sung thất bại: ' + res.message);
         }
     } catch (e) {
         console.error('Error adding to cart:', e);
-        alert('Lỗi thêm vào giỏ hàng');
+        showStatusPopup(false, 'Lỗi bổ sung vào giỏ hàng. Vui lòng thử lại sau.');
     }
 }
 
@@ -516,7 +836,7 @@ function renderReviews() {
 // Render Related Products Carousel
 function renderRelated(productsList) {
     relatedContainer.innerHTML = '';
-    
+
     if (productsList.length === 0) {
         relatedContainer.innerHTML = '<p class="text-muted">Không tìm thấy sản phẩm liên quan nào.</p>';
         return;

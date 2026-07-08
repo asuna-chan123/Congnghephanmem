@@ -14,7 +14,8 @@ class CartModel {
         sc.capacity_value as capacity,
         dv.deposit_amount as product_price,
         dv.daily_rental_price as product_trial_price,
-        d.default_image as product_image_url
+        d.default_image as product_image_url,
+        COALESCE((SELECT COUNT(*) FROM device_units du WHERE du.variant_id = dv.variant_id AND du.current_status = 'available'), 0) AS stock_quantity
       FROM cart_items ci
       LEFT JOIN device_variants dv ON ci.variant_id = dv.variant_id
       LEFT JOIN devices d ON dv.device_id = d.device_id
@@ -51,7 +52,8 @@ class CartModel {
         price: parseFloat(price) || 0,
         image,
         type: typeName,
-        quantity: item.quantity
+        quantity: item.quantity,
+        stock_quantity: item.stock_quantity
       };
     });
   }
@@ -71,6 +73,13 @@ class CartModel {
       throw new Error('No variant found to add to cart');
     }
 
+    // Get stock quantity of this variant
+    const stockRes = await get(
+      `SELECT COALESCE((SELECT COUNT(*) FROM device_units du WHERE du.variant_id = ? AND du.current_status = 'available'), 0) AS stock`,
+      [targetVariantId]
+    );
+    const stock = stockRes ? stockRes.stock : 0;
+
     // Check if it already exists to increment quantity
     const existing = await get(
       `SELECT cart_item_id as id, quantity FROM cart_items 
@@ -79,6 +88,11 @@ class CartModel {
          AND type = ?`,
       [sessionId, targetVariantId, type]
     );
+
+    const totalRequestedQty = (existing ? existing.quantity : 0) + quantity;
+    if (totalRequestedQty > stock) {
+      throw new Error(`Rất tiếc, kho hàng chỉ còn lại ${stock} sản phẩm này.`);
+    }
 
     if (existing) {
       const sql = `UPDATE cart_items SET quantity = quantity + ? WHERE cart_item_id = ?`;
@@ -94,6 +108,11 @@ class CartModel {
     }
   }
 
+  static async getCartItem(sessionId, cartItemId) {
+    const sql = `SELECT cart_item_id, variant_id, quantity FROM cart_items WHERE session_id = ? AND cart_item_id = ?`;
+    return await get(sql, [sessionId, cartItemId]);
+  }
+
   static async removeItem(sessionId, cartItemId) {
     const sql = `DELETE FROM cart_items WHERE session_id = ? AND cart_item_id = ?`;
     return await query(sql, [sessionId, cartItemId]);
@@ -102,6 +121,12 @@ class CartModel {
   static async updateQuantity(sessionId, cartItemId, quantity) {
     const sql = `UPDATE cart_items SET quantity = ? WHERE session_id = ? AND cart_item_id = ?`;
     return await query(sql, [quantity, sessionId, cartItemId]);
+  }
+
+  static async checkVariantStock(variantId) {
+    const sql = `SELECT COALESCE((SELECT COUNT(*) FROM device_units du WHERE du.variant_id = ? AND du.current_status = 'available'), 0) AS stock`;
+    const res = await get(sql, [variantId]);
+    return res ? res.stock : 0;
   }
 
   static async clearCart(sessionId) {

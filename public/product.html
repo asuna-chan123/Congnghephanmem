@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,9 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS (sharing styles with home page + custom product detail styles) -->
@@ -23,6 +26,7 @@
             margin-top: 30px;
             margin-bottom: 60px;
         }
+
         .gallery-box {
             position: relative;
             background-color: var(--card-bg);
@@ -35,12 +39,14 @@
             min-height: 450px;
             box-shadow: var(--shadow-sm);
         }
+
         .gallery-box img {
             max-width: 100%;
             max-height: 400px;
             object-fit: contain;
             border-radius: var(--radius-md);
         }
+
         .favorite-toggle-btn {
             position: absolute;
             top: 20px;
@@ -59,30 +65,40 @@
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
         }
+
         .favorite-toggle-btn.favorited {
             color: #ef4444;
             background-color: #fef2f2;
             border-color: #fca5a5;
         }
+
         .product-meta {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
+
         .product-meta h1 {
             font-size: 32px;
             font-weight: 800;
             line-height: 1.2;
         }
+
         .rating-summary {
             display: flex;
             align-items: center;
             gap: 10px;
             font-size: 14px;
         }
+
         .stars {
             color: #fbbf24;
         }
+
+        .main-content {
+            padding-top: 50px;
+        }
+
         .price-box {
             background-color: var(--light);
             padding: 20px;
@@ -90,6 +106,7 @@
             border: 1px solid var(--border);
             margin: 10px 0;
         }
+
         .price-box-title {
             font-size: 12px;
             text-transform: uppercase;
@@ -97,19 +114,22 @@
             font-weight: 700;
             margin-bottom: 5px;
         }
+
         .rental-price-large {
             font-size: 36px;
             font-weight: 800;
-            color: #059669;
+            color: var(--accent);
             display: flex;
             align-items: baseline;
             gap: 5px;
         }
+
         .rental-price-large span {
             font-size: 16px;
             font-weight: 500;
             color: var(--text-muted);
         }
+
         .buy-price-small {
             font-size: 15px;
             color: var(--text-muted);
@@ -118,69 +138,379 @@
             align-items: center;
             gap: 8px;
         }
+
         .buy-price-value {
             font-weight: 700;
             color: var(--text-main);
             font-size: 16px;
         }
+
         .option-group {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
+
         .option-label {
             font-size: 14px;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             display: block;
-        }
-        .option-select {
-            width: 100%;
-            padding: 12px;
-            border-radius: var(--radius-sm);
-            border: 2px solid var(--border);
-            background-color: var(--card-bg);
             color: var(--text-main);
-            font-size: 14px;
+        }
+
+        /* Huawei-style Navigation Tabs */
+        .huawei-product-nav-tabs {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 10px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
             font-weight: 500;
-            outline: none;
+        }
+
+        .huawei-tab-item {
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .huawei-tab-item:hover,
+        .huawei-tab-item.active {
+            color: var(--accent);
+        }
+
+        .huawei-tab-divider {
+            color: var(--border-strong);
+            font-size: 11px;
+            user-select: none;
+        }
+
+        /* Huawei-style Model Card */
+        .huawei-model-card {
+            border: 1px solid var(--border-strong);
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .huawei-model-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .huawei-model-card-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .huawei-model-card-features li {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .huawei-model-card-features li::before {
+            content: "•";
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Color Swatches Selector */
+        .color-swatches {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        .color-swatch-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .color-swatch-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-swatch-wrapper:hover .color-swatch-circle {
+            transform: scale(1.1);
+        }
+
+        .color-swatch-wrapper.active .color-swatch-circle {
+            box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 4px var(--text-primary);
+        }
+
+        .color-swatch-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .color-swatch-wrapper.active .color-swatch-label {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Capacity Selector Blocks */
+        .capacity-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .capacity-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            background-color: var(--card-bg);
             cursor: pointer;
             transition: var(--transition);
         }
-        .option-select:focus {
-            border-color: var(--primary);
+
+        .capacity-card:hover {
+            border-color: var(--border-strong);
+            background-color: var(--bg-secondary);
         }
+
+        .capacity-card.active {
+            border-color: var(--text-primary);
+            background-color: var(--bg-secondary);
+        }
+
+        .capacity-card.disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            pointer-events: none;
+            background-color: #fafafa;
+            border-color: #e5e5e7;
+        }
+
+        .color-swatch-wrapper.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .capacity-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .capacity-price {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .capacity-card.active .capacity-price {
+            color: var(--text-primary);
+        }
+
+        /* Stepper for Quantity Selector */
+        .quantity-stepper {
+            display: inline-flex;
+            align-items: center;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            background-color: var(--card-bg);
+        }
+
+        .stepper-btn {
+            border: none;
+            background: none;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .stepper-btn:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .stepper-val {
+            width: 44px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            outline: none;
+            background: none;
+            color: var(--text-primary);
+            pointer-events: none;
+        }
+
+        /* Collapsible Description Box */
+        .collapsible-description-box {
+            margin-top: 30px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background-color: var(--card-bg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .collapsible-description-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .collapsible-description-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .collapsible-description-header .toggle-icon {
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: transform 0.3s ease;
+        }
+
+        .collapsible-description-body {
+            position: relative;
+            max-height: 120px;
+            /* Short view height */
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 20px;
+        }
+
+        .collapsible-description-body.expanded {
+            max-height: 2000px;
+            /* Expand fully */
+        }
+
+        .collapsible-description-body .description-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(transparent, var(--card-bg));
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .collapsible-description-body.expanded .description-overlay {
+            opacity: 0;
+        }
+
+        .collapsible-description-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .collapsible-description-footer {
+            display: flex;
+            justify-content: center;
+            padding: 10px 0 16px 0;
+            border-top: 1px solid transparent;
+        }
+
+        .btn-toggle-description {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .btn-toggle-description:hover {
+            color: var(--accent-hover);
+        }
+
         .booking-calendar-box {
-            border: 2px dashed #059669;
-            background-color: #f0fdf4;
+            border: 2.5px solid var(--accent);
+            background-color: var(--bg-secondary);
             padding: 20px;
             border-radius: var(--radius-md);
             margin-bottom: 25px;
+            box-shadow: var(--shadow-sm);
         }
+
         [data-theme="dark"] .booking-calendar-box {
-            background-color: #064e3b20;
-            border-color: #059669;
+            background-color: #00000020;
+            border-color: var(--accent);
         }
+
         .calendar-inputs {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-top: 10px;
         }
+
         .calendar-input-group label {
             font-size: 12px;
             font-weight: 600;
-            color: var(--text-muted);
+            color: var(--text-secondary);
             display: block;
             margin-bottom: 4px;
         }
+
         .calendar-input-group input {
             width: 100%;
             padding: 10px;
-            border: 1px solid var(--border);
+            border: 1.5px solid var(--border);
             border-radius: var(--radius-sm);
             background-color: var(--card-bg);
             color: var(--text-main);
             outline: none;
+            transition: var(--transition);
         }
+
+        .calendar-input-group input:focus {
+            border-color: var(--accent);
+        }
+
         .blocked-dates-info {
             font-size: 12px;
             color: #ef4444;
@@ -189,45 +519,80 @@
             align-items: center;
             gap: 6px;
         }
+
         .detail-actions {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
+
         .btn-try-prominent {
-            background-color: #059669;
+            background-color: var(--accent);
             color: white;
-            font-size: 18px;
-            padding: 16px;
-            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
+            font-size: 15px;
+            font-weight: 600;
+            padding: 14px;
+            box-shadow: var(--shadow-accent);
             border: none;
+            border-radius: var(--radius-pill);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
+
         .btn-try-prominent:hover {
-            background-color: #047857;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.6);
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(0, 113, 227, 0.4);
         }
+
+        .btn-outline {
+            border: 1.5px solid var(--text-primary);
+            background-color: transparent;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 600;
+            padding: 14px;
+            border-radius: var(--radius-pill);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--text-primary);
+            color: var(--card-bg);
+        }
+
         .reviews-section {
             margin-top: 60px;
             border-top: 1px solid var(--border);
             padding-top: 40px;
         }
+
         .reviews-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
         }
+
         .reviews-summary-stats {
             display: flex;
             align-items: center;
             gap: 20px;
         }
+
         .reviews-average-number {
             font-size: 48px;
             font-weight: 800;
             color: var(--text-main);
         }
+
         .review-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
@@ -236,31 +601,41 @@
             margin-bottom: 20px;
             box-shadow: var(--shadow-sm);
         }
+
         .review-user-info {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
         }
+
         .review-username {
             font-weight: 700;
             font-size: 15px;
         }
+
         .review-date {
             font-size: 12px;
             color: var(--text-muted);
         }
+
         .review-comment {
             font-size: 14px;
             color: var(--text-main);
             margin-top: 8px;
         }
+
         @media (max-width: 900px) {
             .detail-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-actions {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Header Navigation (Etsy Inspired) -->
@@ -268,7 +643,7 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        
+
         <!-- Detail Grid -->
         <div class="detail-layout" id="product-detail-layout">
             <!-- Loading state -->
@@ -276,23 +651,6 @@
                 <i class="fa-solid fa-spinner fa-spin"></i> Đang tải thông tin chi tiết sản phẩm...
             </div>
         </div>
-
-        <!-- Related Products Section -->
-        <section class="related-section">
-            <div class="section-title-wrapper">
-                <div>
-                    <span class="section-subtitle">Có thể bạn cũng thích</span>
-                    <h3 class="section-title">Sản Phẩm Loại Liên Quan</h3>
-                </div>
-            </div>
-            <div class="carousel-wrapper">
-                <button class="carousel-nav-btn carousel-prev" id="related-prev"><i class="fa-solid fa-chevron-left"></i></button>
-                <div class="carousel-container" id="related-products-container">
-                    <!-- Related cards injected here -->
-                </div>
-                <button class="carousel-nav-btn carousel-next" id="related-next"><i class="fa-solid fa-chevron-right"></i></button>
-            </div>
-        </section>
 
         <!-- Reviews Section -->
         <section class="reviews-section">
@@ -306,13 +664,33 @@
                         <div class="stars" id="avg-stars-container">
                             <!-- stars -->
                         </div>
-                        <span id="reviews-count-label" style="font-size: 13px; color: var(--text-muted);">0 đánh giá</span>
+                        <span id="reviews-count-label" style="font-size: 13px; color: var(--text-muted);">0 đánh
+                            giá</span>
                     </div>
                 </div>
             </div>
-            
+
             <div id="reviews-list-container">
                 <!-- Review cards injected here -->
+            </div>
+        </section>
+
+        <!-- Related Products Section -->
+        <section class="related-section">
+            <div class="section-title-wrapper">
+                <div>
+                    <span class="section-subtitle">Có thể bạn cũng thích</span>
+                    <h3 class="section-title">Sản Phẩm Loại Liên Quan</h3>
+                </div>
+            </div>
+            <div class="carousel-wrapper">
+                <button class="carousel-nav-btn carousel-prev" id="related-prev"><i
+                        class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel-container" id="related-products-container">
+                    <!-- Related cards injected here -->
+                </div>
+                <button class="carousel-nav-btn carousel-next" id="related-next"><i
+                        class="fa-solid fa-chevron-right"></i></button>
             </div>
         </section>
 
@@ -324,6 +702,8 @@
     <!-- Scripts -->
     <script src="js/components.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/popup-component.js"></script>
     <script src="js/product-detail.js"></script>
 </body>
+
 </html>

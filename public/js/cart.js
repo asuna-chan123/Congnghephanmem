@@ -1,3 +1,7 @@
+// State variables
+let cartList = [];
+let selectedItemIds = [];
+
 document.addEventListener('DOMContentLoaded', () => {
     loadCartPage();
     loadRelatedItems();
@@ -7,7 +11,7 @@ async function loadCartPage() {
     const cartItemsContainer = document.getElementById('cart-items-container');
     const emptyCartView = document.getElementById('empty-cart-view');
     const cartLayout = document.getElementById('cart-layout');
-    
+
     try {
         const data = await apiFetch('/api/cart');
         if (!data.success || !data.cart || data.cart.length === 0) {
@@ -16,74 +20,188 @@ async function loadCartPage() {
             return;
         }
 
-        const cartItems = data.cart;
+        cartList = data.cart;
         cartLayout.style.display = 'grid';
         emptyCartView.style.display = 'none';
 
-        cartItemsContainer.innerHTML = '';
-        let itemsTotal = 0;
+        // Select all items by default on first load
+        if (selectedItemIds.length === 0 && cartList.length > 0) {
+            selectedItemIds = cartList.map(item => item.uniqueId);
+        } else {
+            // Filter out selected items that no longer exist in the cart
+            const currentIds = cartList.map(item => item.uniqueId);
+            selectedItemIds = selectedItemIds.filter(id => currentIds.includes(id));
+        }
 
-        cartItems.forEach(item => {
-            itemsTotal += (item.price * item.quantity);
-        
-        // Mock original price and discount for UI purposes (similar to Etsy)
-        const discountPercent = 15;
-        const originalPrice = Math.round(item.price / (1 - discountPercent/100));
-        
-        const itemEl = document.createElement('div');
-        itemEl.className = 'cart-item-row';
-        itemEl.innerHTML = `
-            <img src="${item.image || 'https://via.placeholder.com/160'}" alt="${item.name}" class="cart-item-image">
-            <div class="cart-item-details">
-                <h3 class="cart-item-title">${item.name}</h3>
-                <div class="cart-item-options">Loại: ${item.type}</div>
-                <div class="cart-item-stock"><i class="fa-solid fa-check"></i> Còn hàng</div>
-                
-                <div class="cart-item-actions">
-                    <select onchange="updateCartItemQuantity('${item.uniqueId}', this.value)">
-                        <option value="1" ${item.quantity === 1 ? 'selected' : ''}>1</option>
-                        <option value="2" ${item.quantity === 2 ? 'selected' : ''}>2</option>
-                        <option value="3" ${item.quantity === 3 ? 'selected' : ''}>3</option>
-                        <option value="4" ${item.quantity === 4 ? 'selected' : ''}>4</option>
-                        <option value="5" ${item.quantity === 5 ? 'selected' : ''}>5</option>
-                    </select>
-                    <button>Chỉnh sửa</button>
-                    <button>Lưu lại sau</button>
-                    <button onclick="removeAndReload('${item.uniqueId}')">Xóa</button>
-                </div>
-            </div>
-            <div class="cart-item-price-col">
-                <span class="discount-badge">Giảm ${discountPercent}%</span>
-                <span class="original-price">${formatCurrency(originalPrice)}</span>
-                <span class="current-price">${formatCurrency(item.price)}</span>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: auto;">Có thể áp dụng mã giảm giá</div>
-            </div>
-        `;
-        cartItemsContainer.appendChild(itemEl);
-    });
-
-    updateCartSummary(itemsTotal, cartItems.length);
+        renderCartItems();
+        recalculateTotals();
+        updateSelectAllCheckboxState();
     } catch (e) {
         console.error('Error loading cart page:', e);
-        cartItemsContainer.innerHTML = '<p>Lỗi tải giỏ hàng.</p>';
+        cartItemsContainer.innerHTML = '<div class="cart-loading">Lỗi tải giỏ hàng. Vui lòng thử lại sau.</div>';
     }
 }
 
-function updateCartSummary(itemsTotal, itemCount) {
-    const discountAmount = itemsTotal * 0.15; // Mock 15% discount
-    const subtotal = itemsTotal - discountAmount;
-    const delivery = 30000; // Mock delivery
-    const total = subtotal + delivery;
+function renderCartItems() {
+    const container = document.getElementById('cart-items-container');
+    if (!container) return;
 
-    document.getElementById('summary-items-total').textContent = formatCurrency(itemsTotal);
-    document.getElementById('summary-discount').textContent = '-' + formatCurrency(discountAmount);
-    document.getElementById('summary-subtotal').textContent = formatCurrency(subtotal);
-    document.getElementById('summary-delivery').textContent = formatCurrency(delivery);
-    document.getElementById('summary-total').textContent = formatCurrency(total);
-    document.getElementById('summary-total-label').textContent = `Tổng cộng (${itemCount} sản phẩm)`;
+    container.innerHTML = '';
+
+    cartList.forEach(item => {
+        const isChecked = selectedItemIds.includes(item.uniqueId);
+        const card = document.createElement('div');
+        card.className = 'cart-item-card';
+        card.innerHTML = `
+            <!-- Checkbox -->
+            <div class="cart-item-checkbox-col">
+                <label class="xiaomi-checkbox-wrapper">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItemSelect('${item.uniqueId}', this.checked)">
+                    <span class="xiaomi-checkbox-mark"></span>
+                </label>
+            </div>
+
+            <!-- Image -->
+            <div class="cart-item-image-col">
+                <img src="${item.image || 'https://via.placeholder.com/160'}" alt="${item.name}">
+            </div>
+
+            <!-- Details & Price -->
+            <div class="cart-item-info-col">
+                <a href="/product.html?id=${item.productId}" class="cart-item-title-link">${item.name}</a>
+                <span class="cart-item-variant">Phân loại: ${item.type === 'trial' ? 'Thuê dùng thử' : 'Mua đứt'}</span>
+                <span class="cart-item-price">${formatCurrency(item.price)}</span>
+            </div>
+
+            <!-- Quantity Stepper & Trash -->
+            <div class="cart-item-controls-col">
+                <div class="cart-item-stepper-wrapper">
+                    <div class="cart-quantity-stepper">
+                        <button class="cart-stepper-btn" onclick="adjustCartQty('${item.uniqueId}', -1)"><i class="fa-solid fa-minus"></i></button>
+                        <input type="text" class="cart-stepper-val" value="${item.quantity}" readonly>
+                        <button class="cart-stepper-btn" onclick="adjustCartQty('${item.uniqueId}', 1)"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <span class="stepper-limit-hint">* Còn lại ${item.stock_quantity || 0} sản phẩm</span>
+                </div>
+                
+                <button class="cart-item-trash-btn" onclick="removeAndReload('${item.uniqueId}')" title="Xóa sản phẩm">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
 }
 
-window.removeAndReload = async function(cartItemId) {
+function recalculateTotals() {
+    let itemsTotal = 0;
+    let itemCount = 0;
+
+    cartList.forEach(item => {
+        if (selectedItemIds.includes(item.uniqueId)) {
+            itemsTotal += (item.price * item.quantity);
+            itemCount += item.quantity;
+        }
+    });
+
+    const subtotal = itemsTotal; // Let's keep it clean
+    const delivery = 0; // free delivery
+    const total = subtotal + delivery;
+
+    document.getElementById('summary-subtotal').textContent = formatCurrency(subtotal);
+    document.getElementById('summary-total').textContent = formatCurrency(total);
+}
+
+function updateSelectAllCheckboxState() {
+    const selectAllCheckbox = document.getElementById('select-all-checkbox');
+    if (!selectAllCheckbox) return;
+
+    if (cartList.length === 0) {
+        selectAllCheckbox.checked = false;
+        return;
+    }
+
+    const allSelected = cartList.every(item => selectedItemIds.includes(item.uniqueId));
+    selectAllCheckbox.checked = allSelected;
+}
+
+window.toggleItemSelect = function (uniqueId, isChecked) {
+    if (isChecked) {
+        if (!selectedItemIds.includes(uniqueId)) {
+            selectedItemIds.push(uniqueId);
+        }
+    } else {
+        selectedItemIds = selectedItemIds.filter(id => id !== uniqueId);
+    }
+    recalculateTotals();
+    updateSelectAllCheckboxState();
+};
+
+window.toggleSelectAll = function (checkbox) {
+    if (checkbox.checked) {
+        selectedItemIds = cartList.map(item => item.uniqueId);
+    } else {
+        selectedItemIds = [];
+    }
+    renderCartItems();
+    recalculateTotals();
+};
+
+window.deleteSelectedItems = async function () {
+    if (selectedItemIds.length === 0) {
+        alert('Vui lòng chọn ít nhất một sản phẩm để xóa!');
+        return;
+    }
+
+    if (!confirm('Bạn có chắc chắn muốn xóa các sản phẩm đã chọn khỏi giỏ hàng?')) {
+        return;
+    }
+
+    try {
+        // Delete items sequentially or map them
+        for (const id of selectedItemIds) {
+            await apiFetch(`/api/cart/${id}`, { method: 'DELETE' });
+        }
+        selectedItemIds = [];
+        loadCart(); // update header badge
+        loadCartPage(); // refresh cart list
+    } catch (e) {
+        console.error('Error deleting selected items:', e);
+        alert('Lỗi khi xóa các mục đã chọn.');
+    }
+};
+
+window.adjustCartQty = async function (uniqueId, change) {
+    const item = cartList.find(i => i.uniqueId === uniqueId);
+    if (!item) return;
+
+    const newQty = item.quantity + change;
+    if (newQty < 1) return;
+
+    const maxQty = item.stock_quantity || 5;
+    if (newQty > maxQty) {
+        alert(`Rất tiếc, kho hàng chỉ còn lại ${maxQty} sản phẩm này.`);
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/cart/${uniqueId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ quantity: newQty })
+        });
+        if (res.success) {
+            loadCart(); // update header badge
+            loadCartPage(); // refresh cart list
+        } else {
+            alert('Lỗi cập nhật số lượng: ' + res.message);
+        }
+    } catch (e) {
+        console.error('Error updating quantity:', e);
+        alert('Lỗi kết nối máy chủ khi cập nhật số lượng.');
+    }
+};
+
+window.removeAndReload = async function (cartItemId) {
     try {
         const res = await apiFetch(`/api/cart/${cartItemId}`, { method: 'DELETE' });
         if (res.success) {
@@ -91,17 +209,42 @@ window.removeAndReload = async function(cartItemId) {
             loadCartPage(); // refresh cart list
         }
     } catch (e) {
-        console.error('Error removing cart item', e);
+        console.error('Error removing cart item:', e);
+    }
+};
+
+window.toggleWhyMi = function () {
+    const body = document.getElementById('why-mi-body');
+    const chevron = document.getElementById('why-mi-chevron');
+    if (!body) return;
+
+    if (body.classList.contains('expanded')) {
+        body.classList.remove('expanded');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+        body.classList.add('expanded');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
     }
 };
 
 document.getElementById('checkout-submit-btn')?.addEventListener('click', async () => {
-    alert('Đang chuyển hướng tới trang thanh toán...');
+    if (selectedItemIds.length === 0) {
+        alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
+        return;
+    }
+
+    alert('Đang tiến hành đặt hàng & thanh toán các mục đã chọn...');
     try {
-        await apiFetch('/api/cart', { method: 'DELETE' });
+        // Clear only selected items from server cart
+        for (const id of selectedItemIds) {
+            await apiFetch(`/api/cart/${id}`, { method: 'DELETE' });
+        }
+        selectedItemIds = [];
+        loadCart(); // update header
         window.location.href = '/';
     } catch (e) {
-        console.error('Error checkout', e);
+        console.error('Error checkout:', e);
+        alert('Lỗi đặt hàng.');
     }
 });
 
@@ -110,17 +253,16 @@ async function loadRelatedItems() {
         const response = await fetch('/api/home-data');
         const data = await response.json();
         const grid = document.getElementById('related-items-grid');
-        
+
         if (data.success && data.tryBeforeBuy) {
             grid.innerHTML = '';
-            // Display first 4 items as related
             data.tryBeforeBuy.slice(0, 4).forEach(product => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
                     <div class="product-image-container">
                         <img src="${product.image_url}" alt="${product.name}" loading="lazy">
-                        ${product.is_new ? '<span class="badge badge-new">Mới</span>' : ''}
+                        ${product.is_new ? '<span class="badge badge-new">Mới về hàng</span>' : ''}
                     </div>
                     <div class="product-info">
                         <h3 class="product-title">${product.name}</h3>
@@ -132,7 +274,7 @@ async function loadRelatedItems() {
                                 Giá mua: <span class="buy-price-value">${formatCurrency(product.price)}</span>
                             </div>
                         </div>
-                        <div class="product-actions">
+                        <div class="product-actions" style="margin-top: 10px;">
                             <button class="btn btn-outline" onclick="addToCart(${product.id}, 'trial')">Thử trước</button>
                             <button class="btn btn-primary" onclick="addToCart(${product.id}, 'buy')">Mua ngay</button>
                         </div>
@@ -146,17 +288,9 @@ async function loadRelatedItems() {
     }
 }
 
-window.updateCartItemQuantity = async function(cartItemId, newQty) {
-    try {
-        const res = await apiFetch(`/api/cart/${cartItemId}`, {
-            method: 'PUT',
-            body: JSON.stringify({ quantity: newQty })
-        });
-        if (res.success) {
-            loadCart(); // update header badge
-            loadCartPage(); // refresh cart list
-        }
-    } catch (e) {
-        console.error('Error updating quantity:', e);
+// Global format currency fallback if not defined
+if (typeof formatCurrency !== 'function') {
+    window.formatCurrency = function(value) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
     }
-};
+}

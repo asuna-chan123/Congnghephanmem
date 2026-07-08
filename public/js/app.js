@@ -227,9 +227,9 @@ function renderTryBeforeBuy(products) {
 
         tryBeforeBuyContainer.appendChild(card);
         
-        // Wait for Custom Element rendering to observe internal .product-card
+        // Wait for Custom Element rendering to observe internal card element
         setTimeout(() => {
-            const innerCard = card.querySelector('.product-card');
+            const innerCard = card.querySelector('.product-card, .apple-product-card');
             if (innerCard) observeReveal(innerCard);
         }, 50);
     });

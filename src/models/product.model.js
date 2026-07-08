@@ -140,6 +140,7 @@ class ProductModel {
           dv.variant_id AS id,
           dv.condition_name AS condition,
           c.color_name AS color,
+          c.hex_code AS hex,
           sc.capacity_value AS capacity,
           dv.daily_rental_price AS trial_price_per_day,
           dv.deposit_amount AS price,

@@ -17,96 +17,110 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
-    <!-- Header Navigation (Etsy Inspired) -->
+    <!-- Header Navigation -->
     <custom-header></custom-header>
 
     <!-- Cart Page Layout -->
     <main class="cart-page-wrapper">
-        <div class="cart-page-header">
-            <h1>Giỏ hàng của bạn</h1>
-        </div>
-        
         <div class="cart-layout" id="cart-layout">
-            <!-- Left Column: Items -->
+            <!-- Left Column: Items (Xiaomi Style) -->
             <div class="cart-items-column">
-                <div class="cart-store-header">
-                    <div class="store-info">
-                        <img src="https://ui-avatars.com/api/?name=E+Tech&background=0D8ABC&color=fff" alt="E-Tech Store" class="store-avatar">
-                        <span class="store-name">E-Tech Store</span>
-                        <span class="store-rating"><i class="fa-solid fa-star"></i> 4.9 (5.4k)</span>
-                    </div>
+                <!-- Select All Control Card -->
+                <div class="cart-select-all-card">
+                    <label class="xiaomi-checkbox-wrapper">
+                        <input type="checkbox" id="select-all-checkbox" checked onchange="toggleSelectAll(this)">
+                        <span class="xiaomi-checkbox-mark"></span>
+                        <span class="select-all-label">Tất cả</span>
+                    </label>
+                    <button class="cart-delete-selected-btn" onclick="deleteSelectedItems()">Xóa các mục đã chọn</button>
                 </div>
                 
+                <!-- Items Container -->
                 <div id="cart-items-container">
-                    <!-- Cart items will be rendered here -->
                     <div class="cart-loading">Đang tải giỏ hàng...</div>
                 </div>
             </div>
 
-            <!-- Right Column: Summary -->
+            <!-- Right Column: Summary & Why Us (Xiaomi Style) -->
             <div class="cart-summary-column">
+                <!-- Total calculations box -->
                 <div class="summary-box">
-                    <h3>Phương thức thanh toán</h3>
-                    <div class="payment-methods">
-                        <label class="payment-option">
-                            <input type="radio" name="payment" checked>
-                            <span class="payment-icons">
-                                <i class="fa-brands fa-cc-visa"></i>
-                                <i class="fa-brands fa-cc-mastercard"></i>
-                                <i class="fa-brands fa-cc-amex"></i>
-                            </span>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment">
-                            <span class="payment-icons"><i class="fa-brands fa-paypal"></i> PayPal</span>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment">
-                            <span class="payment-icons"><i class="fa-brands fa-google-pay"></i> Pay</span>
-                        </label>
+                    <div class="summary-row main-total-row">
+                        <span>Tổng cộng</span>
+                        <strong id="summary-total" class="accent-price-large">0 đ</strong>
                     </div>
-
+                    <div class="summary-divider"></div>
                     <div class="summary-rows">
                         <div class="summary-row">
-                            <span>Tổng tiền hàng</span>
-                            <span id="summary-items-total">0 đ</span>
-                        </div>
-                        <div class="summary-row text-green">
-                            <span>Giảm giá</span>
-                            <span id="summary-discount">0 đ</span>
-                        </div>
-                        <div class="summary-row">
-                            <span>Tạm tính</span>
+                            <span>Tổng phụ</span>
                             <span id="summary-subtotal">0 đ</span>
                         </div>
                         <div class="summary-row">
-                            <span>Phí giao hàng <br><small>(Tới Việt Nam)</small></span>
-                            <span id="summary-delivery">0 đ</span>
-                        </div>
-                        <div class="summary-row total-row">
-                            <span id="summary-total-label">Tổng cộng (0 sản phẩm)</span>
-                            <strong id="summary-total">0 đ</strong>
+                            <span>Phí vận chuyển <i class="fa-regular fa-circle-question" title="Phí giao hàng nội địa Việt Nam"></i></span>
+                            <span id="summary-delivery" class="text-free">Miễn phí</span>
                         </div>
                     </div>
 
-                    <label class="gift-checkbox">
-                        <input type="checkbox">
-                        <span>Đánh dấu là quà tặng <a href="#">Tìm hiểu thêm</a></span>
-                    </label>
-
-                    <button class="checkout-submit-btn" id="checkout-submit-btn">Tiến hành thanh toán</button>
-
+                    <!-- Voucher code link -->
                     <div class="coupon-section">
-                        <a href="#"><i class="fa-solid fa-tag"></i> Áp dụng mã giảm giá</a>
+                        <div class="coupon-link-wrapper">
+                            <i class="fa-solid fa-ticket icon-ticket"></i>
+                            <a href="#" class="coupon-link">Phiếu giảm giá <span class="coupon-hint">Đăng nhập để xem phiếu giảm giá của bạn ></span></a>
+                        </div>
+                    </div>
+
+                    <button class="checkout-submit-btn" id="checkout-submit-btn">Thanh toán</button>
+                </div>
+
+                <!-- Why E-Tech Store Box -->
+                <div class="why-mi-box">
+                    <div class="why-mi-header" onclick="toggleWhyMi()">
+                        <h4>Tại sao nên mua từ E-Tech Store</h4>
+                        <i class="fa-solid fa-chevron-up toggle-chevron" id="why-mi-chevron"></i>
+                    </div>
+                    <div class="why-mi-body expanded" id="why-mi-body">
+                        <div class="benefit-item">
+                            <i class="fa-solid fa-truck-fast benefit-icon"></i>
+                            <div class="benefit-content">
+                                <strong>Giao hàng nhanh</strong>
+                                <p>HCM và khu vực phía Nam: Dự kiến giao hàng trong vòng 1-3 ngày làm việc. Các khu vực khác: Dự kiến 3-6 ngày làm việc.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fa-solid fa-rotate-left benefit-icon"></i>
+                            <div class="benefit-content">
+                                <strong>Dịch vụ sau bán hàng</strong>
+                                <p>Hỗ trợ Đổi hoặc Trả hàng trong vòng 14 ngày nếu phát sinh lỗi sản xuất từ nhà cung cấp.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fa-solid fa-shield-halved benefit-icon"></i>
+                            <div class="benefit-content">
+                                <strong>Thanh toán an toàn</strong>
+                                <p>Thanh toán an toàn & bảo mật thông tin. Hỗ trợ đa dạng phương thức thanh toán.</p>
+                            </div>
+                        </div>
+                        <!-- Pay badges -->
+                        <div class="payment-badges">
+                            <i class="fa-brands fa-cc-visa"></i>
+                            <i class="fa-brands fa-cc-mastercard"></i>
+                            <i class="fa-brands fa-cc-jcb"></i>
+                            <i class="fa-brands fa-cc-amex"></i>
+                            <i class="fa-brands fa-paypal"></i>
+                            <i class="fa-brands fa-google-pay"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="empty-cart-view" style="display: none; text-align: center; padding: 60px 0;">
+            <div style="font-size: 64px; color: var(--text-tertiary); margin-bottom: 20px;">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
             <h2>Giỏ hàng của bạn đang trống.</h2>
-            <p style="margin-bottom: 20px;">Khám phá các sản phẩm công nghệ tuyệt vời ngay.</p>
-            <a href="/products.html" class="btn btn-primary" style="padding: 10px 20px; text-decoration: none; border-radius: 99px;">Tiếp tục mua sắm</a>
+            <p style="margin-bottom: 25px; color: var(--text-secondary);">Khám phá các sản phẩm công nghệ tuyệt vời ngay.</p>
+            <a href="/products.html" class="btn btn-primary" style="padding: 12px 30px; text-decoration: none; border-radius: 99px;">Tiếp tục mua sắm</a>
         </div>
 
         <!-- Related Items Section -->

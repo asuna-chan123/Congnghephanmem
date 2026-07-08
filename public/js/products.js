@@ -654,41 +654,18 @@ function renderProducts() {
     }
 
     filtered.forEach(p => {
-        const isOutOfStock = p.stock_quantity <= 0;
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.style.cursor = 'pointer';
-        card.innerHTML = `
-            <div class="product-image-container" onclick="goToDetails(${p.id})">
-                ${p.is_try_before_buy ? '<span class="trial-badge" style="background-color: #059669;">Thuê trước</span>' : ''}
-                <span class="stock-badge ${isOutOfStock ? 'out-of-stock' : ''}">
-                    ${isOutOfStock ? 'Hết hàng' : `Kho: ${p.stock_quantity}`}
-                </span>
-                <img src="${p.image_url || 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=500'}" alt="${p.name}">
-            </div>
-            <div class="product-info">
-                <h4 class="product-name" title="${p.name}" onclick="goToDetails(${p.id})">
-                    <span style="font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 2px;">${p.manufacturer || ''}</span>
-                    ${p.name}
-                </h4>
-                <div class="product-pricing">
-                    <div class="trial-price-row" style="font-size: 16px; font-weight: 800; color: #059669; margin-bottom: 4px;">
-                        ${formatCurrency(p.trial_price_per_day)} <span style="font-size: 12px; font-weight: 500; color: var(--text-muted);">/ ngày</span>
-                    </div>
-                    <div class="price-row">
-                        <span style="font-size: 12px; color: var(--text-muted);">Giá mua đứt: ${formatCurrency(p.price)}</span>
-                    </div>
-                </div>
-                <div class="product-actions" style="display: flex; gap: 8px;">
-                    <button class="btn btn-outline" style="flex: 1; font-size: 12px; padding: 8px 4px; border-color: #059669; color: #059669;" onclick="goToDetails(${p.id})" ${isOutOfStock ? 'disabled' : ''}>
-                        Dùng thử
-                    </button>
-                    <button class="btn btn-primary" style="flex: 1; font-size: 12px; padding: 8px 4px;" onclick="addToCart(${p.id}, 'buy')" ${isOutOfStock ? 'disabled' : ''}>
-                        Mua đứt
-                    </button>
-                </div>
-            </div>
-        `;
+        const card = document.createElement('product-card');
+        card.setAttribute('product-id', p.id);
+        card.setAttribute('name', p.name);
+        card.setAttribute('price', p.price);
+        card.setAttribute('trial-price', p.trial_price_per_day);
+        card.setAttribute('image-url', p.image_url || '');
+        card.setAttribute('manufacturer', p.manufacturer || '');
+        card.setAttribute('stock-quantity', p.stock_quantity);
+        card.setAttribute('is-try', p.is_try_before_buy ? '1' : '0');
+        card.setAttribute('tags', p.tags || '');
+        card.className = 'visible';
+        
         catalogGrid.appendChild(card);
     });
 }

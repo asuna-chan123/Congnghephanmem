@@ -51,7 +51,7 @@ class CartModel {
         name,
         price: parseFloat(price) || 0,
         image,
-        type: typeName,
+        type: item.type,
         quantity: item.quantity,
         stock_quantity: item.stock_quantity
       };

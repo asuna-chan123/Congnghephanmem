@@ -109,6 +109,7 @@ async function loadProductDetails() {
             renderReviews();
             renderRelated(data.related);
             attachPriceListeners();
+            updatePrices();
         } else {
             detailLayout.innerHTML = `<div class="error-msg">Không thể tải thông tin sản phẩm: ${data.message}</div>`;
         }

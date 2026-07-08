@@ -43,7 +43,7 @@ class CartController {
       res.json({ success: true, message: 'Added to cart' });
     } catch (error) {
       console.error('Error adding to cart:', error);
-      res.status(500).json({ success: false, message: 'Server Error' });
+      res.status(400).json({ success: false, message: error.message || 'Server Error' });
     }
   }
 

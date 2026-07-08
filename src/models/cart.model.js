@@ -11,6 +11,8 @@ class CartModel {
         ci.session_id,
         ci.quantity,
         ci.variant_id,
+        ci.rental_start_date,
+        ci.rental_end_date,
         d.device_name as product_name,
         c.color_name as color,
         sc.capacity_value as capacity,
@@ -43,12 +45,14 @@ class CartModel {
         image,
         type: 'trial',
         quantity: item.quantity,
-        stock_quantity: item.stock_quantity
+        stock_quantity: item.stock_quantity,
+        rental_start_date: item.rental_start_date,
+        rental_end_date: item.rental_end_date
       };
     });
   }
 
-  static async addItem(sessionId, customerId, productId, quantity = 1, variantId = null) {
+  static async addItem(sessionId, customerId, productId, quantity = 1, variantId = null, rentalStartDate = null, rentalEndDate = null) {
     let targetVariantId = variantId;
 
     // Nếu chỉ nhận được productId (ví dụ từ Trang chủ), tự động lấy Variant đầu tiên làm mặc định
@@ -91,15 +95,15 @@ class CartModel {
     }
 
     if (existing) {
-      const sql = `UPDATE cart_items SET quantity = quantity + ? WHERE cart_item_id = ?`;
-      await query(sql, [quantity, existing.id]);
+      const sql = `UPDATE cart_items SET quantity = quantity + ?, rental_start_date = ?, rental_end_date = ? WHERE cart_item_id = ?`;
+      await query(sql, [quantity, rentalStartDate, rentalEndDate, existing.id]);
       return existing.id;
     } else {
       const sql = `
-        INSERT INTO cart_items (session_id, customer_id, variant_id, quantity)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO cart_items (session_id, customer_id, variant_id, quantity, rental_start_date, rental_end_date)
+        VALUES (?, ?, ?, ?, ?, ?)
       `;
-      const result = await query(sql, [sessionId, customerId, targetVariantId, quantity]);
+      const result = await query(sql, [sessionId, customerId, targetVariantId, quantity, rentalStartDate, rentalEndDate]);
       return true;
     }
   }

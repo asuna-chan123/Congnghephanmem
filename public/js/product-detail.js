@@ -1,12 +1,14 @@
 // State variables
 let product = null;
 let reviews = [];
+let qa = [];
 let rentals = [];
 let isFavorited = false;
 let currentSelectedImage = '';
 let activeColor = '';
 let activeCapacity = '';
 let activeQty = 1;
+let selectedStarRating = 5;
 
 const colorMap = {
     'Đen': '#1d1d1f',
@@ -32,6 +34,7 @@ const avgRatingVal = document.getElementById('avg-rating-val');
 const avgStarsContainer = document.getElementById('avg-stars-container');
 const reviewsCountLabel = document.getElementById('reviews-count-label');
 const reviewsListContainer = document.getElementById('reviews-list-container');
+const qaListContainer = document.getElementById('qa-list-container');
 
 // Extract Product ID
 const urlParams = new URLSearchParams(window.location.search);
@@ -83,6 +86,7 @@ async function loadProductDetails() {
         if (data.success) {
             product = data.product;
             reviews = data.reviews;
+            qa = data.qa || [];
             rentals = data.rentals;
 
             // Normalize product.images to always be an array of objects { url, color, isPrimary }
@@ -106,7 +110,9 @@ async function loadProductDetails() {
             if (colorSelect) {
                 updateGalleryForColor(colorSelect.value);
             }
+            setupReviewForm();
             renderReviews();
+            renderQA();
             renderRelated(data.related);
             attachPriceListeners();
             updatePrices();
@@ -740,7 +746,12 @@ async function handleDetailAction() {
     try {
         const res = await apiFetch('/api/cart/add', {
             method: 'POST',
-            body: JSON.stringify({ variantId: variant.id, quantity: qty })
+            body: JSON.stringify({
+                variantId: variant.id,
+                quantity: qty,
+                rentalStartDate: startInput.value,
+                rentalEndDate: endInput.value
+            })
         });
         if (res.success) {
             showStatusPopup(true, 'Đã thêm vào giỏ hàng thành công.', true);
@@ -784,7 +795,7 @@ function calculateAverageRating() {
 // Render Reviews
 function renderReviews() {
     if (reviews.length === 0) {
-        reviewsListContainer.innerHTML = '<p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>';
+        reviewsListContainer.innerHTML = '<p class="text-muted" style="padding: 16px 0;">Chưa có đánh giá nào cho sản phẩm này.</p>';
         avgRatingVal.textContent = '5.0';
         avgStarsContainer.innerHTML = renderStars(5);
         reviewsCountLabel.textContent = '0 đánh giá';
@@ -801,19 +812,302 @@ function renderReviews() {
         const dateStr = new Date(r.created_at).toLocaleDateString('vi-VN');
         const card = document.createElement('div');
         card.className = 'review-card';
+        
+        // Dynamic purchase badge
+        const badgeClass = r.has_purchased ? 'badge-purchased' : 'badge-not-purchased';
+        const badgeText = r.has_purchased ? 'Đã thuê' : 'Chưa thuê';
+        const badgeHtml = `<span class="purchase-badge ${badgeClass}">${badgeText}</span>`;
+
+        // Render replies
+        let repliesHtml = '';
+        if (r.replies && r.replies.length > 0) {
+            repliesHtml = '<div class="reply-container">';
+            r.replies.forEach(rep => {
+                const repDate = new Date(rep.created_at).toLocaleDateString('vi-VN');
+                const repBadgeClass = rep.is_staff ? 'badge-staff' : (rep.has_purchased ? 'badge-purchased' : 'badge-not-purchased');
+                const repBadgeText = rep.is_staff ? 'Quản trị viên' : (rep.has_purchased ? 'Đã thuê' : 'Chưa thuê');
+                const repBadgeHtml = `<span class="purchase-badge ${repBadgeClass}">${repBadgeText}</span>`;
+                const name = rep.is_staff ? rep.staff_name : rep.user_name;
+
+                repliesHtml += `
+                    <div class="reply-card">
+                        <div class="reply-user-info">
+                            <span style="font-weight:600;">${name} ${repBadgeHtml}</span>
+                            <span style="font-size:11px; color:var(--text-muted);">${repDate}</span>
+                        </div>
+                        <p style="margin:4px 0 0 0; color:var(--text-main);">${rep.comment}</p>
+                    </div>
+                `;
+            });
+            repliesHtml += '</div>';
+        }
+
         card.innerHTML = `
             <div class="review-user-info">
-                <span class="review-username">${r.user_name}</span>
+                <span class="review-username">${r.user_name} ${badgeHtml}</span>
                 <span class="review-date">${dateStr}</span>
             </div>
-            <div class="stars" style="margin-bottom: 8px;">
+            <div class="stars" style="margin-bottom: 8px; color: #ff9500;">
                 ${renderStars(r.rating)}
             </div>
             <p class="review-comment">${r.comment || 'Không có nhận xét bằng lời.'}</p>
+            
+            ${repliesHtml}
+
+            <!-- Reply action if logged in -->
+            ${localStorage.getItem('currentUser') ? `
+            <button class="btn-reply-toggle" onclick="toggleReplyForm(${r.id})">
+                <i class="fa-regular fa-comment-dots"></i> Phản hồi
+            </button>
+            <div class="reply-form-wrapper" id="reply-form-${r.id}">
+                <textarea class="reply-input-textarea" id="reply-text-${r.id}" placeholder="Viết phản hồi của bạn..."></textarea>
+                <button class="submit-reply-btn" onclick="submitReply(${r.id})">Gửi phản hồi</button>
+            </div>
+            ` : ''}
         `;
         reviewsListContainer.appendChild(card);
     });
 }
+
+// Render QA list
+function renderQA() {
+    if (!qaListContainer) return;
+    if (qa.length === 0) {
+        qaListContainer.innerHTML = '<p class="text-muted" style="padding: 16px 0;">Chưa có câu hỏi nào. Hãy đặt câu hỏi đầu tiên!</p>';
+        return;
+    }
+
+    qaListContainer.innerHTML = '';
+    qa.forEach(q => {
+        const dateStr = new Date(q.created_at).toLocaleDateString('vi-VN');
+        const card = document.createElement('div');
+        card.className = 'review-card';
+
+        const badgeClass = q.has_purchased ? 'badge-purchased' : 'badge-not-purchased';
+        const badgeText = q.has_purchased ? 'Đã thuê' : 'Chưa thuê';
+        const badgeHtml = `<span class="purchase-badge ${badgeClass}">${badgeText}</span>`;
+
+        let repliesHtml = '';
+        if (q.replies && q.replies.length > 0) {
+            repliesHtml = '<div class="reply-container">';
+            q.replies.forEach(rep => {
+                const repDate = new Date(rep.created_at).toLocaleDateString('vi-VN');
+                const repBadgeClass = rep.is_staff ? 'badge-staff' : (rep.has_purchased ? 'badge-purchased' : 'badge-not-purchased');
+                const repBadgeText = rep.is_staff ? 'Quản trị viên' : (rep.has_purchased ? 'Đã thuê' : 'Chưa thuê');
+                const repBadgeHtml = `<span class="purchase-badge ${repBadgeClass}">${repBadgeText}</span>`;
+                const name = rep.is_staff ? rep.staff_name : rep.user_name;
+
+                repliesHtml += `
+                    <div class="reply-card">
+                        <div class="reply-user-info">
+                            <span style="font-weight:600;">${name} ${repBadgeHtml}</span>
+                            <span style="font-size:11px; color:var(--text-muted);">${repDate}</span>
+                        </div>
+                        <p style="margin:4px 0 0 0; color:var(--text-main);">${rep.comment}</p>
+                    </div>
+                `;
+            });
+            repliesHtml += '</div>';
+        }
+
+        card.innerHTML = `
+            <div class="review-user-info">
+                <span class="review-username">${q.user_name} ${badgeHtml}</span>
+                <span class="review-date">${dateStr}</span>
+            </div>
+            <p class="review-comment" style="font-weight:500; font-size:15px; color:#1d1d1f;"><i class="fa-regular fa-circle-question" style="color:#0066cc; margin-right:6px;"></i>${q.comment}</p>
+            
+            ${repliesHtml}
+
+            ${localStorage.getItem('currentUser') ? `
+            <button class="btn-reply-toggle" onclick="toggleReplyForm(${q.id})">
+                <i class="fa-regular fa-comment-dots"></i> Trả lời
+            </button>
+            <div class="reply-form-wrapper" id="reply-form-${q.id}">
+                <textarea class="reply-input-textarea" id="reply-text-${q.id}" placeholder="Viết phản hồi của bạn..."></textarea>
+                <button class="submit-reply-btn" onclick="submitReply(${q.id})">Gửi phản hồi</button>
+            </div>
+            ` : ''}
+        `;
+        qaListContainer.appendChild(card);
+    });
+}
+
+// Switch tabs
+window.switchReviewsTab = function(tab) {
+    const revBtn = document.getElementById('tab-reviews-btn');
+    const qaBtn = document.getElementById('tab-qa-btn');
+    const revContent = document.getElementById('tab-content-reviews');
+    const qaContent = document.getElementById('tab-content-qa');
+
+    if (tab === 'reviews') {
+        revBtn.classList.add('active');
+        qaBtn.classList.remove('active');
+        revContent.style.display = 'block';
+        qaContent.style.display = 'none';
+    } else {
+        revBtn.classList.remove('active');
+        qaBtn.classList.add('active');
+        revContent.style.display = 'none';
+        qaContent.style.display = 'block';
+    }
+};
+
+// Toggle reply form
+window.toggleReplyForm = function(reviewId) {
+    const form = document.getElementById(`reply-form-${reviewId}`);
+    if (!form) return;
+    if (form.style.display === 'flex') {
+        form.style.display = 'none';
+    } else {
+        form.style.display = 'flex';
+    }
+};
+
+// Check eligibility and setup review form
+async function setupReviewForm() {
+    const formBox = document.getElementById('review-form-container');
+    if (!formBox) return;
+
+    const currentUserJson = localStorage.getItem('currentUser');
+    if (!currentUserJson) {
+        formBox.innerHTML = `
+            <h5 class="form-title">Đánh giá sản phẩm này</h5>
+            <p class="text-muted" style="margin: 0;">Vui lòng <a href="#" onclick="window.openSignInModal(); return false;" style="color:#0066cc; font-weight:500;">Đăng nhập</a> để gửi đánh giá sản phẩm.</p>
+        `;
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/products/${product.id}/review-eligibility`);
+        if (res.success && res.eligible) {
+            // User is eligible, configure star rating inputs
+            const stars = document.querySelectorAll('#stars-input-container i');
+            stars.forEach(star => {
+                // Highlight initially up to selectedStarRating
+                const r = parseInt(star.getAttribute('data-rating'), 10);
+                if (r <= selectedStarRating) star.classList.add('active');
+
+                star.addEventListener('click', () => {
+                    selectedStarRating = r;
+                    stars.forEach(s => {
+                        const sr = parseInt(s.getAttribute('data-rating'), 10);
+                        if (sr <= selectedStarRating) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                });
+            });
+        } else {
+            formBox.innerHTML = `
+                <h5 class="form-title">Đánh giá sản phẩm này</h5>
+                <p class="text-muted" style="margin: 0; font-size:14px;"><i class="fa-solid fa-circle-info" style="color:#7a7a7a; margin-right:6px;"></i>Chỉ những khách hàng đã thuê thành công thiết bị này mới có thể viết đánh giá.</p>
+            `;
+        }
+    } catch (e) {
+        console.error('Error checking review eligibility:', e);
+    }
+}
+
+// Submit review
+window.submitUserReview = async () => {
+    const commentEl = document.getElementById('review-comment-textarea');
+    if (!commentEl) return;
+    const comment = commentEl.value.trim();
+
+    if (!comment) {
+        window.showStatusPopup(false, 'Vui lòng viết nội dung nhận xét trước khi gửi.');
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/products/${product.id}/reviews`, {
+            method: 'POST',
+            body: JSON.stringify({ rating: selectedStarRating, comment })
+        });
+
+        if (res.success) {
+            window.showStatusPopup(true, 'Cảm ơn bạn đã gửi đánh giá!', false);
+            commentEl.value = '';
+            // Reload product details to update lists
+            setTimeout(() => loadProductDetails(), 1500);
+        } else {
+            window.showStatusPopup(false, res.message || 'Lỗi gửi đánh giá.');
+        }
+    } catch (e) {
+        console.error(e);
+        window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');
+    }
+};
+
+// Submit question (QA)
+window.submitUserQuestion = async () => {
+    const commentEl = document.getElementById('qa-comment-textarea');
+    if (!commentEl) return;
+    const comment = commentEl.value.trim();
+
+    if (!comment) {
+        window.showStatusPopup(false, 'Vui lòng nhập nội dung câu hỏi.');
+        return;
+    }
+
+    const currentUserJson = localStorage.getItem('currentUser');
+    if (!currentUserJson) {
+        window.showStatusPopup(false, 'Vui lòng đăng nhập để đặt câu hỏi.');
+        if (typeof window.openSignInModal === 'function') window.openSignInModal();
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/products/${product.id}/qa`, {
+            method: 'POST',
+            body: JSON.stringify({ comment })
+        });
+
+        if (res.success) {
+            window.showStatusPopup(true, 'Câu hỏi của bạn đã được gửi thành công!', false);
+            commentEl.value = '';
+            setTimeout(() => loadProductDetails(), 1500);
+        } else {
+            window.showStatusPopup(false, res.message || 'Lỗi gửi câu hỏi.');
+        }
+    } catch (e) {
+        console.error(e);
+        window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');
+    }
+};
+
+// Submit reply
+window.submitReply = async (reviewId) => {
+    const textEl = document.getElementById(`reply-text-${reviewId}`);
+    if (!textEl) return;
+    const comment = textEl.value.trim();
+
+    if (!comment) {
+        window.showStatusPopup(false, 'Vui lòng nhập nội dung phản hồi.');
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/reviews/${reviewId}/replies`, {
+            method: 'POST',
+            body: JSON.stringify({ comment })
+        });
+
+        if (res.success) {
+            window.showStatusPopup(true, 'Gửi phản hồi thành công.', false);
+            textEl.value = '';
+            setTimeout(() => loadProductDetails(), 1500);
+        } else {
+            window.showStatusPopup(false, res.message || 'Lỗi gửi phản hồi.');
+        }
+    } catch (e) {
+        console.error(e);
+        window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');
+    }
+};
 
 // Render Related Products Carousel
 function renderRelated(productsList) {

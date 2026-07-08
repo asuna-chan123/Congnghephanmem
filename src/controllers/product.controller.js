@@ -33,8 +33,8 @@ class ProductController {
         return res.status(404).json({ success: false, message: 'Product not found.' });
       }
 
-      // Fetch reviews
-      const reviews = await ReviewModel.getReviewsByProduct(productId);
+      // Fetch reviews and Q&A
+      const reviewsQA = await ReviewModel.getReviewsAndQA(productId);
 
       // Fetch related products
       const related = await ProductModel.getRelatedProducts(product.category_id, product.id);
@@ -45,7 +45,8 @@ class ProductController {
       res.json({
         success: true,
         product,
-        reviews,
+        reviews: reviewsQA.reviews,
+        qa: reviewsQA.qa,
         related,
         rentals
       });

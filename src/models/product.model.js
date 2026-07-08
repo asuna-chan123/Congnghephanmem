@@ -189,7 +189,7 @@ class ProductModel {
       FROM rental_orders ro
       JOIN rental_order_details rod ON ro.rental_order_id = rod.rental_order_id
       JOIN device_variants dv ON rod.variant_id = dv.variant_id
-      WHERE dv.device_id = ?
+      WHERE dv.device_id = ? AND ro.rental_order_status NOT IN ('cancelled', 'completed')
     `;
     return db.query(sql, [productId]);
   }

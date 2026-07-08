@@ -625,11 +625,14 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
+            align-items: center;
         }
 
         .review-username {
             font-weight: 700;
             font-size: 15px;
+            display: flex;
+            align-items: center;
         }
 
         .review-date {
@@ -641,6 +644,175 @@
             font-size: 14px;
             color: var(--text-main);
             margin-top: 8px;
+        }
+
+        /* Tab Controls */
+        .reviews-tabs {
+            display: flex;
+            gap: 16px;
+            border-bottom: 2px solid #e5e5e7;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #7a7a7a;
+            cursor: pointer;
+            position: relative;
+            font-family: inherit;
+        }
+
+        .tab-btn.active {
+            color: #0066cc;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #0066cc;
+        }
+
+        /* Badges */
+        .purchase-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            display: inline-block;
+        }
+
+        .badge-purchased {
+            background-color: rgba(5, 150, 105, 0.1);
+            color: #047857;
+        }
+
+        .badge-not-purchased {
+            background-color: #f5f5f7;
+            color: #7a7a7a;
+        }
+
+        .badge-staff {
+            background-color: rgba(0, 102, 204, 0.1);
+            color: #0066cc;
+        }
+
+        /* Reply style */
+        .reply-container {
+            margin-top: 16px;
+            padding-left: 20px;
+            border-left: 2px solid #e5e5e7;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .reply-card {
+            background-color: #fafafc;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .reply-user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        /* Buttons & Forms */
+        .btn-reply-toggle {
+            background: none;
+            border: none;
+            color: #0066cc;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0;
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .reply-form-wrapper {
+            margin-top: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .reply-input-textarea {
+            width: 100%;
+            height: 60px;
+            padding: 8px 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .submit-reply-btn {
+            align-self: flex-end;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Review & QA Form */
+        .form-section-box {
+            background: #fafafc;
+            border: 1px solid #e5e5e7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1d1d1f;
+        }
+
+        .rating-stars-input {
+            display: flex;
+            gap: 8px;
+            font-size: 24px;
+            color: #d2d2d7;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .rating-stars-input i.active {
+            color: #ff9500;
+        }
+
+        .form-textarea {
+            width: 100%;
+            height: 100px;
+            padding: 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 12px;
         }
 
         @media (max-width: 900px) {
@@ -669,24 +841,60 @@
 
         <!-- Reviews Section -->
         <section class="reviews-section">
-            <div class="reviews-header">
-                <div>
-                    <h3 class="section-title">Đánh giá từ khách hàng</h3>
-                </div>
-                <div class="reviews-summary-stats">
-                    <div class="reviews-average-number" id="avg-rating-val">0.0</div>
+            <div class="reviews-tabs">
+                <button class="tab-btn active" id="tab-reviews-btn" onclick="switchReviewsTab('reviews')">Đánh giá từ khách hàng</button>
+                <button class="tab-btn" id="tab-qa-btn" onclick="switchReviewsTab('qa')">Hỏi & Đáp (Q&A)</button>
+            </div>
+
+            <!-- Tab Content: Reviews -->
+            <div id="tab-content-reviews" class="tab-content">
+                <div class="reviews-header" style="margin-bottom: 24px;">
                     <div>
-                        <div class="stars" id="avg-stars-container">
-                            <!-- stars -->
-                        </div>
-                        <span id="reviews-count-label" style="font-size: 13px; color: var(--text-muted);">0 đánh
-                            giá</span>
+                        <h4 style="font-size: 18px; font-weight:600; margin: 0;">Điểm đánh giá trung bình</h4>
                     </div>
+                    <div class="reviews-summary-stats">
+                        <div class="reviews-average-number" id="avg-rating-val">0.0</div>
+                        <div>
+                            <div class="stars" id="avg-stars-container" style="color: #ff9500; font-size: 16px;">
+                                <!-- stars -->
+                            </div>
+                            <span id="reviews-count-label" style="font-size: 13px; color: var(--text-muted);">0 đánh giá</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Write Review Form Section -->
+                <div id="review-form-container" class="form-section-box">
+                    <!-- Form will be dynamically updated based on eligibility -->
+                    <h5 class="form-title">Đánh giá sản phẩm này</h5>
+                    <div class="rating-stars-input" id="stars-input-container">
+                        <i class="fa-solid fa-star" data-rating="1"></i>
+                        <i class="fa-solid fa-star" data-rating="2"></i>
+                        <i class="fa-solid fa-star" data-rating="3"></i>
+                        <i class="fa-solid fa-star" data-rating="4"></i>
+                        <i class="fa-solid fa-star" data-rating="5"></i>
+                    </div>
+                    <textarea id="review-comment-textarea" class="form-textarea" placeholder="Chia sẻ trải nghiệm sử dụng thực tế của bạn về thiết bị này..."></textarea>
+                    <button class="btn btn-primary" onclick="submitUserReview()" style="padding: 10px 24px; font-size:14px; border-radius: 9999px;">Gửi Đánh Giá</button>
+                </div>
+
+                <div id="reviews-list-container">
+                    <!-- Review cards injected here -->
                 </div>
             </div>
 
-            <div id="reviews-list-container">
-                <!-- Review cards injected here -->
+            <!-- Tab Content: QA -->
+            <div id="tab-content-qa" class="tab-content" style="display: none;">
+                <!-- Write Question Form Section -->
+                <div id="qa-form-container" class="form-section-box">
+                    <h5 class="form-title">Đặt câu hỏi về sản phẩm</h5>
+                    <textarea id="qa-comment-textarea" class="form-textarea" placeholder="Đặt câu hỏi về sản phẩm, cấu hình, phương thức thuê..."></textarea>
+                    <button class="btn btn-primary" onclick="submitUserQuestion()" style="padding: 10px 24px; font-size:14px; border-radius: 9999px;">Gửi Câu Hỏi</button>
+                </div>
+
+                <div id="qa-list-container">
+                    <!-- QA cards injected here -->
+                </div>
             </div>
         </section>
 

@@ -98,6 +98,11 @@ class CustomHeader extends HTMLElement {
                         <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
                         <span class="cart-count" style="position: absolute; top: -7px; right: -8px; background: var(--text-primary); color: var(--bg-elevated); font-size: 8px; width: 13px; height: 13px;" aria-live="polite" aria-label="0 sản phẩm trong giỏ">0</span>
                     </a>
+                    ${currentUserJson ? `
+                    <a href="/orders.html" class="action-btn orders-btn" aria-label="Đơn hàng" style="width: auto; height: auto; font-size: 13px; opacity: 0.8;">
+                        <i class="fa-solid fa-truck" aria-hidden="true"></i>
+                    </a>
+                    ` : ''}
                 </nav>
 
             </div>

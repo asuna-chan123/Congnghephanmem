@@ -1,4 +1,5 @@
 const CartModel = require('../models/cart.model');
+const OrderModel = require('../models/order.model');
 
 class CartController {
   static async getCart(req, res) {
@@ -31,14 +32,14 @@ class CartController {
         return res.status(400).json({ success: false, message: 'Session ID or Customer ID is required' });
       }
 
-      const { productId, quantity, variantId } = req.body;
+      const { productId, quantity, variantId, rentalStartDate, rentalEndDate } = req.body;
       if (!productId && !variantId) {
         return res.status(400).json({ success: false, message: 'Product ID or Variant ID is required' });
       }
 
       const qty = parseInt(quantity, 10) || 1;
 
-      await CartModel.addItem(sessionId, customerId, productId || null, qty, variantId || null);
+      await CartModel.addItem(sessionId, customerId, productId || null, qty, variantId || null, rentalStartDate || null, rentalEndDate || null);
       res.json({ success: true, message: 'Added to cart' });
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -111,6 +112,26 @@ class CartController {
     } catch (error) {
       console.error('Error updating quantity:', error);
       res.status(500).json({ success: false, message: 'Server Error' });
+    }
+  }
+
+  static async checkout(req, res) {
+    try {
+      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      if (!customerId) {
+        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập trước khi thanh toán.' });
+      }
+
+      const { selectedItemIds } = req.body;
+      if (!selectedItemIds || selectedItemIds.length === 0) {
+        return res.status(400).json({ success: false, message: 'Vui lòng chọn ít nhất một sản phẩm để thanh toán.' });
+      }
+
+      const result = await OrderModel.createOrderFromCart(customerId, selectedItemIds);
+      res.json({ success: true, message: 'Thanh toán thành công. Đơn hàng đã được khởi tạo.', order: result });
+    } catch (error) {
+      console.error('Error during checkout:', error);
+      res.status(400).json({ success: false, message: error.message || 'Server Error' });
     }
   }
 }

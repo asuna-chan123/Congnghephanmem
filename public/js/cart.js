@@ -69,7 +69,13 @@ function renderCartItems() {
             <!-- Details & Price -->
             <div class="cart-item-info-col">
                 <a href="/product.html?id=${item.productId}" class="cart-item-title-link">${item.name}</a>
-                <span class="cart-item-price">${formatCurrency(item.price)}</span>
+                ${item.rental_start_date && item.rental_end_date ? `
+                <span class="cart-item-dates" style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">
+                    <i class="fa-regular fa-calendar-days" style="margin-right: 4px; color: var(--accent);"></i>
+                    Thuê: ${new Date(item.rental_start_date).toLocaleDateString('vi-VN')} - ${new Date(item.rental_end_date).toLocaleDateString('vi-VN')}
+                </span>
+                ` : ''}
+                <span class="cart-item-price">${formatCurrency(item.price)} <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary)">/ ngày</span></span>
             </div>
 
             <!-- Quantity Stepper & Trash -->
@@ -256,19 +262,26 @@ document.getElementById('checkout-submit-btn')?.addEventListener('click', async 
     }
 
     try {
-        // Clear only selected items from server cart
-        for (const id of selectedItemIds) {
-            await apiFetch(`/api/cart/${id}`, { method: 'DELETE' });
+        const res = await apiFetch('/api/cart/checkout', {
+            method: 'POST',
+            body: JSON.stringify({ selectedItemIds })
+        });
+        if (res.success) {
+            selectedItemIds = [];
+            loadCart(); // update header
+            showStatusPopup(true, 'Đặt hàng & thanh toán thành công!', true);
+            setTimeout(() => {
+                window.location.href = '/orders.html';
+            }, 1500);
+        } else {
+            showStatusPopup(false, res.message || 'Lỗi đặt hàng.');
         }
-        selectedItemIds = [];
-        loadCart(); // update header
-        window.location.href = '/';
     } catch (e) {
         console.error('Error checkout:', e);
         if (typeof showStatusPopup === 'function') {
-            showStatusPopup(false, 'Lỗi đặt hàng.');
+            showStatusPopup(false, e.message || 'Lỗi đặt hàng.');
         } else {
-            alert('Lỗi đặt hàng.');
+            alert(e.message || 'Lỗi đặt hàng.');
         }
     }
 });

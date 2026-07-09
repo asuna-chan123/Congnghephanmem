@@ -1,5 +1,6 @@
 const db = require('./db');
 
+
 class ProductModel {
   static async getAllCategories() {
     const sql = `
@@ -71,7 +72,7 @@ class ProductModel {
     `;
     return db.query(sql);
   }
-
+  // Search
   static async getAllProducts() {
     const sql = `
       SELECT 

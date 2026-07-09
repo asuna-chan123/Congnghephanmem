@@ -103,7 +103,7 @@ function formatCurrency(value) {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 }
 
-// Fetch all product data
+// Yêu cầu dữ liệu từ Server
 async function fetchCatalogData() {
     try {
         const response = await fetch('/api/products');
@@ -116,7 +116,7 @@ async function fetchCatalogData() {
             // Read query params
             parseQueryParams();
 
-            // Setup events
+            // Search
             setupEventListeners();
 
             // Initial render

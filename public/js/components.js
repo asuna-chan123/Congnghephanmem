@@ -23,7 +23,7 @@ class CustomHeader extends HTMLElement {
                     <span style="font-size: 11px; opacity: 0.3; color: var(--text-primary);">|</span>
                     <a href="#" class="action-link" id="signout-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng xuất</a>
                 `;
-            } catch(e) {
+            } catch (e) {
                 localStorage.removeItem('currentUser');
             }
         }
@@ -68,7 +68,7 @@ class CustomHeader extends HTMLElement {
                       </span>
                     </button>
 
-                    <!-- Apple-like Search Box (extremely sleek and borders-free) -->
+                    <!-- Search Box (extremely sleek and borders-free) -->
                     <form class="search-form" action="/products.html" method="GET" role="search" style="height: 32px; background: rgba(0,0,0,0.04); border-radius: 8px; align-items: center; padding: 0 10px; width: 220px; transition: width 0.3s ease;">
                         <input
                             type="search"
@@ -382,7 +382,7 @@ class CustomHeader extends HTMLElement {
 
     playClose() {
         if (typeof gsap === 'undefined') return;
-        
+
         if (this.openTl) {
             this.openTl.kill();
             this.openTl = null;
@@ -457,10 +457,10 @@ class CustomHeader extends HTMLElement {
     }
 
     setupEventListeners() {
-        const toggleBtn  = this.querySelector('#sm-toggle-btn');
-        const themeBtn   = this.querySelector('#theme-toggle');
-        const header     = this.querySelector('.main-header');
-        const panel      = this.querySelector('#staggered-menu-panel');
+        const toggleBtn = this.querySelector('#sm-toggle-btn');
+        const themeBtn = this.querySelector('#theme-toggle');
+        const header = this.querySelector('.main-header');
+        const panel = this.querySelector('#staggered-menu-panel');
 
         this.setupStaggeredLayers();
 
@@ -607,7 +607,7 @@ customElements.define('custom-footer', CustomFooter);
 // Simple Apple-Style Auth Modals DOM structure and handlers
 function initAuthModals() {
     if (document.getElementById('auth-modal-overlay')) return;
-    
+
     const overlayHtml = `
     <div id="auth-modal-overlay" class="auth-modal-overlay">
         <!-- Sign In Modal -->
@@ -670,56 +670,56 @@ function initAuthModals() {
     </div>
     `;
     document.body.insertAdjacentHTML('beforeend', overlayHtml);
-    
+
     const overlay = document.getElementById('auth-modal-overlay');
     const signinM = document.getElementById('signin-modal');
     const signupM = document.getElementById('signup-modal');
-    
-    window.openSignInModal = function() {
+
+    window.openSignInModal = function () {
         overlay.classList.add('active');
         signinM.style.display = 'block';
         signupM.style.display = 'none';
     };
-    
-    window.openSignUpModal = function() {
+
+    window.openSignUpModal = function () {
         overlay.classList.add('active');
         signinM.style.display = 'none';
         signupM.style.display = 'block';
     };
-    
-    window.closeAuthModal = function() {
+
+    window.closeAuthModal = function () {
         overlay.classList.remove('active');
         setTimeout(() => {
             signinM.style.display = 'none';
             signupM.style.display = 'none';
         }, 400);
     };
-    
+
     document.getElementById('close-signin').onclick = window.closeAuthModal;
     document.getElementById('close-signup').onclick = window.closeAuthModal;
     document.getElementById('switch-to-signup').onclick = window.openSignUpModal;
     document.getElementById('switch-to-signin').onclick = window.openSignInModal;
-    
-    overlay.onclick = function(e) {
+
+    overlay.onclick = function (e) {
         if (e.target === overlay) window.closeAuthModal();
     };
-    
-    document.getElementById('signin-form').onsubmit = async function(e) {
+
+    document.getElementById('signin-form').onsubmit = async function (e) {
         e.preventDefault();
         const email = document.getElementById('signin-email').value;
         const password = document.getElementById('signin-password').value;
         const sessionId = localStorage.getItem('sessionId');
-        
+
         try {
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'X-Session-Id': sessionId
                 },
                 body: JSON.stringify({ email, password })
             }).then(r => r.json());
-            
+
             if (res.success) {
                 localStorage.setItem('currentUser', JSON.stringify(res.user));
                 window.closeAuthModal();
@@ -732,15 +732,15 @@ function initAuthModals() {
                     window.showStatusPopup(false, res.message || 'Đăng nhập thất bại.');
                 }
             }
-        } catch(err) {
+        } catch (err) {
             console.error(err);
             if (typeof window.showStatusPopup === 'function') {
                 window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');
             }
         }
     };
-    
-    document.getElementById('signup-form').onsubmit = async function(e) {
+
+    document.getElementById('signup-form').onsubmit = async function (e) {
         e.preventDefault();
         const fullName = document.getElementById('signup-fullname').value;
         const email = document.getElementById('signup-email').value;
@@ -748,17 +748,17 @@ function initAuthModals() {
         const address = document.getElementById('signup-address').value;
         const password = document.getElementById('signup-password').value;
         const sessionId = localStorage.getItem('sessionId');
-        
+
         try {
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'X-Session-Id': sessionId
                 },
                 body: JSON.stringify({ fullName, email, phoneNumber, address, password })
             }).then(r => r.json());
-            
+
             if (res.success) {
                 localStorage.setItem('currentUser', JSON.stringify(res.user));
                 window.closeAuthModal();
@@ -771,7 +771,7 @@ function initAuthModals() {
                     window.showStatusPopup(false, res.message || 'Đăng ký thất bại.');
                 }
             }
-        } catch(err) {
+        } catch (err) {
             console.error(err);
             if (typeof window.showStatusPopup === 'function') {
                 window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');

@@ -321,9 +321,9 @@ function renderDetails() {
                 </div>
                 
                 <div class="buy-price-small">
-                    <span>Giá mua đứt:</span>
+                    <span>Giá đặt cọc:</span>
                     <span class="buy-price-value" id="buy-price-display">${formatCurrency(product.price)}</span>
-                    ${product.original_price ? `<span class="original-price" id="original-price-display" style="margin-left: 5px;">${formatCurrency(product.original_price)}</span>` : ''}
+                    
                 </div>
             </div>
 
@@ -812,7 +812,7 @@ function renderReviews() {
         const dateStr = new Date(r.created_at).toLocaleDateString('vi-VN');
         const card = document.createElement('div');
         card.className = 'review-card';
-        
+
         // Dynamic purchase badge
         const badgeClass = r.has_purchased ? 'badge-purchased' : 'badge-not-purchased';
         const badgeText = r.has_purchased ? 'Đã thuê' : 'Chưa thuê';
@@ -934,7 +934,7 @@ function renderQA() {
 }
 
 // Switch tabs
-window.switchReviewsTab = function(tab) {
+window.switchReviewsTab = function (tab) {
     const revBtn = document.getElementById('tab-reviews-btn');
     const qaBtn = document.getElementById('tab-qa-btn');
     const revContent = document.getElementById('tab-content-reviews');
@@ -954,7 +954,7 @@ window.switchReviewsTab = function(tab) {
 };
 
 // Toggle reply form
-window.toggleReplyForm = function(reviewId) {
+window.toggleReplyForm = function (reviewId) {
     const form = document.getElementById(`reply-form-${reviewId}`);
     if (!form) return;
     if (form.style.display === 'flex') {

@@ -118,6 +118,14 @@
             background-color: rgba(220, 38, 38, 0.1);
             color: #b91c1c;
         }
+        .status-delivering {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #1d4ed8;
+        }
+        .status-returning {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #6d28d9;
+        }
 
         .order-body {
             padding: 24px;
@@ -331,6 +339,12 @@
                     } else if (order.rental_order_status === 'cancelled') {
                         statusText = 'Đã hủy';
                         statusClass = 'status-cancelled';
+                    } else if (order.rental_order_status === 'delivering') {
+                        statusText = 'Đang giao hàng';
+                        statusClass = 'status-delivering';
+                    } else if (order.rental_order_status === 'returning') {
+                        statusText = 'Đang hoàn trả';
+                        statusClass = 'status-returning';
                     }
 
                     // Render items
@@ -350,6 +364,7 @@
                     });
 
                     const oId = order.rental_order_id || order.rentalOrderId;
+                    const firstItemDeviceId = order.items && order.items.length > 0 ? order.items[0].device_id : '';
 
                     card.innerHTML = `
                         <div class="order-header">
@@ -362,6 +377,11 @@
                         <div class="order-body">
                             ${itemsHtml}
                         </div>
+                        <div class="order-shipping-info" style="padding: 12px 24px; border-top: 1px dashed #e5e5e7; background: #fafafc; font-size: 13px; color: #515154; text-align: left;">
+                            <div style="font-weight: 600; color: #1d1d1f; margin-bottom: 4px;"><i class="fa-solid fa-location-dot" style="margin-right: 6px; color:#0066cc;"></i>Thông tin giao hàng:</div>
+                            <div>Người nhận: <strong>${order.shipping_name || 'Chưa cập nhật'}</strong> | SĐT: <strong>${order.shipping_phone || 'Chưa cập nhật'}</strong></div>
+                            <div style="margin-top: 2px;">Địa chỉ: <strong>${order.shipping_address || 'Chưa cập nhật'}</strong></div>
+                        </div>
                         <div class="order-footer">
                             <span class="order-rental-dates">
                                 <i class="fa-regular fa-calendar-days"></i> Thời gian: ${startStr} - ${endStr}
@@ -370,17 +390,26 @@
                         </div>
                         <div class="order-actions-bar" style="padding: 16px 24px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 12px; background: #fafafc;">
                             ${
-                                order.rental_order_status === 'pending' || order.rental_order_status === 'confirmed'
+                                order.rental_order_status === 'pending'
+                                ? `
+                                  <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.showEditShippingModal(${oId}, '${(order.shipping_name || '').replace(/'/g, "\\'")}', '${(order.shipping_phone || '').replace(/'/g, "\\'")}', '${(order.shipping_address || '').replace(/'/g, "\\'")}')">Sửa thông tin giao hàng</button>
+                                  <button class="no-orders-btn" style="background-color: transparent; color: #dc2626; border: 1px solid #dc2626; padding: 8px 18px; font-size: 13px;" onclick="window.cancelOrder(${oId})">Hủy đơn</button>
+                                  `
+                                : order.rental_order_status === 'confirmed'
                                 ? `<button class="no-orders-btn" style="background-color: transparent; color: #dc2626; border: 1px solid #dc2626; padding: 8px 18px; font-size: 13px;" onclick="window.cancelOrder(${oId})">Hủy đơn</button>`
                                 : order.rental_order_status === 'active'
-                                ? `<button class="no-orders-btn" style="background-color: transparent; color: #d97706; border: 1px solid #d97706; padding: 8px 18px; font-size: 13px;" onclick="window.reportIssue(${oId})">Báo lỗi thiết bị</button>`
+                                ? `
+                                  <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.showExtendModal(${oId}, '${order.expected_return_date}')">Gia hạn</button>
+                                  <button class="no-orders-btn" style="background-color: transparent; color: #8b5cf6; border: 1px solid #8b5cf6; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.returnOrder(${oId})">Trả hàng</button>
+                                  <button class="no-orders-btn" style="background-color: transparent; color: #d97706; border: 1px solid #d97706; padding: 8px 18px; font-size: 13px;" onclick="window.reportIssue(${oId})">Báo lỗi thiết bị</button>
+                                  `
                                 : order.rental_order_status === 'completed'
                                 ? `
                                   <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.reviewOrder(${oId})">Đánh giá</button>
-                                  <button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.reorderItems('${encodeURIComponent(JSON.stringify(order.items))}')">Đặt lại</button>
+                                  <button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.redirectToProductDetails(${firstItemDeviceId})">Đặt lại</button>
                                   `
                                 : order.rental_order_status === 'cancelled'
-                                ? `<button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.reorderItems('${encodeURIComponent(JSON.stringify(order.items))}')">Đặt lại</button>`
+                                ? `<button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.redirectToProductDetails(${firstItemDeviceId})">Đặt lại</button>`
                                 : ''
                             }
                         </div>
@@ -401,7 +430,7 @@
             }
         });
 
-        window.showConfirmPopup = (message, onConfirm) => {
+        window.showConfirmPopup = (message, onConfirm, okText = 'Xác nhận hủy') => {
             const existing = document.getElementById('custom-confirm-popup');
             if (existing) existing.remove();
 
@@ -459,7 +488,7 @@
                             font-weight: 500;
                             cursor: pointer;
                             transition: background 0.2s;
-                        ">Xác nhận hủy</button>
+                        ">${okText}</button>
                     </div>
                 </div>
             `;
@@ -484,6 +513,256 @@
             });
         };
 
+        window.showEditShippingModal = (orderId, name, phone, address) => {
+            const existing = document.getElementById('edit-shipping-modal');
+            if (existing) existing.remove();
+
+            const modal = document.createElement('div');
+            modal.id = 'edit-shipping-modal';
+            modal.style = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(8px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 999999;
+                opacity: 0;
+                transition: opacity 0.25s ease;
+            `;
+
+            modal.innerHTML = `
+                <div style="
+                    background: #ffffff;
+                    border-radius: 18px;
+                    padding: 28px;
+                    width: 90%;
+                    max-width: 450px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+                    transform: translateY(20px);
+                    transition: transform 0.25s ease;
+                ">
+                    <h4 style="font-size: 18px; font-weight: 600; color: #1d1d1f; margin: 0 0 20px 0; text-align: center; font-family: sans-serif;">Sửa Thông Tin Giao Hàng</h4>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; text-align: left;">
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 500; color: #7a7a7a; margin-bottom: 6px;">Họ tên người nhận</label>
+                            <input type="text" id="ship-name-input" value="${name || ''}" style="width: 100%; padding: 10px 12px; border: 1px solid #d2d2d7; border-radius: 8px; font-size: 14px; font-family: inherit; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 500; color: #7a7a7a; margin-bottom: 6px;">Số điện thoại</label>
+                            <input type="text" id="ship-phone-input" value="${phone || ''}" style="width: 100%; padding: 10px 12px; border: 1px solid #d2d2d7; border-radius: 8px; font-size: 14px; font-family: inherit; box-sizing: border-box;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 500; color: #7a7a7a; margin-bottom: 6px;">Địa chỉ giao hàng</label>
+                            <textarea id="ship-address-input" style="width: 100%; height: 80px; padding: 10px 12px; border: 1px solid #d2d2d7; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; box-sizing: border-box;">${address || ''}</textarea>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button id="close-shipping-btn" style="
+                            background: #f5f5f7;
+                            color: #1d1d1f;
+                            border: none;
+                            padding: 10px 22px;
+                            border-radius: 9999px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                        ">Hủy bỏ</button>
+                        <button id="save-shipping-btn" style="
+                            background: #0066cc;
+                            color: #ffffff;
+                            border: none;
+                            padding: 10px 22px;
+                            border-radius: 9999px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                        ">Lưu thay đổi</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modal.children[0].style.transform = 'translateY(0)';
+            }, 10);
+
+            const close = () => {
+                modal.style.opacity = '0';
+                modal.children[0].style.transform = 'translateY(20px)';
+                setTimeout(() => modal.remove(), 250);
+            };
+
+            modal.querySelector('#close-shipping-btn').addEventListener('click', close);
+            modal.querySelector('#save-shipping-btn').addEventListener('click', async () => {
+                const newName = modal.querySelector('#ship-name-input').value.trim();
+                const newPhone = modal.querySelector('#ship-phone-input').value.trim();
+                const newAddress = modal.querySelector('#ship-address-input').value.trim();
+
+                if (!newName || !newPhone || !newAddress) {
+                    window.showStatusPopup(false, 'Vui lòng điền đầy đủ họ tên, SĐT và địa chỉ.');
+                    return;
+                }
+
+                try {
+                    const res = await apiFetch(`/api/orders/${orderId}/shipping`, {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            shippingName: newName,
+                            shippingPhone: newPhone,
+                            shippingAddress: newAddress
+                        })
+                    });
+
+                    if (res.success) {
+                        close();
+                        window.showStatusPopup(true, 'Cập nhật thông tin giao hàng thành công!', false);
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        window.showStatusPopup(false, res.message || 'Lỗi cập nhật thông tin.');
+                    }
+                } catch (err) {
+                    console.error('Error updating shipping details:', err);
+                    window.showStatusPopup(false, 'Không thể cập nhật thông tin lúc này.');
+                }
+            });
+        };
+
+        window.redirectToProductDetails = (deviceId) => {
+            if (!deviceId) {
+                window.showStatusPopup(false, 'Không tìm thấy thông tin sản phẩm.');
+                return;
+            }
+            window.location.href = `/product.html?id=${deviceId}`;
+        };
+
+        window.showExtendModal = (orderId, currentReturnDateStr) => {
+            const existing = document.getElementById('extend-rental-modal');
+            if (existing) existing.remove();
+
+            const currentReturnDate = new Date(currentReturnDateStr);
+            const minDate = new Date(currentReturnDate);
+            minDate.setDate(minDate.getDate() + 1);
+            const minDateStr = minDate.toISOString().split('T')[0];
+
+            const modal = document.createElement('div');
+            modal.id = 'extend-rental-modal';
+            modal.style = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(8px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 999999;
+                opacity: 0;
+                transition: opacity 0.25s ease;
+            `;
+
+            modal.innerHTML = `
+                <div style="
+                    background: #ffffff;
+                    border-radius: 18px;
+                    padding: 28px;
+                    width: 90%;
+                    max-width: 400px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+                    transform: translateY(20px);
+                    transition: transform 0.25s ease;
+                ">
+                    <h4 style="font-size: 18px; font-weight: 600; color: #1d1d1f; margin: 0 0 20px 0; text-align: center; font-family: sans-serif;">Gia Hạn Thời Gian Thuê</h4>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; text-align: left;">
+                        <p style="font-size: 13px; color: #515154; margin: 0; font-family: sans-serif;">Ngày trả hiện tại: <strong>${new Date(currentReturnDateStr).toLocaleDateString('vi-VN')}</strong></p>
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 500; color: #7a7a7a; margin-bottom: 6px; font-family: sans-serif;">Gia hạn đến ngày</label>
+                            <input type="date" id="extend-date-input" min="${minDateStr}" value="${minDateStr}" style="width: 100%; padding: 10px 12px; border: 1px solid #d2d2d7; border-radius: 8px; font-size: 14px; font-family: inherit; box-sizing: border-box;">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button id="close-extend-btn" style="
+                            background: #f5f5f7;
+                            color: #1d1d1f;
+                            border: none;
+                            padding: 10px 22px;
+                            border-radius: 9999px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                        ">Hủy bỏ</button>
+                        <button id="save-extend-btn" style="
+                            background: #0066cc;
+                            color: #ffffff;
+                            border: none;
+                            padding: 10px 22px;
+                            border-radius: 9999px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                        ">Xác nhận gia hạn</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modal.children[0].style.transform = 'translateY(0)';
+            }, 10);
+
+            const close = () => {
+                modal.style.opacity = '0';
+                modal.children[0].style.transform = 'translateY(20px)';
+                setTimeout(() => modal.remove(), 250);
+            };
+
+            modal.querySelector('#close-extend-btn').addEventListener('click', close);
+            modal.querySelector('#save-extend-btn').addEventListener('click', async () => {
+                const newReturnDate = modal.querySelector('#extend-date-input').value;
+
+                if (!newReturnDate) {
+                    window.showStatusPopup(false, 'Vui lòng chọn ngày gia hạn.');
+                    return;
+                }
+
+                try {
+                    const res = await apiFetch(`/api/orders/${orderId}/extend`, {
+                        method: 'POST',
+                        body: JSON.stringify({ newReturnDate })
+                    });
+
+                    if (res.success) {
+                        close();
+                        window.showStatusPopup(true, 'Gia hạn đơn hàng thành công!', false);
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        window.showStatusPopup(false, res.message || 'Lỗi gia hạn đơn hàng.');
+                    }
+                } catch (err) {
+                    console.error('Error extending order:', err);
+                    window.showStatusPopup(false, 'Không thể thực hiện gia hạn lúc này.');
+                }
+            });
+        };
+
         window.cancelOrder = async (orderId) => {
             window.showConfirmPopup('Bạn có chắc chắn muốn hủy đơn hàng này không?', async () => {
                 try {
@@ -499,6 +778,23 @@
                     window.showStatusPopup(false, 'Không thể hủy đơn hàng vào lúc này.');
                 }
             });
+        };
+
+        window.returnOrder = async (orderId) => {
+            window.showConfirmPopup('Bạn có chắc chắn muốn yêu cầu trả hàng cho đơn hàng này không?', async () => {
+                try {
+                    const res = await apiFetch(`/api/orders/${orderId}/return`, { method: 'POST' });
+                    if (res.success) {
+                        window.showStatusPopup(true, 'Đã gửi yêu cầu trả hàng thành công!', false);
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        window.showStatusPopup(false, res.message || 'Lỗi yêu cầu trả hàng.');
+                    }
+                } catch (e) {
+                    console.error('Error returning order:', e);
+                    window.showStatusPopup(false, 'Không thể gửi yêu cầu trả hàng vào lúc này.');
+                }
+            }, 'Xác nhận trả');
         };
 
         window.reportIssue = (orderId) => {

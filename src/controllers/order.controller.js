@@ -35,6 +35,70 @@ class OrderController {
       res.status(400).json({ success: false, message: error.message || 'Server Error' });
     }
   }
+
+  static async updateShipping(req, res) {
+    try {
+      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      if (!customerId) {
+        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+      }
+
+      const orderId = parseInt(req.params.id, 10);
+      const { shippingName, shippingPhone, shippingAddress } = req.body;
+
+      if (!shippingName || !shippingPhone || !shippingAddress) {
+        return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ họ tên, SĐT và địa chỉ.' });
+      }
+
+      await OrderModel.updateShippingInfo(customerId, orderId, shippingName, shippingPhone, shippingAddress);
+      res.json({ success: true, message: 'Cập nhật thông tin giao hàng thành công.' });
+    } catch (error) {
+      console.error('Error updating shipping info:', error);
+      res.status(400).json({ success: false, message: error.message || 'Server Error' });
+    }
+  }
+
+  static async extendOrder(req, res) {
+    try {
+      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      if (!customerId) {
+        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+      }
+
+      const orderId = parseInt(req.params.id, 10);
+      const { newReturnDate } = req.body;
+
+      if (!newReturnDate) {
+        return res.status(400).json({ success: false, message: 'Vui lòng chọn ngày gia hạn mới.' });
+      }
+
+      await OrderModel.extendOrder(customerId, orderId, newReturnDate);
+      res.json({ success: true, message: 'Gia hạn đơn hàng thành công.' });
+    } catch (error) {
+      console.error('Error extending order:', error);
+      res.status(400).json({ success: false, message: error.message || 'Server Error' });
+    }
+  }
+
+  static async returnOrder(req, res) {
+    try {
+      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      if (!customerId) {
+        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+      }
+
+      const orderId = parseInt(req.params.id, 10);
+      if (!orderId) {
+        return res.status(400).json({ success: false, message: 'Mã đơn hàng không hợp lệ.' });
+      }
+
+      await OrderModel.returnOrder(customerId, orderId);
+      res.json({ success: true, message: 'Yêu cầu trả hàng đã được gửi thành công.' });
+    } catch (error) {
+      console.error('Error returning order:', error);
+      res.status(400).json({ success: false, message: error.message || 'Server Error' });
+    }
+  }
 }
 
 module.exports = OrderController;

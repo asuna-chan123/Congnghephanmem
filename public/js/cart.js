@@ -308,9 +308,6 @@ async function loadRelatedItems() {
                             <div class="trial-price">
                                 <i class="fa-solid fa-rotate"></i> ${formatCurrency(product.trial_price_per_day)}/ngày
                             </div>
-                            <div class="buy-price-small">
-                                Giá mua: <span class="buy-price-value">${formatCurrency(product.price)}</span>
-                            </div>
                         </div>
                         <div class="product-actions" style="margin-top: 10px;">
                             <button class="btn btn-outline" onclick="addToCart(${product.id}, 'trial')">Thử trước</button>

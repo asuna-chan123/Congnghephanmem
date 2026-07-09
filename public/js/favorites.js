@@ -62,18 +62,15 @@ async function loadFavoritesPage() {
                                 <span class="price-value accent-trial">${formatCurrency(product.trial_price_per_day)} <span style="font-size: 10px; font-weight: normal; color: var(--text-secondary);">/ ngày</span></span>
                             </div>
                             <div class="fav-price-row">
-                                <span class="price-label">Giá mua đứt:</span>
+                                <span class="price-label">Giá đặt cọc:</span>
                                 <span class="price-value">${formatCurrency(product.price)}</span>
                             </div>
                         </div>
 
                         <!-- Action Buttons -->
                         <div class="fav-card-actions">
-                            <button class="btn-fav-action btn-fav-trial" onclick="addToCartDirect(${product.id}, 'trial', event)">
+                            <button class="btn-fav-action btn-fav-trial" style="width:200%" onclick="addToCartDirect(${product.id}, 'trial', event)">
                                 <i class="fa-solid fa-rotate"></i> Thuê thử
-                            </button>
-                            <button class="btn-fav-action btn-fav-buy" onclick="addToCartDirect(${product.id}, 'buy', event)">
-                                <i class="fa-solid fa-cart-shopping"></i> Mua ngay
                             </button>
                         </div>
                     </div>

@@ -1,6 +1,7 @@
 const CartModel = require('../models/cart.model');
 const OrderModel = require('../models/order.model');
 
+//get cart
 class CartController {
   static async getCart(req, res) {
     try {
@@ -11,7 +12,7 @@ class CartController {
       }
 
       const cartItems = await CartModel.getCartBySessionId(sessionId, customerId);
-      
+
       let total = 0;
       cartItems.forEach(item => {
         total += (item.price * item.quantity);
@@ -52,7 +53,7 @@ class CartController {
       const sessionId = req.headers['x-session-id'];
       const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
       const cartItemId = req.params.id;
-      
+
       if (!sessionId && !customerId) {
         return res.status(400).json({ success: false, message: 'Session ID or Customer ID is required' });
       }
@@ -107,6 +108,7 @@ class CartController {
         });
       }
 
+      //change quantity
       await CartModel.updateQuantity(sessionId, customerId, cartItemId, requestedQty);
       res.json({ success: true, message: 'Quantity updated' });
     } catch (error) {

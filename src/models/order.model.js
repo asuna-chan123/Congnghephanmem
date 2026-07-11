@@ -178,7 +178,9 @@ class OrderModel {
 
   static async cancelOrder(customerId, orderId) {
     const order = await get(
-      `SELECT rental_order_id, rental_order_status FROM rental_orders WHERE rental_order_id = ? AND customer_id = ?`,
+      `SELECT rental_order_id, rental_order_status 
+      FROM rental_orders WHERE rental_order_id = ?
+      AND customer_id = ?`,
       [orderId, customerId]
     );
 
@@ -252,8 +254,8 @@ class OrderModel {
     const proposedReturnDate = new Date(newReturnDate);
 
     // Reset times to midnight for date-only comparison
-    currentReturnDate.setHours(0,0,0,0);
-    proposedReturnDate.setHours(0,0,0,0);
+    currentReturnDate.setHours(0, 0, 0, 0);
+    proposedReturnDate.setHours(0, 0, 0, 0);
 
     if (proposedReturnDate <= currentReturnDate) {
       throw new Error('Ngày gia hạn mới phải sau ngày trả hiện tại.');

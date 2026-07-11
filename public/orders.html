@@ -8,7 +8,9 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
@@ -17,7 +19,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         body {
-            background-color: #f5f5f7; /* Apple Parchment background */
+            background-color: #f5f5f7;
+            /* Apple Parchment background */
             color: #1d1d1f;
             font-family: "SF Pro Text", "Inter", -apple-system, sans-serif;
             margin: 0;
@@ -50,15 +53,16 @@
         .order-card {
             background: #ffffff;
             border: 1px solid #e0e0e0;
-            border-radius: 18px; /* Apple rounded.lg */
+            border-radius: 18px;
+            /* Apple rounded.lg */
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .order-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
         }
 
         .order-header {
@@ -91,7 +95,8 @@
 
         .order-status-badge {
             padding: 6px 14px;
-            border-radius: 9999px; /* Pill radius */
+            border-radius: 9999px;
+            /* Pill radius */
             font-size: 13px;
             font-weight: 500;
             text-transform: capitalize;
@@ -102,26 +107,32 @@
             background-color: rgba(217, 119, 6, 0.1);
             color: #b45309;
         }
+
         .status-confirmed {
             background-color: rgba(0, 102, 204, 0.1);
             color: #0066cc;
         }
+
         .status-active {
             background-color: rgba(5, 150, 105, 0.1);
             color: #047857;
         }
+
         .status-completed {
             background-color: rgba(5, 150, 105, 0.15);
             color: #065f46;
         }
+
         .status-cancelled {
             background-color: rgba(220, 38, 38, 0.1);
             color: #b91c1c;
         }
+
         .status-delivering {
             background-color: rgba(59, 130, 246, 0.1);
             color: #1d4ed8;
         }
+
         .status-returning {
             background-color: rgba(139, 92, 246, 0.1);
             color: #6d28d9;
@@ -173,7 +184,8 @@
         }
 
         .order-item-name:hover {
-            color: #0066cc; /* Action Blue */
+            color: #0066cc;
+            /* Action Blue */
         }
 
         .order-item-meta {
@@ -213,7 +225,8 @@
         .order-total-price {
             font-size: 17px;
             font-weight: 600;
-            color: #0066cc; /* Action Blue */
+            color: #0066cc;
+            /* Action Blue */
         }
 
         .no-orders {
@@ -222,7 +235,7 @@
             background: #ffffff;
             border: 1px solid #e0e0e0;
             border-radius: 18px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.01);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
         }
 
         .no-orders i {
@@ -241,7 +254,8 @@
             background-color: #0066cc;
             color: #ffffff;
             padding: 12px 28px;
-            border-radius: 9999px; /* Pill CTA */
+            border-radius: 9999px;
+            /* Pill CTA */
             text-decoration: none;
             font-weight: 500;
             display: inline-block;
@@ -278,9 +292,11 @@
     <script src="js/app.js"></script>
     <script src="js/components.js"></script>
     <script>
+        // load orders
         document.addEventListener('DOMContentLoaded', async () => {
             const container = document.getElementById('orders-container');
             const currentUserJson = localStorage.getItem('currentUser');
+
 
             if (!currentUserJson) {
                 container.innerHTML = `
@@ -389,29 +405,29 @@
                             <span class="order-total-price">Tổng cộng: ${totalStr}</span>
                         </div>
                         <div class="order-actions-bar" style="padding: 16px 24px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 12px; background: #fafafc;">
-                            ${
-                                order.rental_order_status === 'pending'
-                                ? `
+                            ${order.rental_order_status === 'pending'
+                            ? `
                                   <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.showEditShippingModal(${oId}, '${(order.shipping_name || '').replace(/'/g, "\\'")}', '${(order.shipping_phone || '').replace(/'/g, "\\'")}', '${(order.shipping_address || '').replace(/'/g, "\\'")}')">Sửa thông tin giao hàng</button>
                                   <button class="no-orders-btn" style="background-color: transparent; color: #dc2626; border: 1px solid #dc2626; padding: 8px 18px; font-size: 13px;" onclick="window.cancelOrder(${oId})">Hủy đơn</button>
                                   `
-                                : order.rental_order_status === 'confirmed'
+                            : order.rental_order_status === 'confirmed'
                                 ? `<button class="no-orders-btn" style="background-color: transparent; color: #dc2626; border: 1px solid #dc2626; padding: 8px 18px; font-size: 13px;" onclick="window.cancelOrder(${oId})">Hủy đơn</button>`
+                                //cancel order
                                 : order.rental_order_status === 'active'
-                                ? `
+                                    ? `
                                   <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.showExtendModal(${oId}, '${order.expected_return_date}')">Gia hạn</button>
                                   <button class="no-orders-btn" style="background-color: transparent; color: #8b5cf6; border: 1px solid #8b5cf6; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.returnOrder(${oId})">Trả hàng</button>
                                   <button class="no-orders-btn" style="background-color: transparent; color: #d97706; border: 1px solid #d97706; padding: 8px 18px; font-size: 13px;" onclick="window.reportIssue(${oId})">Báo lỗi thiết bị</button>
                                   `
-                                : order.rental_order_status === 'completed'
-                                ? `
+                                    : order.rental_order_status === 'completed'
+                                        ? `
                                   <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.reviewOrder(${oId})">Đánh giá</button>
                                   <button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.redirectToProductDetails(${firstItemDeviceId})">Đặt lại</button>
                                   `
-                                : order.rental_order_status === 'cancelled'
-                                ? `<button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.redirectToProductDetails(${firstItemDeviceId})">Đặt lại</button>`
-                                : ''
-                            }
+                                        : order.rental_order_status === 'cancelled'
+                                            ? `<button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.redirectToProductDetails(${firstItemDeviceId})">Đặt lại</button>`
+                                            : ''
+                        }
                         </div>
                     `;
                     listDiv.appendChild(card);
@@ -809,7 +825,7 @@
             try {
                 const items = JSON.parse(decodeURIComponent(encodedItems));
                 window.showStatusPopup(true, 'Đang tiến hành đặt lại thiết bị...');
-                
+
                 // Add each item back to cart
                 for (const item of items) {
                     await apiFetch('/api/cart/add', {
@@ -820,7 +836,7 @@
                         })
                     });
                 }
-                
+
                 window.showStatusPopup(true, 'Đã thêm tất cả thiết bị vào giỏ hàng!', true);
                 setTimeout(() => {
                     window.location.href = '/cart.html';

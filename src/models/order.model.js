@@ -303,6 +303,77 @@ class OrderModel {
     return true;
   }
 
+  static async calculateExtendCost(customerId, orderId, newReturnDate) {
+    const order = await get(
+      `SELECT rental_order_id, rental_order_status, expected_return_date 
+       FROM rental_orders 
+       WHERE rental_order_id = ? AND customer_id = ?`,
+      [orderId, customerId]
+    );
+
+    if (!order) {
+      throw new Error('Đơn hàng không tồn tại.');
+    }
+
+    if (order.rental_order_status !== 'active') {
+      throw new Error('Chỉ có thể tính phí gia hạn cho đơn hàng đang ở trạng thái Đang thuê.');
+    }
+
+    const currentReturnDate = new Date(order.expected_return_date);
+    const proposedReturnDate = new Date(newReturnDate);
+
+    // Reset times to midnight for date-only comparison
+    currentReturnDate.setHours(0, 0, 0, 0);
+    proposedReturnDate.setHours(0, 0, 0, 0);
+
+    if (proposedReturnDate <= currentReturnDate) {
+      throw new Error('Ngày gia hạn mới phải sau ngày trả hiện tại.');
+    }
+
+    // Calculate extra days
+    const diffTime = Math.abs(proposedReturnDate - currentReturnDate);
+    const extraDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (extraDays <= 0) {
+      throw new Error('Số ngày gia hạn không hợp lệ.');
+    }
+
+    // Fetch order details
+    const details = await query(
+      `SELECT rod.rental_order_detail_id, rod.variant_id, rod.rental_quantity, rod.unit_rental_price, 
+              d.device_name, c.color_name as color, sc.capacity_value as capacity
+       FROM rental_order_details rod
+       JOIN device_variants dv ON rod.variant_id = dv.variant_id
+       JOIN devices d ON dv.device_id = d.device_id
+       LEFT JOIN colors c ON dv.color_id = c.color_id
+       LEFT JOIN storage_capacities sc ON dv.capacity_id = sc.capacity_id
+       WHERE rod.rental_order_id = ?`,
+      [orderId]
+    );
+
+    let totalExtraCost = 0;
+    const items = [];
+
+    for (const detail of details) {
+      const extraCost = detail.unit_rental_price * extraDays * detail.rental_quantity;
+      totalExtraCost += extraCost;
+      items.push({
+        deviceName: detail.device_name,
+        color: detail.color,
+        capacity: detail.capacity,
+        quantity: detail.rental_quantity,
+        unitPrice: detail.unit_rental_price,
+        extraCost
+      });
+    }
+
+    return {
+      extraDays,
+      totalExtraCost,
+      items
+    };
+  }
+
   static async returnOrder(customerId, orderId) {
     const order = await get(
       `SELECT rental_order_id, rental_order_status FROM rental_orders WHERE rental_order_id = ? AND customer_id = ?`,

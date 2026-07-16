@@ -708,6 +708,19 @@
                             <label style="display: block; font-size: 12px; font-weight: 500; color: #7a7a7a; margin-bottom: 6px; font-family: sans-serif;">Gia hạn đến ngày</label>
                             <input type="date" id="extend-date-input" min="${minDateStr}" value="${minDateStr}" style="width: 100%; padding: 10px 12px; border: 1px solid #d2d2d7; border-radius: 8px; font-size: 14px; font-family: inherit; box-sizing: border-box;">
                         </div>
+                        <div id="extend-cost-container" style="
+                            background: #f5f5f7;
+                            border-radius: 10px;
+                            padding: 12px;
+                            font-size: 13px;
+                            font-family: sans-serif;
+                            color: #1d1d1f;
+                            display: none;
+                            flex-direction: column;
+                            gap: 8px;
+                            border: 1px solid #e5e5ea;
+                        ">
+                        </div>
                     </div>
 
                     <div style="display: flex; gap: 12px; justify-content: flex-end;">
@@ -738,6 +751,51 @@
             `;
 
             document.body.appendChild(modal);
+
+            const dateInput = modal.querySelector('#extend-date-input');
+            const costContainer = modal.querySelector('#extend-cost-container');
+
+            const updateExtendCost = async () => {
+                const val = dateInput.value;
+                if (!val) {
+                    costContainer.style.display = 'none';
+                    return;
+                }
+                try {
+                    const res = await apiFetch(`/api/orders/${orderId}/extend-cost?newReturnDate=${val}`);
+                    if (res.success) {
+                        costContainer.style.display = 'flex';
+                        let itemsHtml = res.items.map(item => `
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #515154; gap: 8px;">
+                                <span>${item.deviceName} (${item.capacity || ''} ${item.color || ''}) x${item.quantity}</span>
+                                <span style="white-space: nowrap;">+${item.extraCost.toLocaleString('vi-VN')}đ</span>
+                            </div>
+                        `).join('');
+
+                        costContainer.innerHTML = `
+                            <div style="font-weight: 600; font-size: 12px; color: #0066cc; border-bottom: 1px solid #e5e5ea; padding-bottom: 4px; margin-bottom: 4px;">
+                                Chi phí gia hạn tạm tính (${res.extraDays} ngày)
+                            </div>
+                            ${itemsHtml}
+                            <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 14px; margin-top: 4px; border-top: 1px solid #e5e5ea; padding-top: 6px;">
+                                <span>Tổng cộng:</span>
+                                <span style="color: #ff3b30; white-space: nowrap;">${res.totalExtraCost.toLocaleString('vi-VN')}đ</span>
+                            </div>
+                        `;
+                    } else {
+                        costContainer.style.display = 'flex';
+                        costContainer.innerHTML = `<span style="color: #ff3b30; font-size: 12px;">${res.message || 'Lỗi tính toán chi phí'}</span>`;
+                    }
+                } catch (err) {
+                    console.error('Error fetching extend cost:', err);
+                    costContainer.style.display = 'flex';
+                    costContainer.innerHTML = `<span style="color: #ff3b30; font-size: 12px;">Không thể tính toán chi phí gia hạn lúc này.</span>`;
+                }
+            };
+
+            dateInput.addEventListener('change', updateExtendCost);
+            // Trigger calculation immediately
+            updateExtendCost();
 
             setTimeout(() => {
                 modal.style.opacity = '1';

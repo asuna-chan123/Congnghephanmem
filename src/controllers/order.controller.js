@@ -80,6 +80,28 @@ class OrderController {
     }
   }
 
+  static async getExtendCost(req, res) {
+    try {
+      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      if (!customerId) {
+        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+      }
+
+      const orderId = parseInt(req.params.id, 10);
+      const { newReturnDate } = req.query;
+
+      if (!newReturnDate) {
+        return res.status(400).json({ success: false, message: 'Vui lòng chọn ngày gia hạn mới.' });
+      }
+
+      const data = await OrderModel.calculateExtendCost(customerId, orderId, newReturnDate);
+      res.json({ success: true, ...data });
+    } catch (error) {
+      console.error('Error calculating extension cost:', error);
+      res.status(400).json({ success: false, message: error.message || 'Server Error' });
+    }
+  }
+
   static async returnOrder(req, res) {
     try {
       const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;

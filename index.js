@@ -4,12 +4,6 @@ const homeRoutes = require('./src/routes/home.route');
 const productRoutes = require('./src/routes/product.route');
 const cartRoutes = require('./src/routes/cart.route');
 const favoriteRoutes = require('./src/routes/favorite.route');
-<<<<<<< HEAD
-const authRoutes = require('./src/routes/auth.route');
-const orderRoutes = require('./src/routes/order.route');
-const reviewRoutes = require('./src/routes/review.route');
-
-=======
 const orderRoutes = require('./src/routes/order.route');
 const reviewRoutes = require('./src/routes/review.route');
 
@@ -18,7 +12,6 @@ const authModule = require('./src/Auth/routes');
 const customerModule = require('./src/Customer/routes');
 const paymentModule = require('./src/Payment/routes');
 
->>>>>>> fa7e42e (Update From Home)
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -34,12 +27,6 @@ app.use('/api', homeRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/favorites', favoriteRoutes);
-<<<<<<< HEAD
-app.use('/api/auth', authRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api', reviewRoutes);
-
-=======
 app.use('/api/orders', orderRoutes);
 app.use('/api', reviewRoutes);
 
@@ -48,7 +35,6 @@ app.use('/api/auth', authModule);
 app.use('/api/customer', customerModule);
 app.use('/api/payment', paymentModule);
 
->>>>>>> fa7e42e (Update From Home)
 // Clean routes
 app.get('/products', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'products.html'));

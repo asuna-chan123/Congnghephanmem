@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực — E-Tech Store</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Tinh chỉnh lại một chút để modal nằm giữa trang tĩnh thay vì popup */
+        .auth-page-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - var(--nav-height) - 100px);
+            padding: var(--space-3xl) var(--space-lg);
+            margin-top: var(--nav-height);
+        }
+        .auth-modal-static {
+            position: relative;
+            transform: none;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: var(--shadow-xl);
+        }
+        .toggle-auth-mode {
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .toggle-auth-mode:hover { text-decoration: underline; }
+        .hidden-form { display: none; }
+    </style>
+</head>
+<body>
+
+    <custom-header></custom-header>
+
+    <main class="main-content" id="main-content">
+        <div class="auth-page-wrapper">
+            <!-- Sử dụng class auth-modal có sẵn của bạn -->
+            <div class="auth-modal auth-modal-static">
+                
+                <!-- HEADER FORM -->
+                <div class="auth-modal-header">
+                    <h2 class="auth-modal-title" id="auth-title">Đăng nhập</h2>
+                    <p class="auth-modal-subtitle" id="auth-subtitle">Truy cập E-Tech Store để tiếp tục</p>
+                </div>
+
+                <!-- ALERT BOX (Hiển thị lỗi/thành công) -->
+                <div id="auth-alert" style="display: none; padding: 10px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; text-align: center;"></div>
+
+                <!-- FORM XÁC THỰC -->
+                <form id="auth-form" class="auth-form">
+                    <div class="auth-field-group">
+                        <label for="phone">Số điện thoại</label>
+                        <input type="tel" id="phone" class="auth-input" placeholder="Nhập số điện thoại của bạn" required>
+                    </div>
+                    
+                    <div class="auth-field-group">
+                        <label for="password">Mật khẩu</label>
+                        <input type="password" id="password" class="auth-input" placeholder="Nhập mật khẩu" required>
+                    </div>
+
+                    <button type="submit" class="auth-submit-btn" id="submit-btn">Đăng nhập</button>
+                </form>
+
+                <!-- FOOTER FORM (Chuyển đổi Đăng nhập / Đăng ký) -->
+                <div class="auth-modal-footer">
+                    <span id="auth-switch-text">Chưa có tài khoản?</span>
+                    <span class="toggle-auth-mode" id="auth-switch-btn">Đăng ký ngay</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <!-- Script Components -->
+    <script src="js/components.js"></script>
+    <script src="js/auth.js"></script> <!-- Link tới file xử lý logic -->
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang cá nhân — E-Tech Store</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .customer-page-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: var(--space-3xl) var(--space-lg);
+            margin-top: var(--nav-height);
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: var(--space-xl);
+        }
+        
+        /* Sidebar (Menu) */
+        .customer-sidebar {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg) 0;
+            height: fit-content;
+            box-shadow: var(--shadow-sm);
+        }
+        .customer-avatar {
+            text-align: center;
+            padding-bottom: var(--space-lg);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: var(--space-sm);
+        }
+        .avatar-circle {
+            width: 80px; height: 80px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: var(--text-tertiary);
+            margin: 0 auto 12px;
+        }
+        .customer-phone { font-weight: 600; font-size: 18px; }
+        .customer-role { font-size: 13px; color: var(--text-secondary); text-transform: capitalize; }
+        
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-item {
+            padding: 12px var(--space-lg);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex; align-items: center; gap: 12px;
+            transition: var(--transition);
+        }
+        .sidebar-item:hover { background: var(--bg-secondary); color: var(--text-primary); }
+        .sidebar-item.active {
+            color: var(--accent);
+            border-right: 3px solid var(--accent);
+            background: var(--accent-light);
+        }
+        .sidebar-item i { width: 20px; text-align: center; }
+        
+        /* Content Area */
+        .customer-content-area {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2xl);
+            box-shadow: var(--shadow-sm);
+        }
+        .content-section { display: none; }
+        .content-section.active { display: block; animation: fadeUp 0.3s var(--ease-out); }
+        
+        .section-header-title {
+            font-size: 24px; font-weight: 700;
+            margin-bottom: var(--space-xl);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        /* Form Box */
+        .profile-form-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);
+        }
+        @media (max-width: 768px) {
+            .customer-page-wrapper { grid-template-columns: 1fr; }
+            .profile-form-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* Transaction Table */
+        .wallet-balance-card {
+            background: linear-gradient(135deg, #1d1d1f 0%, #434345 100%);
+            color: white;
+            padding: var(--space-lg) var(--space-2xl);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-xl);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .wallet-balance-card h4 { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+        .wallet-balance-card .balance-amount { font-size: 32px; font-weight: 700; }
+        
+        .txn-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .txn-table th { padding: 12px; font-size: 12px; text-transform: uppercase; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+        .txn-table td { padding: 16px 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
+        .txn-type.deposit { color: var(--success); font-weight: 600; }
+        .txn-type.withdrawal { color: var(--danger); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <custom-header></custom-header>
+
+    <main class="main-content" id="main-content">
+        <div class="customer-page-wrapper">
+            
+            <!-- SIDEBAR -->
+            <aside class="customer-sidebar">
+                <div class="customer-avatar">
+                    <div class="avatar-circle"><i class="fa-regular fa-user"></i></div>
+                    <div class="customer-phone" id="display-phone">Đang tải...</div>
+                    <div class="customer-role" id="display-role">Khách hàng</div>
+                </div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-item active" data-target="profile-sec">
+                        <i class="fa-regular fa-id-card"></i> Thông tin cá nhân
+                    </li>
+                    <li class="sidebar-item" data-target="wallet-sec">
+                        <i class="fa-solid fa-wallet"></i> Ví & Giao dịch
+                    </li>
+                    <li class="sidebar-item" id="logout-btn" style="color: var(--danger);">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <div class="customer-content-area">
+                
+                <!-- PROFILE SECTION -->
+                <section class="content-section active" id="profile-sec">
+                    <h2 class="section-header-title">Hồ sơ của bạn</h2>
+                    <form id="profile-form">
+                        <div class="profile-form-grid">
+                            <div class="auth-field-group">
+                                <label>Họ và Tên</label>
+                                <input type="text" id="hoTen" class="auth-input" placeholder="Nguyễn Văn A">
+                            </div>
+                            <div class="auth-field-group">
+                                <label>Số CCCD</label>
+                                <input type="text" id="cccd" class="auth-input" placeholder="012345678910">
+                            </div>
+                            <div class="auth-field-group" style="grid-column: span 2;">
+                                <label>Địa chỉ</label>
+                                <input type="text" id="diaChi" class="auth-input" placeholder="Số nhà, Đường, Phường, Quận, Thành phố">
+                            </div>
+                            <div class="auth-field-group">
+                                <label>Tên Ngân Hàng</label>
+                                <input type="text" id="tenNganHang" class="auth-input" placeholder="Vietcombank">
+                            </div>
+                            <div class="auth-field-group">
+                                <label>Số Tài Khoản</label>
+                                <input type="text" id="soTaiKhoan" class="auth-input" placeholder="Nhập số tài khoản">
+                            </div>
+                        </div>
+                        <button type="submit" class="auth-submit-btn" style="margin-top: 24px; padding: 12px 32px;">Lưu thông tin</button>
+                    </form>
+                </section>
+
+                <!-- WALLET SECTION -->
+                <section class="content-section" id="wallet-sec">
+                    <h2 class="section-header-title">Quản lý Ví</h2>
+                    
+                    <div class="wallet-balance-card">
+                        <div>
+                            <h4>Số dư khả dụng</h4>
+                            <div class="balance-amount" id="wallet-balance">0 ₫</div>
+                        </div>
+                        <button class="btn btn-white btn-sm" id="topup-btn">Nạp tiền ngay</button>
+                    </div>
+
+                    <h4>Lịch sử giao dịch</h4>
+                    <table class="txn-table">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Loại</th>
+                                <th>Số tiền</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txn-list">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <!-- Script Components -->
+    <script src="js/components.js"></script>
+    <script src="js/customer.js"></script>
+</body>
+</html>

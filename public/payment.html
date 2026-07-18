@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán — E-Tech Store</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/cart.css"> <!-- Tái sử dụng CSS của giỏ hàng -->
+    <style>
+        /* Một chút CSS bổ sung nhỏ cho phần chọn phương thức thanh toán */
+        .payment-method-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: var(--transition);
+        }
+        .payment-method-card:hover { border-color: var(--accent); background: var(--bg-secondary); }
+        .payment-method-card.selected {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+        .method-icon { font-size: 24px; color: var(--text-secondary); width: 40px; text-align: center; }
+        .payment-method-card.selected .method-icon { color: var(--accent); }
+        .method-info h4 { font-size: 15px; margin-bottom: 4px; }
+        .method-info p { font-size: 12px; color: var(--text-secondary); margin: 0; }
+        
+        .address-box {
+            background: var(--bg-secondary);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 24px;
+        }
+        .address-input {
+            width: 100%; padding: 12px; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); font-family: inherit; margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <custom-header></custom-header>
+
+    <main class="main-content" id="main-content">
+        <div class="cart-page-wrapper">
+            <h1 style="margin-bottom: 24px; font-size: 28px;">Thanh toán an toàn</h1>
+            
+            <!-- LAYOUT CHIA 2 CỘT TỪ CART.CSS -->
+            <div class="cart-layout">
+                
+                <!-- CỘT TRÁI: THÔNG TIN GIAO HÀNG & PHƯƠNG THỨC -->
+                <div class="cart-items-column">
+                    
+                    <!-- 1. Địa chỉ giao hàng -->
+                    <div class="summary-box">
+                        <h3 style="margin-bottom: 16px; font-size: 18px;"><i class="fa-solid fa-location-dot" style="color: var(--accent); margin-right: 8px;"></i> Thông tin giao hàng</h3>
+                        <div class="address-box">
+                            <label style="font-size: 13px; font-weight: 600;">Họ tên người nhận:</label>
+                            <input type="text" id="shipping-name" class="address-input" placeholder="Nhập họ tên">
+                            
+                            <label style="font-size: 13px; font-weight: 600; display: block; margin-top: 16px;">Số điện thoại:</label>
+                            <input type="tel" id="shipping-phone" class="address-input" placeholder="Nhập số điện thoại">
+
+                            <label style="font-size: 13px; font-weight: 600; display: block; margin-top: 16px;">Địa chỉ chi tiết:</label>
+                            <input type="text" id="shipping-address" class="address-input" placeholder="Số nhà, đường, phường, quận...">
+                        </div>
+                    </div>
+
+                    <!-- 2. Phương thức thanh toán -->
+                    <div class="summary-box">
+                        <h3 style="margin-bottom: 16px; font-size: 18px;"><i class="fa-solid fa-credit-card" style="color: var(--accent); margin-right: 8px;"></i> Phương thức thanh toán</h3>
+                        
+                        <div class="payment-method-card selected" data-method="wallet">
+                            <div class="method-icon"><i class="fa-solid fa-wallet"></i></div>
+                            <div class="method-info">
+                                <h4>Ví E-Tech Store</h4>
+                                <p>Thanh toán siêu tốc, không cần nhập thẻ. Số dư: <strong id="current-balance">0 ₫</strong></p>
+                            </div>
+                        </div>
+
+                        <div class="payment-method-card" data-method="cod">
+                            <div class="method-icon"><i class="fa-solid fa-truck"></i></div>
+                            <div class="method-info">
+                                <h4>Thanh toán khi nhận hàng (COD)</h4>
+                                <p>Kiểm tra hàng trước khi thanh toán</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CỘT PHẢI: TÓM TẮT ĐƠN HÀNG -->
+                <div class="cart-summary-column">
+                    <div class="summary-box">
+                        <h3 style="font-size: 18px; margin-bottom: 20px;">Tóm tắt đơn hàng</h3>
+                        
+                        <div class="summary-row">
+                            <span>Tạm tính (<span id="total-items">0</span> sản phẩm)</span>
+                            <span id="subtotal">0 ₫</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Phí vận chuyển</span>
+                            <span class="text-free">Miễn phí</span>
+                        </div>
+                        
+                        <div class="summary-divider"></div>
+                        
+                        <div class="summary-row main-total-row">
+                            <span>Tổng cộng</span>
+                            <span class="accent-price-large" id="final-total">0 ₫</span>
+                        </div>
+                        
+                        <button class="checkout-submit-btn" id="confirm-payment-btn">Xác nhận thanh toán</button>
+                        
+                        <div class="payment-badges">
+                            <i class="fa-brands fa-cc-visa"></i>
+                            <i class="fa-brands fa-cc-mastercard"></i>
+                            <i class="fa-brands fa-apple"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <script src="js/components.js"></script>
+    <script src="js/payment.js"></script>
+</body>
+</html>

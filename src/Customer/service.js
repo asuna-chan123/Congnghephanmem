@@ -1,10 +1,20 @@
-const { get, query } = require('../models/db'); // Trỏ về file db.js của dự án chính
+const { get, query } = require('../models/db');
 
 // 1. Lấy thông tin cá nhân
 const getCustomerProfile = async (userId) => {
-    // Dùng SELECT để lấy thông tin, nhưng KHÔNG lấy cột password để bảo mật
+    // Dùng AS để map các tên cột DB mới về key mà Frontend mong đợi
     const user = await get(
-        'SELECT id, phone, role, hoTen, cccd, diaChi, soTaiKhoan, tenNganHang FROM users WHERE id = ?', 
+        `SELECT 
+            customer_id AS id, 
+            phone_number AS phone, 
+            'customer' AS role,
+            full_name AS hoTen, 
+            identity_number AS cccd, 
+            address AS diaChi, 
+            bank_account_number AS soTaiKhoan, 
+            bank_name AS tenNganHang 
+         FROM customers 
+         WHERE customer_id = ?`, 
         [userId]
     );
 
@@ -16,21 +26,29 @@ const getCustomerProfile = async (userId) => {
 const updateCustomerProfile = async (userId, updateData) => {
     const { hoTen, cccd, diaChi, soTaiKhoan, tenNganHang } = updateData;
 
-    // Kiểm tra xem user có tồn tại không trước khi update
-    const user = await get('SELECT id FROM users WHERE id = ?', [userId]);
+    const user = await get('SELECT customer_id FROM customers WHERE customer_id = ?', [userId]);
     if (!user) throw new Error("USER_NOT_FOUND");
 
-    // Dùng câu lệnh UPDATE để sửa thông tin trong bảng users
     await query(
-        `UPDATE users 
-         SET hoTen = ?, cccd = ?, diaChi = ?, soTaiKhoan = ?, tenNganHang = ? 
-         WHERE id = ?`,
+        `UPDATE customers 
+         SET full_name = ?, identity_number = ?, address = ?, bank_account_number = ?, bank_name = ? 
+         WHERE customer_id = ?`,
         [hoTen, cccd, diaChi, soTaiKhoan, tenNganHang, userId]
     );
 
-    // Lấy lại thông tin mới nhất sau khi đã cập nhật thành công để trả về cho giao diện
+    // Lấy lại thông tin bằng alias
     const updatedUser = await get(
-        'SELECT id, phone, role, hoTen, cccd, diaChi, soTaiKhoan, tenNganHang FROM users WHERE id = ?', 
+        `SELECT 
+            customer_id AS id, 
+            phone_number AS phone, 
+            'customer' AS role,
+            full_name AS hoTen, 
+            identity_number AS cccd, 
+            address AS diaChi, 
+            bank_account_number AS soTaiKhoan, 
+            bank_name AS tenNganHang 
+         FROM customers 
+         WHERE customer_id = ?`, 
         [userId]
     );
 

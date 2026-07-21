@@ -1,5 +1,6 @@
 const CartModel = require('../models/cart.model');
 const OrderModel = require('../models/order.model');
+const { get } = require('../models/db');
 
 //get cart
 class CartController {
@@ -59,10 +60,10 @@ class CartController {
       }
 
       await CartModel.removeItem(sessionId, customerId, cartItemId);
-      res.json({ success: true, message: 'Item removed' });
+      res.json({ success: true, message: 'Removed from cart' });
     } catch (error) {
       console.error('Error removing from cart:', error);
-      res.status(500).json({ success: false, message: 'Server Error' });
+      res.status(400).json({ success: false, message: error.message || 'Server Error' });
     }
   }
 
@@ -93,23 +94,12 @@ class CartController {
         return res.status(400).json({ success: false, message: 'Session ID or Customer ID is required' });
       }
 
-      const cartItem = await CartModel.getCartItem(sessionId, customerId, cartItemId);
-      if (!cartItem) {
-        return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm trong giỏ hàng' });
+      const qty = parseInt(quantity, 10);
+      if (isNaN(qty) || qty < 1) {
+        return res.status(400).json({ success: false, message: 'Invalid quantity' });
       }
 
-      const requestedQty = parseInt(quantity, 10) || 1;
-      const stock = await CartModel.checkVariantStock(cartItem.variant_id);
-
-      if (requestedQty > stock) {
-        return res.status(400).json({
-          success: false,
-          message: `Rất tiếc, kho hàng chỉ còn lại ${stock} sản phẩm này.`
-        });
-      }
-
-      //change quantity
-      await CartModel.updateQuantity(sessionId, customerId, cartItemId, requestedQty);
+      await CartModel.updateQuantity(sessionId, customerId, cartItemId, qty);
       res.json({ success: true, message: 'Quantity updated' });
     } catch (error) {
       console.error('Error updating quantity:', error);
@@ -127,6 +117,24 @@ class CartController {
       const { selectedItemIds } = req.body;
       if (!selectedItemIds || selectedItemIds.length === 0) {
         return res.status(400).json({ success: false, message: 'Vui lòng chọn ít nhất một sản phẩm để thanh toán.' });
+      }
+
+      // Kiểm tra xác minh danh tính CCCD của khách hàng trước khi cho phép thanh toán
+      const customer = await get(
+        'SELECT identity_number, identity_image_front, identity_image_back FROM customers WHERE customer_id = ?',
+        [customerId]
+      );
+
+      const hasCCCD = (customer?.identity_number && customer.identity_number.trim().length > 0) ||
+                      (customer?.identity_image_front && customer.identity_image_front.trim().length > 0) ||
+                      (customer?.identity_image_back && customer.identity_image_back.trim().length > 0);
+
+      if (!hasCCCD) {
+        return res.status(400).json({
+          success: false,
+          requireProfileUpdate: true,
+          message: 'Tài khoản của bạn chưa cập nhật Căn cước công dân (CCCD). Vui lòng cập nhật hồ sơ trước khi thanh toán.'
+        });
       }
 
       const result = await OrderModel.createOrderFromCart(customerId, selectedItemIds);

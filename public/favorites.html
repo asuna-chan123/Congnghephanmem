@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yêu thích - E-Tech Store</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/favorites.css">
     <link rel="stylesheet" href="css/StaggeredMenu.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
+
 <body>
     <!-- Header Navigation -->
     <custom-header></custom-header>
@@ -29,19 +33,20 @@
                 <button class="icon-btn circle"><i class="fa-solid fa-share-nodes"></i></button>
             </div>
         </div>
-        
+
         <div class="alert-box">
             <i class="fa-solid fa-clock"></i>
             <div>
                 <strong>Don't lose your faves! Sign in or create an account.</strong>
-                <p>Guest favourites are only saved to your device for 7 days, or until you clear your cache. Sign in or create an account to hang on to your picks.</p>
+                <p>Guest favourites are only saved to your device for 7 days, or until you clear your cache. Sign in or
+                    create an account to hang on to your picks.</p>
             </div>
         </div>
 
         <div class="favorites-grid" id="favorites-grid">
             <!-- Items injected by JS -->
         </div>
-        
+
         <div id="empty-favorites-view" style="display: none; text-align: center; padding: 60px 0;">
             <h2>Chưa có sản phẩm yêu thích nào.</h2>
             <a href="/products.html" class="btn btn-primary" style="margin-top: 20px;">Khám phá ngay</a>
@@ -56,4 +61,5 @@
     <script src="js/app.js"></script>
     <script src="js/favorites.js"></script>
 </body>
+
 </html>

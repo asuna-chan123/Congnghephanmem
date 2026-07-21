@@ -414,7 +414,11 @@ document.getElementById('checkout-submit-btn')?.addEventListener('click', async 
                 window.location.href = '/orders.html';
             }, 1500);
         } else {
-            showStatusPopup(false, res.message || 'Lỗi đặt hàng.');
+            if (res.requireProfileUpdate) {
+                showVerificationWarningPopup();
+            } else {
+                showStatusPopup(false, res.message || 'Lỗi đặt hàng.');
+            }
         }
     } catch (e) {
         console.error('Error checkout:', e);

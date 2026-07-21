@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hồ sơ cá nhân - E-Tech Store</title>
     <meta name="description" content="Quản lý hồ sơ cá nhân và xác minh danh tính tài khoản E-Tech Store.">
-    
+
     <!-- Preconnect & Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Core Styles -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/StaggeredMenu.css">
@@ -118,7 +120,9 @@
             opacity: 0.9;
         }
 
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             background: var(--bg-primary);
             border: 1px solid var(--profile-border);
             border-radius: 10px;
@@ -129,13 +133,15 @@
             outline: none;
         }
 
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
             border-color: var(--text-primary);
             box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
         }
 
         .form-group input[readonly] {
-            background: rgba(0,0,0,0.03);
+            background: rgba(0, 0, 0, 0.03);
             color: var(--text-secondary);
             cursor: not-allowed;
         }
@@ -249,7 +255,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
         .camera-modal-header {
@@ -293,7 +299,7 @@
         /* Guide overlay for CCCD alignment */
         .camera-overlay-guide {
             position: absolute;
-            border: 2px dashed rgba(255,255,255,0.7);
+            border: 2px dashed rgba(255, 255, 255, 0.7);
             border-radius: 12px;
             width: 70%;
             height: 60%;
@@ -301,7 +307,7 @@
             left: 15%;
             pointer-events: none;
             box-sizing: border-box;
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.4);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -312,7 +318,7 @@
             font-size: 12px;
             font-weight: 500;
             text-align: center;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.6);
             padding: 4px 10px;
             border-radius: 4px;
         }
@@ -326,11 +332,17 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Header Navigation -->
@@ -343,8 +355,10 @@
         </div>
 
         <!-- Lock Screen Card -->
-        <div id="profile-lock-card" class="profile-card" style="max-width: 480px; margin: 40px auto; text-align: center; display: block; padding: 40px 30px;">
-            <div style="background: rgba(0, 113, 227, 0.08); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: var(--accent);">
+        <div id="profile-lock-card" class="profile-card"
+            style="max-width: 480px; margin: 40px auto; text-align: center; display: block; padding: 40px 30px;">
+            <div
+                style="background: rgba(0, 113, 227, 0.08); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: var(--accent);">
                 <i class="fa-solid fa-lock" style="font-size: 24px;"></i>
             </div>
             <h2 style="justify-content: center; margin-bottom: 8px;">Xác minh bảo mật</h2>
@@ -353,18 +367,19 @@
             </p>
             <form id="lock-form" style="display: flex; flex-direction: column; gap: 16px;">
                 <div class="form-group" style="margin-bottom: 0;">
-                    <input type="password" id="lock-password" placeholder="Nhập mật khẩu của bạn" required style="text-align: center; font-size: 16px; padding: 14px;">
+                    <input type="password" id="lock-password" placeholder="Nhập mật khẩu của bạn" required
+                        style="text-align: center; font-size: 16px; padding: 14px;">
                 </div>
                 <button type="submit" class="btn-save-profile" style="margin-top: 8px;">Xác nhận</button>
             </form>
         </div>
 
         <div class="profile-grid" id="profile-main-grid" style="display: none;">
-            
+
             <!-- Left Side: User Info Form -->
             <form id="profile-form" class="profile-card">
                 <h2><i class="fa-regular fa-id-card"></i> Thông tin tài khoản</h2>
-                
+
                 <div class="form-group">
                     <label for="profile-email">Email đăng nhập</label>
                     <input type="email" id="profile-email" readonly>
@@ -384,7 +399,8 @@
 
                 <div class="form-group">
                     <label for="profile-address">Địa chỉ giao hàng</label>
-                    <textarea id="profile-address" rows="2" placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/Thành phố"></textarea>
+                    <textarea id="profile-address" rows="2"
+                        placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/Thành phố"></textarea>
                 </div>
 
                 <div class="form-group">
@@ -412,43 +428,48 @@
             <div class="profile-card">
                 <h2><i class="fa-solid fa-shield-halved"></i> Xác minh danh tính (CCCD)</h2>
                 <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px;">
-                    Hãy tải lên hoặc chụp ảnh trực tiếp hai mặt Căn cước công dân của bạn để hoàn tất xác minh tài khoản thuê thiết bị.
+                    Hãy tải lên hoặc chụp ảnh trực tiếp hai mặt Căn cước công dân của bạn để hoàn tất xác minh tài khoản
+                    thuê thiết bị.
                 </p>
 
                 <div class="identity-verification-box">
-                    
+
                     <!-- Mặt trước CCCD -->
                     <div>
-                        <span style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 10px;">Mặt trước CCCD</span>
+                        <span style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 10px;">Mặt trước
+                            CCCD</span>
                         <div class="cccd-card" id="cccd-front-card">
                             <div class="cccd-placeholder" id="cccd-front-placeholder">
                                 <i class="fa-regular fa-image"></i>
                                 <p>Chưa có ảnh mặt trước</p>
                             </div>
                             <img id="cccd-front-preview" src="" alt="Mặt trước CCCD" style="display: none;">
-                            
+
                             <div class="cccd-actions">
-                                <button type="button" class="btn btn-outline btn-sm" onclick="triggerFileInput('front')">
+                                <button type="button" class="btn btn-outline btn-sm"
+                                    onclick="triggerFileInput('front')">
                                     <i class="fa-solid fa-arrow-up-from-bracket"></i> Tải lên
                                 </button>
                                 <button type="button" class="btn btn-outline btn-sm" onclick="openCamera('front')">
                                     <i class="fa-solid fa-camera"></i> Chụp ảnh
                                 </button>
                             </div>
-                            <input type="file" id="front-file-input" accept="image/*" style="display: none;" onchange="handleFileChange(event, 'front')">
+                            <input type="file" id="front-file-input" accept="image/*" style="display: none;"
+                                onchange="handleFileChange(event, 'front')">
                         </div>
                     </div>
 
                     <!-- Mặt sau CCCD -->
                     <div>
-                        <span style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 10px;">Mặt sau CCCD</span>
+                        <span style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 10px;">Mặt sau
+                            CCCD</span>
                         <div class="cccd-card" id="cccd-back-card">
                             <div class="cccd-placeholder" id="cccd-back-placeholder">
                                 <i class="fa-regular fa-image"></i>
                                 <p>Chưa có ảnh mặt sau</p>
                             </div>
                             <img id="cccd-back-preview" src="" alt="Mặt sau CCCD" style="display: none;">
-                            
+
                             <div class="cccd-actions">
                                 <button type="button" class="btn btn-outline btn-sm" onclick="triggerFileInput('back')">
                                     <i class="fa-solid fa-arrow-up-from-bracket"></i> Tải lên
@@ -457,7 +478,8 @@
                                     <i class="fa-solid fa-camera"></i> Chụp ảnh
                                 </button>
                             </div>
-                            <input type="file" id="back-file-input" accept="image/*" style="display: none;" onchange="handleFileChange(event, 'back')">
+                            <input type="file" id="back-file-input" accept="image/*" style="display: none;"
+                                onchange="handleFileChange(event, 'back')">
                         </div>
                     </div>
 
@@ -474,7 +496,7 @@
                 <h3 id="camera-modal-title">Chụp ảnh CCCD</h3>
                 <button type="button" class="close-btn" onclick="closeCamera()">&times;</button>
             </div>
-            
+
             <div class="camera-view-container">
                 <video id="webcam-video" autoplay playsinline></video>
                 <div class="camera-overlay-guide">
@@ -482,10 +504,11 @@
                 </div>
                 <canvas id="webcam-canvas" style="display: none;"></canvas>
             </div>
-            
+
             <div class="camera-modal-actions">
                 <button type="button" class="btn btn-outline" onclick="closeCamera()">Hủy bỏ</button>
-                <button type="button" class="btn btn-primary" onclick="capturePhoto()"><i class="fa-solid fa-camera"></i> Chụp ảnh</button>
+                <button type="button" class="btn btn-primary" onclick="capturePhoto()"><i
+                        class="fa-solid fa-camera"></i> Chụp ảnh</button>
             </div>
         </div>
     </div>
@@ -498,4 +521,5 @@
     <script src="js/app.js"></script>
     <script src="js/profile.js"></script>
 </body>
+
 </html>

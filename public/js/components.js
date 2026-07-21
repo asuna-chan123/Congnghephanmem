@@ -18,7 +18,7 @@ class CustomHeader extends HTMLElement {
         if (currentUserJson) {
             try {
                 const user = JSON.parse(currentUserJson);
-                userSectionHtml = `
+                 userSectionHtml = `
                     <span style="font-size: 12px; color: var(--text-primary); opacity: 0.9; font-weight: 500;">Hi, ${user.fullName}</span>
                     <span style="font-size: 11px; opacity: 0.3; color: var(--text-primary);">|</span>
                     <a href="#" class="action-link" id="signout-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng xuất</a>
@@ -99,6 +99,9 @@ class CustomHeader extends HTMLElement {
                         <span class="cart-count" style="position: absolute; top: -7px; right: -8px; background: var(--text-primary); color: var(--bg-elevated); font-size: 8px; width: 13px; height: 13px;" aria-live="polite" aria-label="0 sản phẩm trong giỏ">0</span>
                     </a>
                     ${currentUserJson ? `
+                    <a href="/profile" class="action-btn profile-btn" aria-label="Hồ sơ" style="width: auto; height: auto; font-size: 13px; opacity: 0.8;">
+                        <i class="fa-solid fa-user" aria-hidden="true"></i>
+                    </a>
                     <a href="/orders.html" class="action-btn orders-btn" aria-label="Đơn hàng" style="width: auto; height: auto; font-size: 13px; opacity: 0.8;">
                         <i class="fa-solid fa-truck" aria-hidden="true"></i>
                     </a>

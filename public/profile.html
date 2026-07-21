@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ cá nhân - E-Tech Store</title>
+    <meta name="description" content="Quản lý hồ sơ cá nhân và xác minh danh tính tài khoản E-Tech Store.">
+    
+    <!-- Preconnect & Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Core Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/StaggeredMenu.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --profile-bg: var(--bg-primary, #ffffff);
+            --profile-card-bg: var(--bg-elevated, #f5f5f7);
+            --profile-border: var(--border, rgba(0, 0, 0, 0.08));
+        }
+
+        .profile-container {
+            max-width: 1020px;
+            margin: 60px auto;
+            padding: 0 22px;
+            font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-primary);
+        }
+
+        .profile-header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--profile-border);
+            padding-bottom: 24px;
+        }
+
+        .profile-header h1 {
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .profile-header p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            opacity: 0.8;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 868px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .profile-card {
+            background: var(--profile-card-bg);
+            border: 1px solid var(--profile-border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.01);
+            transition: transform 0.3s var(--ease-out);
+        }
+
+        .profile-card h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .form-group-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 600px) {
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            opacity: 0.9;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            background: var(--bg-primary);
+            border: 1px solid var(--profile-border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group input[readonly] {
+            background: rgba(0,0,0,0.03);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+
+        .identity-verification-box {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .cccd-card {
+            border: 2px dashed var(--profile-border);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            background: var(--bg-primary);
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: border-color 0.2s;
+            overflow: hidden;
+        }
+
+        .cccd-card.has-image {
+            border-style: solid;
+            border-color: var(--text-primary);
+        }
+
+        .cccd-card img {
+            max-width: 100%;
+            max-height: 180px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .cccd-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+        }
+
+        .cccd-placeholder i {
+            font-size: 32px;
+            opacity: 0.6;
+        }
+
+        .cccd-placeholder p {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .cccd-actions {
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+
+        .btn-save-profile {
+            width: 100%;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 500;
+            background: var(--text-primary, #1d1d1f);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 24px;
+        }
+
+        .btn-save-profile:hover {
+            opacity: 0.9;
+        }
+
+        /* Camera Modal Apple Style */
+        .camera-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s var(--ease-out);
+        }
+
+        .camera-modal-content {
+            background: var(--bg-elevated);
+            border: 1px solid var(--profile-border);
+            border-radius: 24px;
+            max-width: 640px;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .camera-modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--profile-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .camera-modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .camera-modal-header .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-primary);
+            opacity: 0.6;
+        }
+
+        .camera-view-container {
+            position: relative;
+            background: #000;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-view-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Guide overlay for CCCD alignment */
+        .camera-overlay-guide {
+            position: absolute;
+            border: 2px dashed rgba(255,255,255,0.7);
+            border-radius: 12px;
+            width: 70%;
+            height: 60%;
+            top: 20%;
+            left: 15%;
+            pointer-events: none;
+            box-sizing: border-box;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-overlay-guide span {
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            background: rgba(0,0,0,0.6);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .camera-modal-actions {
+            padding: 20px 24px;
+            border-top: 1px solid var(--profile-border);
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <custom-header></custom-header>
+
+    <main class="profile-container">
+        <div class="profile-header">
+            <h1>Hồ sơ cá nhân</h1>
+            <p>Quản lý thông tin tài khoản E-Tech, cập nhật chi tiết ngân hàng và xác minh danh tính bằng CCCD.</p>
+        </div>
+
+        <!-- Lock Screen Card -->
+        <div id="profile-lock-card" class="profile-card" style="max-width: 480px; margin: 40px auto; text-align: center; display: block; padding: 40px 30px;">
+            <div style="background: rgba(0, 113, 227, 0.08); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: var(--accent);">
+                <i class="fa-solid fa-lock" style="font-size: 24px;"></i>
+            </div>
+            <h2 style="justify-content: center; margin-bottom: 8px;">Xác minh bảo mật</h2>
+            <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px;">
+                Vui lòng nhập mật khẩu tài khoản để xem và chỉnh sửa thông tin cá nhân.
+            </p>
+            <form id="lock-form" style="display: flex; flex-direction: column; gap: 16px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <input type="password" id="lock-password" placeholder="Nhập mật khẩu của bạn" required style="text-align: center; font-size: 16px; padding: 14px;">
+                </div>
+                <button type="submit" class="btn-save-profile" style="margin-top: 8px;">Xác nhận</button>
+            </form>
+        </div>
+
+        <div class="profile-grid" id="profile-main-grid" style="display: none;">
+            
+            <!-- Left Side: User Info Form -->
+            <form id="profile-form" class="profile-card">
+                <h2><i class="fa-regular fa-id-card"></i> Thông tin tài khoản</h2>
+                
+                <div class="form-group">
+                    <label for="profile-email">Email đăng nhập</label>
+                    <input type="email" id="profile-email" readonly>
+                </div>
+
+                <div class="form-group-grid">
+                    <div class="form-group">
+                        <label for="profile-fullName">Họ và tên</label>
+                        <input type="text" id="profile-fullName" placeholder="Nguyễn Văn A" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profile-phoneNumber">Số điện thoại</label>
+                        <input type="tel" id="profile-phoneNumber" placeholder="0901234567">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-address">Địa chỉ giao hàng</label>
+                    <textarea id="profile-address" rows="2" placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/Thành phố"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-identityNumber">Số Căn cước công dân (CCCD)</label>
+                    <input type="text" id="profile-identityNumber" placeholder="Số CCCD gồm 12 số">
+                </div>
+
+                <h2 style="margin-top: 32px;"><i class="fa-solid fa-building-columns"></i> Thông tin nhận hoàn cọc</h2>
+                <div class="form-group-grid">
+                    <div class="form-group">
+                        <label for="profile-bankName">Tên ngân hàng</label>
+                        <input type="text" id="profile-bankName" placeholder="VD: Vietcombank">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profile-bankAccountNumber">Số tài khoản</label>
+                        <input type="text" id="profile-bankAccountNumber" placeholder="Số tài khoản ngân hàng">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-save-profile">Lưu thay đổi</button>
+            </form>
+
+            <!-- Right Side: CCCD verification -->
+            <div class="profile-card">
+                <h2><i class="fa-solid fa-shield-halved"></i> Xác minh danh tính (CCCD)</h2>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px;">
+                    Hãy tải lên hoặc chụp ảnh trực tiếp hai mặt Căn cước công dân của bạn để hoàn tất xác minh tài khoản thuê thiết bị.
+                </p>
+
+                <div class="identity-verification-box">
+                    
+                    <!-- Mặt trước CCCD -->
+                    <div>
+                        <span style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 10px;">Mặt trước CCCD</span>
+                        <div class="cccd-card" id="cccd-front-card">
+                            <div class="cccd-placeholder" id="cccd-front-placeholder">
+                                <i class="fa-regular fa-image"></i>
+                                <p>Chưa có ảnh mặt trước</p>
+                            </div>
+                            <img id="cccd-front-preview" src="" alt="Mặt trước CCCD" style="display: none;">
+                            
+                            <div class="cccd-actions">
+                                <button type="button" class="btn btn-outline btn-sm" onclick="triggerFileInput('front')">
+                                    <i class="fa-solid fa-arrow-up-from-bracket"></i> Tải lên
+                                </button>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="openCamera('front')">
+                                    <i class="fa-solid fa-camera"></i> Chụp ảnh
+                                </button>
+                            </div>
+                            <input type="file" id="front-file-input" accept="image/*" style="display: none;" onchange="handleFileChange(event, 'front')">
+                        </div>
+                    </div>
+
+                    <!-- Mặt sau CCCD -->
+                    <div>
+                        <span style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 10px;">Mặt sau CCCD</span>
+                        <div class="cccd-card" id="cccd-back-card">
+                            <div class="cccd-placeholder" id="cccd-back-placeholder">
+                                <i class="fa-regular fa-image"></i>
+                                <p>Chưa có ảnh mặt sau</p>
+                            </div>
+                            <img id="cccd-back-preview" src="" alt="Mặt sau CCCD" style="display: none;">
+                            
+                            <div class="cccd-actions">
+                                <button type="button" class="btn btn-outline btn-sm" onclick="triggerFileInput('back')">
+                                    <i class="fa-solid fa-arrow-up-from-bracket"></i> Tải lên
+                                </button>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="openCamera('back')">
+                                    <i class="fa-solid fa-camera"></i> Chụp ảnh
+                                </button>
+                            </div>
+                            <input type="file" id="back-file-input" accept="image/*" style="display: none;" onchange="handleFileChange(event, 'back')">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Camera Capture Modal -->
+    <div id="camera-modal" class="camera-modal">
+        <div class="camera-modal-content">
+            <div class="camera-modal-header">
+                <h3 id="camera-modal-title">Chụp ảnh CCCD</h3>
+                <button type="button" class="close-btn" onclick="closeCamera()">&times;</button>
+            </div>
+            
+            <div class="camera-view-container">
+                <video id="webcam-video" autoplay playsinline></video>
+                <div class="camera-overlay-guide">
+                    <span>Đặt CCCD khớp với khung này</span>
+                </div>
+                <canvas id="webcam-canvas" style="display: none;"></canvas>
+            </div>
+            
+            <div class="camera-modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeCamera()">Hủy bỏ</button>
+                <button type="button" class="btn btn-primary" onclick="capturePhoto()"><i class="fa-solid fa-camera"></i> Chụp ảnh</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <custom-footer></custom-footer>
+
+    <!-- Scripts -->
+    <script src="js/components.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>

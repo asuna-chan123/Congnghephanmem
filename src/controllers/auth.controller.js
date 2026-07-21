@@ -1,9 +1,52 @@
 const { query, get } = require('../models/db');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
+
+function saveBase64Image(base64Str, prefix, customerId) {
+  if (!base64Str || !base64Str.startsWith('data:image/')) {
+    return base64Str;
+  }
+  
+  try {
+    const parts = base64Str.split(';base64,');
+    if (parts.length !== 2) {
+      throw new Error('Định dạng ảnh không hợp lệ.');
+    }
+    
+    const mime = parts[0];
+    const data = parts[1];
+    const buffer = Buffer.from(data, 'base64');
+    
+    let ext = mime.replace('data:image/', '');
+    if (ext === 'jpeg') ext = 'jpg';
+    
+    // Clean up extensions like svg+xml or similar if necessary, or default to jpg
+    ext = ext.split('+')[0]; // handling e.g. svg+xml
+    if (!/^[a-zA-Z0-9]+$/.test(ext)) {
+      ext = 'jpg';
+    }
+
+    const uploadsDir = path.join(__dirname, '..', '..', 'public', 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    
+    const filename = `${prefix}_${customerId}_${Date.now()}.${ext}`;
+    const filepath = path.join(uploadsDir, filename);
+    fs.writeFileSync(filepath, buffer);
+    
+    return `/uploads/${filename}`;
+  } catch (err) {
+    console.error('Error saving base64 image:', err);
+    throw new Error('Không thể lưu trữ ảnh tải lên.');
+  }
+}
+
 
 async function mergeGuestData(sessionId, customerId) {
   if (!sessionId || !customerId) return;
@@ -147,6 +190,145 @@ class AuthController {
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ success: false, message: 'Lỗi máy chủ trong quá trình đăng nhập.' });
+    }
+  }
+
+  static async getProfile(req, res) {
+    try {
+      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      if (!customerId) {
+        return res.status(401).json({ success: false, message: 'Bạn chưa đăng nhập.' });
+      }
+
+      const user = await get(
+        `SELECT customer_id, full_name, phone_number, email, address, identity_number, 
+                identity_image_front, identity_image_back, bank_name, bank_account_number 
+         FROM customers WHERE customer_id = ?`,
+        [customerId]
+      );
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'Không tìm thấy thông tin tài khoản.' });
+      }
+
+      res.json({
+        success: true,
+        user: {
+          id: user.customer_id,
+          fullName: user.full_name,
+          phoneNumber: user.phone_number,
+          email: user.email,
+          address: user.address,
+          identityNumber: user.identity_number,
+          identityImageFront: user.identity_image_front,
+          identityImageBack: user.identity_image_back,
+          bankName: user.bank_name,
+          bankAccountNumber: user.bank_account_number
+        }
+      });
+    } catch (error) {
+      console.error('Get profile error:', error);
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ khi lấy thông tin hồ sơ.' });
+    }
+  }
+
+  static async updateProfile(req, res) {
+    try {
+      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      if (!customerId) {
+        return res.status(401).json({ success: false, message: 'Bạn chưa đăng nhập.' });
+      }
+
+      const {
+        fullName,
+        phoneNumber,
+        address,
+        identityNumber,
+        identityImageFront,
+        identityImageBack,
+        bankName,
+        bankAccountNumber
+      } = req.body;
+
+      if (!fullName) {
+        return res.status(400).json({ success: false, message: 'Họ tên không được để trống.' });
+      }
+
+      let frontImgPath = identityImageFront;
+      let backImgPath = identityImageBack;
+
+      if (identityImageFront && identityImageFront.startsWith('data:image/')) {
+        frontImgPath = saveBase64Image(identityImageFront, 'cccd_front', customerId);
+      }
+      if (identityImageBack && identityImageBack.startsWith('data:image/')) {
+        backImgPath = saveBase64Image(identityImageBack, 'cccd_back', customerId);
+      }
+
+      await query(
+        `UPDATE customers 
+         SET full_name = ?, phone_number = ?, address = ?, identity_number = ?, 
+             identity_image_front = ?, identity_image_back = ?, bank_name = ?, bank_account_number = ?
+         WHERE customer_id = ?`,
+        [
+          fullName,
+          phoneNumber || null,
+          address || null,
+          identityNumber || null,
+          frontImgPath || null,
+          backImgPath || null,
+          bankName || null,
+          bankAccountNumber || null,
+          customerId
+        ]
+      );
+
+      res.json({
+        success: true,
+        message: 'Cập nhật hồ sơ thành công.',
+        user: {
+          id: customerId,
+          fullName: fullName,
+          phoneNumber: phoneNumber,
+          address: address,
+          identityNumber: identityNumber,
+          identityImageFront: frontImgPath,
+          identityImageBack: backImgPath,
+          bankName: bankName,
+          bankAccountNumber: bankAccountNumber
+        }
+      });
+    } catch (error) {
+      console.error('Update profile error:', error);
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ khi cập nhật hồ sơ.' });
+    }
+  }
+
+  static async verifyPassword(req, res) {
+    try {
+      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      if (!customerId) {
+        return res.status(401).json({ success: false, message: 'Bạn chưa đăng nhập.' });
+      }
+
+      const { password } = req.body;
+      if (!password) {
+        return res.status(400).json({ success: false, message: 'Mật khẩu là bắt buộc.' });
+      }
+
+      const user = await get('SELECT password_hash FROM customers WHERE customer_id = ?', [customerId]);
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản.' });
+      }
+
+      const passwordHash = hashPassword(password);
+      if (user.password_hash !== passwordHash) {
+        return res.status(400).json({ success: false, message: 'Mật khẩu không chính xác.' });
+      }
+
+      res.json({ success: true, message: 'Xác minh mật khẩu thành công.' });
+    } catch (error) {
+      console.error('Verify password error:', error);
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ khi xác minh mật khẩu.' });
     }
   }
 }

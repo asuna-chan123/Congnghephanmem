@@ -28,11 +28,11 @@ async function loadCartPage() {
 
         // Select all items by default on first load
         if (selectedItemIds.length === 0 && cartList.length > 0) {
-            selectedItemIds = cartList.map(item => item.uniqueId);
+            selectedItemIds = cartList.map(item => String(item.uniqueId));
         } else {
             // Filter out selected items that no longer exist in the cart
-            const currentIds = cartList.map(item => item.uniqueId);
-            selectedItemIds = selectedItemIds.filter(id => currentIds.includes(id));
+            const currentIds = cartList.map(item => String(item.uniqueId));
+            selectedItemIds = selectedItemIds.filter(id => currentIds.includes(String(id)));
         }
 
         renderCartItems();
@@ -44,6 +44,17 @@ async function loadCartPage() {
     }
 }
 
+function getRentalDays(item) {
+    if (item.rental_start_date && item.rental_end_date) {
+        const start = new Date(item.rental_start_date);
+        const end = new Date(item.rental_end_date);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays > 0 ? diffDays : 1;
+    }
+    return 1;
+}
+
 function renderCartItems() {
     const container = document.getElementById('cart-items-container');
     if (!container) return;
@@ -51,7 +62,9 @@ function renderCartItems() {
     container.innerHTML = '';
 
     cartList.forEach(item => {
-        const isChecked = selectedItemIds.includes(item.uniqueId);
+        const isChecked = selectedItemIds.includes(String(item.uniqueId));
+        const days = getRentalDays(item);
+        const itemDeposit = item.price * 30 * item.quantity;
         const card = document.createElement('div');
         card.className = 'cart-item-card';
         card.innerHTML = `
@@ -74,10 +87,13 @@ function renderCartItems() {
                 ${item.rental_start_date && item.rental_end_date ? `
                 <span class="cart-item-dates" style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">
                     <i class="fa-regular fa-calendar-days" style="margin-right: 4px; color: var(--accent);"></i>
-                    Thuê: ${new Date(item.rental_start_date).toLocaleDateString('vi-VN')} - ${new Date(item.rental_end_date).toLocaleDateString('vi-VN')}
+                    Thuê: ${new Date(item.rental_start_date).toLocaleDateString('vi-VN')} - ${new Date(item.rental_end_date).toLocaleDateString('vi-VN')} (${days} ngày)
                 </span>
                 ` : ''}
                 <span class="cart-item-price">${formatCurrency(item.price)} <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary)">/ ngày</span></span>
+                <span class="cart-item-deposit" style="font-size: 11px; color: #6e6e73; margin-top: 4px; display: block; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 6px; width: fit-content;">
+                    <i class="fa-solid fa-shield-cat" style="margin-right: 4px; color: #ff9f0a;"></i> Tiền cọc (30 ngày): <strong>${formatCurrency(itemDeposit)}</strong>
+                </span>
             </div>
 
             <!-- Quantity Stepper & Trash -->
@@ -101,22 +117,32 @@ function renderCartItems() {
 }
 
 function recalculateTotals() {
-    let itemsTotal = 0;
+    let rentalTotal = 0;
+    let depositTotal = 0;
     let itemCount = 0;
 
     cartList.forEach(item => {
-        if (selectedItemIds.includes(item.uniqueId)) {
-            itemsTotal += (item.price * item.quantity);
+        if (selectedItemIds.includes(String(item.uniqueId))) {
+            const days = getRentalDays(item);
+            rentalTotal += (item.price * days * item.quantity);
+            depositTotal += (item.price * 30 * item.quantity); // 30 ngày cọc
             itemCount += item.quantity;
         }
     });
 
-    const subtotal = itemsTotal; // Let's keep it clean
+    const subtotal = rentalTotal;
+    const deposit = depositTotal;
     const delivery = 0; // free delivery
-    const total = subtotal + delivery;
+    const total = subtotal + deposit + delivery;
 
-    document.getElementById('summary-subtotal').textContent = formatCurrency(subtotal);
-    document.getElementById('summary-total').textContent = formatCurrency(total);
+    const subtotalElem = document.getElementById('summary-subtotal');
+    if (subtotalElem) subtotalElem.textContent = formatCurrency(subtotal);
+
+    const depositElem = document.getElementById('summary-deposit');
+    if (depositElem) depositElem.textContent = formatCurrency(deposit);
+
+    const totalElem = document.getElementById('summary-total');
+    if (totalElem) totalElem.textContent = formatCurrency(total);
 }
 
 function updateSelectAllCheckboxState() {
@@ -128,17 +154,18 @@ function updateSelectAllCheckboxState() {
         return;
     }
 
-    const allSelected = cartList.every(item => selectedItemIds.includes(item.uniqueId));
+    const allSelected = cartList.length > 0 && cartList.every(item => selectedItemIds.includes(String(item.uniqueId)));
     selectAllCheckbox.checked = allSelected;
 }
 
 window.toggleItemSelect = function (uniqueId, isChecked) {
+    const idStr = String(uniqueId);
     if (isChecked) {
-        if (!selectedItemIds.includes(uniqueId)) {
-            selectedItemIds.push(uniqueId);
+        if (!selectedItemIds.includes(idStr)) {
+            selectedItemIds.push(idStr);
         }
     } else {
-        selectedItemIds = selectedItemIds.filter(id => id !== uniqueId);
+        selectedItemIds = selectedItemIds.filter(id => String(id) !== idStr);
     }
     recalculateTotals();
     updateSelectAllCheckboxState();
@@ -146,7 +173,7 @@ window.toggleItemSelect = function (uniqueId, isChecked) {
 
 window.toggleSelectAll = function (checkbox) {
     if (checkbox.checked) {
-        selectedItemIds = cartList.map(item => item.uniqueId);
+        selectedItemIds = cartList.map(item => String(item.uniqueId));
     } else {
         selectedItemIds = [];
     }
@@ -235,6 +262,93 @@ window.toggleWhyMi = function () {
     }
 };
 
+function showVerificationWarningPopup() {
+    const existing = document.getElementById('verification-warning-modal');
+    if (existing) existing.remove();
+
+    const modalHtml = `
+        <div id="verification-warning-modal" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+        ">
+            <div style="
+                background: white;
+                border-radius: 20px;
+                max-width: 440px;
+                width: 100%;
+                padding: 32px;
+                text-align: center;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                border: 1px solid rgba(0,0,0,0.05);
+                animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            ">
+                <div style="
+                    background: rgba(255, 159, 10, 0.1);
+                    color: #ff9f0a;
+                    width: 64px;
+                    height: 64px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 20px;
+                ">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 28px;"></i>
+                </div>
+                
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #1d1d1f;">Yêu cầu hoàn thiện hồ sơ</h3>
+                
+                <p style="font-size: 14px; color: #8e8e93; line-height: 1.5; margin-bottom: 24px;">
+                    Để đảm bảo an toàn giao dịch thuê thiết bị, vui lòng cập nhật đầy đủ **Số CCCD (Xác minh danh tính)** và **Thông tin Ngân hàng (Nhận hoàn cọc)**.
+                </p>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button onclick="window.location.href='/profile'" style="
+                        width: 100%;
+                        background: #1d1d1f;
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        padding: 12px;
+                        font-size: 14px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: opacity 0.2s;
+                    ">Cập nhật hồ sơ ngay</button>
+                    <button onclick="document.getElementById('verification-warning-modal').remove()" style="
+                        width: 100%;
+                        background: transparent;
+                        color: #8e8e93;
+                        border: none;
+                        padding: 10px;
+                        font-size: 13px;
+                        cursor: pointer;
+                    ">Để sau</button>
+                </div>
+            </div>
+            <style>
+                @keyframes modalFadeIn {
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+            </style>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
 document.getElementById('checkout-submit-btn')?.addEventListener('click', async () => {
     if (selectedItemIds.length === 0) {
         if (typeof showStatusPopup === 'function') {
@@ -256,6 +370,28 @@ document.getElementById('checkout-submit-btn')?.addEventListener('click', async 
         if (typeof window.openSignInModal === 'function') {
             window.openSignInModal();
         }
+        return;
+    }
+
+    // Check profile info completeness (CCCD & Bank)
+    try {
+        const profileRes = await apiFetch('/api/auth/profile');
+        if (!profileRes.success || !profileRes.user) {
+            alert('Không thể xác thực thông tin hồ sơ.');
+            return;
+        }
+
+        const user = profileRes.user;
+        const hasCCCD = (user.identityNumber && user.identityNumber.trim().length > 0) || user.identityImageFront || user.identityImageBack;
+        const hasBank = user.bankName && user.bankName.trim().length > 0 && user.bankAccountNumber && user.bankAccountNumber.trim().length > 0;
+
+        if (!hasCCCD || !hasBank) {
+            showVerificationWarningPopup();
+            return;
+        }
+    } catch (err) {
+        console.error('Error verifying profile before checkout:', err);
+        alert('Lỗi kết nối máy chủ khi xác thực thông tin tài khoản.');
         return;
     }
 

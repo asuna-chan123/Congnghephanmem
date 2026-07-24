@@ -16,9 +16,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Serve Static Files
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -44,6 +43,22 @@ app.get('/cart', (req, res) => {
 });
 app.get('/orders', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'orders.html'));
+});
+
+// API Bắt mạch kết nối
+const { get } = require('./src/models/db');
+app.get('/api/ping', async (req, res) => {
+    try {
+        // Truy vấn thời gian hiện tại từ PostgreSQL
+        const dbTime = await get('SELECT NOW()'); 
+        res.json({ 
+            status: 'THÀNH CÔNG', 
+            message: 'Frontend, Server và Database đang kết nối hoàn hảo!', 
+            thoi_gian_database: dbTime 
+        });
+    } catch (err) {
+        res.status(500).json({ status: 'THẤT BẠI', error: err.message });
+    }
 });
 
 // Catch-all to serve index.html for undefined routes

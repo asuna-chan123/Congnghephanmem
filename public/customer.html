@@ -149,32 +149,54 @@
                         <div class="profile-form-grid">
                             <div class="auth-field-group">
                                 <label>Họ và Tên</label>
-                                <input type="text" id="hoTen" class="auth-input" placeholder="Nguyễn Văn A">
+                                <input type="text" id="hoTen" class="auth-input" disabled>
                             </div>
                             <div class="auth-field-group">
                                 <label>Số CCCD</label>
-                                <input type="text" id="cccd" class="auth-input" placeholder="012345678910">
+                                <input type="text" id="cccd" class="auth-input" disabled>
                             </div>
                             <div class="auth-field-group" style="grid-column: span 2;">
                                 <label>Địa chỉ</label>
-                                <input type="text" id="diaChi" class="auth-input" placeholder="Số nhà, Đường, Phường, Quận, Thành phố">
+                                <input type="text" id="diaChi" class="auth-input" disabled>
                             </div>
-                            <div class="auth-field-group">
-                                <label>Tên Ngân Hàng</label>
-                                <input type="text" id="tenNganHang" class="auth-input" placeholder="Vietcombank">
-                            </div>
-                            <div class="auth-field-group">
-                                <label>Số Tài Khoản</label>
-                                <input type="text" id="soTaiKhoan" class="auth-input" placeholder="Nhập số tài khoản">
+                            
+                            <!-- Khu vực upload ảnh CCCD -->
+                            <div class="auth-field-group" style="grid-column: span 2;">
+                                <label>Hình ảnh CCCD</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px;">
+                                    <!-- Mặt trước -->
+                                    <div style="border: 2px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; position: relative;">
+                                        <p style="font-size: 12px; margin-bottom: 8px;">Mặt trước</p>
+                                        <img id="preview-cccd-truoc" src="https://via.placeholder.com/300x190?text=Chưa+có+ảnh+mặt+trước" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 6px;">
+                                        <input type="file" id="file-cccd-truoc" accept="image/*" disabled style="display: none;">
+                                        <label for="file-cccd-truoc" id="label-cccd-truoc" style="display: none; cursor: pointer; background: var(--accent); color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; margin-top: 10px;">Chọn ảnh</label>
+                                    </div>
+                                    <!-- Mặt sau -->
+                                    <div style="border: 2px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; position: relative;">
+                                        <p style="font-size: 12px; margin-bottom: 8px;">Mặt sau</p>
+                                        <img id="preview-cccd-sau" src="https://via.placeholder.com/300x190?text=Chưa+có+ảnh+mặt+sau" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 6px;">
+                                        <input type="file" id="file-cccd-sau" accept="image/*" disabled style="display: none;">
+                                        <label for="file-cccd-sau" id="label-cccd-sau" style="display: none; cursor: pointer; background: var(--accent); color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; margin-top: 10px;">Chọn ảnh</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <button type="submit" class="auth-submit-btn" style="margin-top: 24px; padding: 12px 32px;">Lưu thông tin</button>
+                        
+                        <div style="margin-top: 24px; display: flex; gap: 12px;">
+                            <button type="button" id="btn-edit-profile" class="auth-submit-btn" style="padding: 12px 32px; background-color: var(--accent); display: none;">
+                                <i class="fa-solid fa-pen"></i> Sửa thông tin
+                            </button>
+                            <button type="submit" id="btn-save-profile" class="auth-submit-btn" style="padding: 12px 32px; display: none;">Lưu thông tin</button>
+                            <button type="button" id="btn-cancel-edit" class="auth-submit-btn" style="padding: 12px 32px; display: none; background-color: #6c757d;">Hủy</button>
+                        </div>
                     </form>
                 </section>
 
                 <!-- WALLET SECTION -->
                 <section class="content-section" id="wallet-sec">
                     <h2 class="section-header-title">Quản lý Ví</h2>
+
+                    
                     
                     <div class="wallet-balance-card">
                         <div>
@@ -184,6 +206,25 @@
                         <button class="btn btn-white btn-sm" id="topup-btn">Nạp tiền ngay</button>
                     </div>
 
+                    <div style="background: var(--card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--border); margin-top: 24px; margin-bottom: 24px;">
+                        <h3 style="font-size: 16px; margin-bottom: 16px; font-weight: 600;">Tài khoản ngân hàng (Dùng để rút tiền)</h3>
+                        <form id="bank-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="auth-field-group">
+                                <label>Tên ngân hàng</label>
+                                <input type="text" id="tenNganHang" class="auth-input bank-input" disabled placeholder="VD: Vietcombank">
+                            </div>
+                            <div class="auth-field-group">
+                                <label>Số tài khoản</label>
+                                <input type="text" id="soTaiKhoan" class="auth-input bank-input" disabled placeholder="Nhập số tài khoản">
+                            </div>
+                            <div style="grid-column: span 2; display: flex; gap: 12px; margin-top: 8px;">
+                                <button type="button" id="btn-edit-bank" class="auth-submit-btn" style="width: auto; padding: 8px 16px; font-size: 13px;">Sửa tài khoản</button>
+                                <button type="button" id="btn-cancel-bank" class="auth-submit-btn" style="width: auto; padding: 8px 16px; font-size: 13px; background: var(--bg-secondary); color: var(--text-primary); display: none;">Hủy</button>
+                                <button type="submit" id="btn-save-bank" class="auth-submit-btn" style="width: auto; padding: 8px 16px; font-size: 13px; display: none;">Lưu tài khoản</button>
+                            </div>
+                        </form>
+                    </div>
+                    
                     <h4>Lịch sử giao dịch</h4>
                     <table class="txn-table">
                         <thead>
@@ -209,5 +250,34 @@
     <!-- Script Components -->
     <script src="js/components.js"></script>
     <script src="js/customer.js"></script>
+
+    <!-- POPUP NẠP TIỀN DEMO -->
+<div id="topup-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--card-bg); padding: 24px; border-radius: var(--radius-lg); width: 100%; max-width: 400px; box-shadow: var(--shadow-lg);">
+        <h3 style="margin-bottom: 16px; font-size: 20px; font-weight: 700;">Nạp tiền vào ví</h3>
+        
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 14px; margin-bottom: 8px; color: var(--text-secondary);">Chọn nhanh mệnh giá:</label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                <button type="button" class="preset-btn" data-value="50000" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); cursor: pointer;">50.000 ₫</button>
+                <button type="button" class="preset-btn" data-value="100000" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); cursor: pointer;">100.000 ₫</button>
+                <button type="button" class="preset-btn" data-value="200000" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); cursor: pointer;">200.000 ₫</button>
+                <button type="button" class="preset-btn" data-value="500000" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); cursor: pointer;">500.000 ₫</button>
+                <button type="button" class="preset-btn" data-value="1000000" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); cursor: pointer;">1.000.000 ₫</button>
+                <button type="button" class="preset-btn" data-value="2000000" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); cursor: pointer;">2.000.000 ₫</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 14px; margin-bottom: 8px; color: var(--text-secondary);">Hoặc nhập số tiền tùy chỉnh:</label>
+            <input type="number" id="custom-amount-input" placeholder="Nhập số tiền..." style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary);">
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" id="close-modal-btn" style="padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px; background: transparent; cursor: pointer; color: var(--text-secondary);">Hủy</button>
+            <button type="button" id="confirm-topup-btn" style="padding: 8px 16px; border: none; border-radius: 6px; background: var(--accent); color: white; cursor: pointer; font-weight: 600;">Xác nhận nạp</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

@@ -68,10 +68,18 @@ const getTransactionStatus = async (transactionId) => {
 };
 
 const processTransaction = async (transactionId, action) => {
-    // Cập nhật trạng thái giao dịch (APPROVE hoặc REJECT)
     const newStatus = action === 'APPROVE' ? 'COMPLETED' : 'FAILED';
     await query('UPDATE transactions SET status = ? WHERE id = ?', [newStatus, transactionId]);
     return { message: `Giao dịch đã chuyển sang trạng thái: ${newStatus}` };
+};
+
+const getWalletInfo = async (customerId) => {
+    const wallet = await get('SELECT balance FROM wallets WHERE customer_id = ?', [customerId]);
+    const balance = wallet ? wallet.balance : 0;
+
+    const history = await getTransactionHistory(customerId);
+
+    return { balance, transactions: history };
 };
 
 module.exports = {
@@ -80,5 +88,6 @@ module.exports = {
     getTransactionHistory,
     getPendingTransactions,
     getTransactionStatus,
-    processTransaction
+    processTransaction,
+    getWalletInfo
 };

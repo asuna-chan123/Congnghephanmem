@@ -5,84 +5,146 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xác thực — E-Tech Store</title>
     
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Tinh chỉnh lại một chút để modal nằm giữa trang tĩnh thay vì popup */
         .auth-page-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             min-height: calc(100vh - var(--nav-height) - 100px);
-            padding: var(--space-3xl) var(--space-lg);
-            margin-top: var(--nav-height);
+            padding: var(--space-3xl) var(--space-lg); margin-top: var(--nav-height);
         }
-        .auth-modal-static {
-            position: relative;
-            transform: none;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: var(--shadow-xl);
+
+        /* KHỐI RÃNH TRƯỢT 3 MÀN HÌNH */
+        .auth-slider-mask {
+            overflow: hidden; width: 100%; max-width: 420px;
+            background: var(--card-bg); border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl); position: relative;
         }
+        .auth-slider-track {
+            display: flex; width: 300%; /* 3 form */
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateX(-33.333%); /* Mặc định ở form giữa (Đăng nhập) */
+        }
+        .auth-panel {
+            width: 33.333%; flex-shrink: 0; padding: 32px 24px; box-sizing: border-box;
+        }
+
         .toggle-auth-mode {
-            color: var(--accent);
-            cursor: pointer;
-            font-weight: 600;
+            color: var(--accent); cursor: pointer; font-weight: 600;
+            background: none; border: none; padding: 0; font-size: inherit; font-family: inherit;
         }
         .toggle-auth-mode:hover { text-decoration: underline; }
-        .hidden-form { display: none; }
+        
+        .auth-modal-header { margin-bottom: 24px; text-align: center; }
+        .auth-modal-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .auth-modal-subtitle { font-size: 14px; color: var(--text-secondary); }
+        .auth-modal-footer { margin-top: 24px; text-align: center; font-size: 14px; color: var(--text-secondary); }
+        .auth-alert { display: none; padding: 10px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; text-align: center; }
+        .auth-alert.success { background-color: rgba(52, 199, 89, 0.15); color: #059669; border: 1px solid #34c759; }
+        .auth-alert.error { background-color: rgba(255, 59, 48, 0.15); color: #d93025; border: 1px solid #ff3b30; }
     </style>
 </head>
 <body>
-
     <custom-header></custom-header>
 
     <main class="main-content" id="main-content">
         <div class="auth-page-wrapper">
-            <!-- Sử dụng class auth-modal có sẵn của bạn -->
-            <div class="auth-modal auth-modal-static">
-                
-                <!-- HEADER FORM -->
-                <div class="auth-modal-header">
-                    <h2 class="auth-modal-title" id="auth-title">Đăng nhập</h2>
-                    <p class="auth-modal-subtitle" id="auth-subtitle">Truy cập E-Tech Store để tiếp tục</p>
-                </div>
-
-                <!-- ALERT BOX (Hiển thị lỗi/thành công) -->
-                <div id="auth-alert" style="display: none; padding: 10px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; text-align: center;"></div>
-
-                <!-- FORM XÁC THỰC -->
-                <form id="auth-form" class="auth-form">
-                    <div class="auth-field-group">
-                        <label for="phone">Số điện thoại</label>
-                        <input type="tel" id="phone" class="auth-input" placeholder="Nhập số điện thoại của bạn" required>
-                    </div>
+            <div class="auth-slider-mask">
+                <div class="auth-slider-track" id="auth-track">
                     
-                    <div class="auth-field-group">
-                        <label for="password">Mật khẩu</label>
-                        <input type="password" id="password" class="auth-input" placeholder="Nhập mật khẩu" required>
+                    <!-- PANEL 0: ĐĂNG KÝ (Trái) -->
+                    <div class="auth-panel" id="panel-signup">
+                        <div class="auth-modal-header">
+                            <h2 class="auth-modal-title">Đăng ký</h2>
+                            <p class="auth-modal-subtitle">Tạo tài khoản để trải nghiệm dịch vụ</p>
+                        </div>
+                        <div class="auth-alert" id="signup-alert"></div>
+                        <form id="signup-form" class="auth-form">
+                            <div class="auth-field-group">
+                                <label>Họ và tên</label>
+                                <input type="text" id="signup-fullname" class="auth-input" required placeholder="Nhập họ và tên của bạn">
+                            </div>
+                            
+                            <div class="auth-field-group">
+                                <label>Số điện thoại</label>
+                                <input type="tel" id="signup-phone" class="auth-input" required placeholder="Nhập số điện thoại">
+                            </div>
+                            <div class="auth-field-group">
+                                <label>Mật khẩu</label>
+                                <input type="password" id="signup-password" class="auth-input" required placeholder="Nhập mật khẩu (>8 ký tự)">
+                            </div>
+                            <button type="submit" class="auth-submit-btn" id="signup-btn">Đăng ký</button>
+                        </form>
+                        <div class="auth-modal-footer">
+                            <span>Đã có tài khoản?</span>
+                            <button class="toggle-auth-mode" id="to-signin-from-signup">Đăng nhập ngay</button>
+                        </div>
                     </div>
 
-                    <button type="submit" class="auth-submit-btn" id="submit-btn">Đăng nhập</button>
-                </form>
+                    <!-- PANEL 1: ĐĂNG NHẬP (Giữa) -->
+                    <div class="auth-panel" id="panel-signin">
+                        <div class="auth-modal-header">
+                            <h2 class="auth-modal-title">Đăng nhập</h2>
+                            <p class="auth-modal-subtitle">Chào mừng bạn quay lại với E-Tech</p>
+                        </div>
+                        <div class="auth-alert" id="signin-alert"></div>
+                        <form id="signin-form" class="auth-form">
+                            <div class="auth-field-group">
+                                <label>Số điện thoại</label>
+                                <!-- Đánh số tabindex="1" -->
+                                <input type="tel" id="signin-phone" class="auth-input" required placeholder="Nhập số điện thoại" tabindex="1">
+                            </div>
+                            <div class="auth-field-group">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <label>Mật khẩu</label>
+                                    <!-- Đánh số tabindex="4" để lùi độ ưu tiên ra sau nút Đăng nhập -->
+                                    <button type="button" class="toggle-auth-mode" id="to-forgot-from-signin" style="font-size: 12px; font-weight: 500;" tabindex="4">Quên mật khẩu?</button>
+                                </div>
+                                <!-- Đánh số tabindex="2" -->
+                                <input type="password" id="signin-password" class="auth-input" required placeholder="Nhập mật khẩu" tabindex="2">
+                            </div>
+                            <!-- Đánh số tabindex="3" -->
+                            <button type="submit" class="auth-submit-btn" id="signin-btn" tabindex="3">Đăng nhập</button>
+                        </form>
+                        <div class="auth-modal-footer">
+                            <span>Chưa có tài khoản?</span>
+                            <!-- Đánh số tabindex="5" -->
+                            <button class="toggle-auth-mode" id="to-signup-from-signin" tabindex="5">Đăng ký ngay</button>
+                        </div>
+                    </div>
 
-                <!-- FOOTER FORM (Chuyển đổi Đăng nhập / Đăng ký) -->
-                <div class="auth-modal-footer">
-                    <span id="auth-switch-text">Chưa có tài khoản?</span>
-                    <span class="toggle-auth-mode" id="auth-switch-btn">Đăng ký ngay</span>
+                    <!-- PANEL 2: QUÊN MẬT KHẨU (Phải) -->
+                    <div class="auth-panel" id="panel-forgot">
+                        <div class="auth-modal-header">
+                            <h2 class="auth-modal-title">Khôi phục mật khẩu</h2>
+                            <p class="auth-modal-subtitle">Nhập số điện thoại để thiết lập lại mật khẩu</p>
+                        </div>
+                        <div class="auth-alert" id="forgot-alert"></div>
+                        <form id="forgot-form" class="auth-form">
+                            <div class="auth-field-group">
+                                <label>Số điện thoại</label>
+                                <input type="tel" id="forgot-phone" class="auth-input" required placeholder="Số điện thoại đã đăng ký">
+                            </div>
+                            <div class="auth-field-group">
+                                <label>Mật khẩu mới</label>
+                                <input type="password" id="forgot-new-password" class="auth-input" required placeholder="Nhập mật khẩu mới">
+                            </div>
+                            <button type="submit" class="auth-submit-btn" id="forgot-btn">Lưu mật khẩu mới</button>
+                        </form>
+                        <div class="auth-modal-footer">
+                            <span style="display: block; margin-bottom: 8px;">Nhớ ra mật khẩu? <button class="toggle-auth-mode" id="to-signin-from-forgot">Đăng nhập</button></span>
+                            <span>Chưa có tài khoản? <button class="toggle-auth-mode" id="to-signup-from-forgot">Đăng ký ngay</button></span>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </main>
 
     <custom-footer></custom-footer>
-
-    <!-- Script Components -->
     <script src="js/components.js"></script>
-    <script src="js/auth.js"></script> <!-- Link tới file xử lý logic -->
+    <script src="js/auth.js"></script>
 </body>
 </html>

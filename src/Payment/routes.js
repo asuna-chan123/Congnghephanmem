@@ -10,6 +10,7 @@ const { verifyToken } = require('../Customer/util');
 router.post('/deposit', verifyToken, controller.createDeposit);
 router.post('/withdraw', verifyToken, controller.createWithdrawal);
 router.get('/history', verifyToken, controller.getTransactionHistory); 
+router.get('/info', verifyToken, controller.getWalletInfo);
 
 // Các API cho Admin hoặc hệ thống duyệt (không cần verifyToken của customer hoặc cần quyền Admin riêng)
 router.post('/process', controller.processTransaction);

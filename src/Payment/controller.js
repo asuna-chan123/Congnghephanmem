@@ -1,63 +1,75 @@
 const walletService = require('./service');
 
-const createDeposit = (req, res) => {
+const createDeposit = async (req, res) => {
     try {
-        // Lấy ID thật từ Token (đã được middleware giải mã), không dùng 'user_123' nữa
         const userId = req.user.id; 
         const { amount } = req.body;
         
-        const result = walletService.createDeposit(userId, amount);
+        // Bổ sung await tại đây
+        const result = await walletService.createDeposit(userId, amount);
         res.status(200).json({ success: true, data: result });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
     }
 };
 
-const processTransaction = (req, res) => {
+const createWithdrawal = async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const { amount } = req.body;
+        
+        const result = await walletService.createWithdrawal(userId, amount);
+        res.status(200).json({ success: true, data: result });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+const getTransactionHistory = async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const result = await walletService.getTransactionHistory(userId);
+        res.status(200).json({ success: true, data: result });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+const getWalletInfo = async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const result = await walletService.getWalletInfo(userId);
+        res.status(200).json({ success: true, data: result });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Lỗi hệ thống." });
+    }
+};
+
+const processTransaction = async (req, res) => {
     try {
         const { transactionId, action } = req.body;
-        const result = walletService.processTransaction(transactionId, action);
+        const result = await walletService.processTransaction(transactionId, action);
         res.status(200).json({ success: true, data: result });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
     }
 };
 
-const getTransactionStatus = (req, res) => {
+const getTransactionStatus = async (req, res) => {
     try {
-        const result = walletService.getTransactionStatus(req.params.id);
+        const result = await walletService.getTransactionStatus(req.params.id);
         res.status(200).json({ success: true, data: result });
     } catch (error) {
         res.status(404).json({ success: false, message: error.message });
     }
 };
 
-const getPendingTransactions = (req, res) => {
-    const result = walletService.getPendingTransactions();
-    res.status(200).json({ success: true, data: result });
-};
-
-const getTransactionHistory = (req, res) => {
+const getPendingTransactions = async (req, res) => {
     try {
-        // Lịch sử cũng nên lấy từ người đang đăng nhập để bảo mật
-        const userId = req.user.id; 
-        const result = walletService.getTransactionHistory(userId);
+        const result = await walletService.getPendingTransactions();
         res.status(200).json({ success: true, data: result });
     } catch (error) {
-        res.status(400).json({ success: false, message: error.message });
-    }
-};
-
-const createWithdrawal = (req, res) => {
-    try {
-        // Lấy ID thật từ Token
-        const userId = req.user.id; 
-        const { amount } = req.body;
-        
-        const result = walletService.createWithdrawal(userId, amount);
-        res.status(200).json({ success: true, data: result });
-    } catch (error) {
-        res.status(400).json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -67,5 +79,6 @@ module.exports = {
     processTransaction,
     getTransactionStatus,
     getPendingTransactions,
-    getTransactionHistory
+    getTransactionHistory,
+    getWalletInfo
 };

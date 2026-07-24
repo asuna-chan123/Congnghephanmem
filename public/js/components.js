@@ -17,21 +17,25 @@ class CustomHeader extends HTMLElement {
         let userSectionHtml = '';
         if (currentUserJson) {
             try {
-                const user = JSON.parse(currentUserJson);
+                // Đã đăng nhập: Hiện Icon Người dùng và Icon Đăng xuất
                 userSectionHtml = `
-                    <span style="font-size: 12px; color: var(--text-primary); opacity: 0.9; font-weight: 500;">Hi, ${user.fullName}</span>
-                    <span style="font-size: 11px; opacity: 0.3; color: var(--text-primary);">|</span>
-                    <a href="#" class="action-link" id="signout-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng xuất</a>
+                    <a href="customer.html" class="action-btn" aria-label="Tài khoản" style="width: auto; height: auto; font-size: 14px; opacity: 0.8; margin-right: 4px;">
+                        <i class="fa-solid fa-user"></i>
+                    </a>
+                    <a href="#" class="action-btn" id="signout-link" aria-label="Đăng xuất" style="width: auto; height: auto; font-size: 14px; opacity: 0.8; color: var(--danger);">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </a>
                 `;
             } catch (e) {
                 localStorage.removeItem('currentUser');
             }
         }
         if (!userSectionHtml) {
+            // Chưa đăng nhập: Hiện Icon Người dùng trỏ sang trang auth.html
             userSectionHtml = `
-                <a href="#" class="action-link sign-in-btn" id="signin-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng nhập</a>
-                <span style="font-size: 11px; opacity: 0.3; color: var(--text-primary);">|</span>
-                <a href="#" class="action-link sign-up-btn" id="signup-link" style="background: transparent; color: var(--text-primary); font-size: 12px; font-weight: 400; padding: 0; opacity: 0.8; transition: opacity 0.2s;">Đăng ký</a>
+                <a href="auth.html" class="action-btn" aria-label="Đăng nhập" style="width: auto; height: auto; font-size: 14px; opacity: 0.8;">
+                    <i class="fa-regular fa-user"></i>
+                </a>
             `;
         }
 
@@ -41,7 +45,7 @@ class CustomHeader extends HTMLElement {
 
                 <!-- Logo -->
                 <div class="logo-area">
-                    <a href="/" class="logo" style="font-weight: 500; font-size: 16px; letter-spacing: -0.01em; color: var(--text-primary); opacity: 0.9;" aria-label="E-Tech Store trang chủ">
+                    <a href="index.html" class="logo" style="font-weight: 500; font-size: 16px; letter-spacing: -0.01em; color: var(--text-primary); opacity: 0.9;" aria-label="E-Tech Store trang chủ">
                         E&#8209;Tech
                     </a>
                 </div>
@@ -69,7 +73,7 @@ class CustomHeader extends HTMLElement {
                     </button>
 
                     <!-- Search Box (extremely sleek and borders-free) -->
-                    <form class="search-form" action="/products.html" method="GET" role="search" style="height: 32px; background: rgba(0,0,0,0.04); border-radius: 8px; align-items: center; padding: 0 10px; width: 220px; transition: width 0.3s ease;">
+                    <form class="search-form" action="products.html" method="GET" role="search" style="height: 32px; background: rgba(0,0,0,0.04); border-radius: 8px; align-items: center; padding: 0 10px; width: 220px; transition: width 0.3s ease;">
                         <input
                             type="search"
                             name="search"
@@ -91,15 +95,15 @@ class CustomHeader extends HTMLElement {
                     <button class="action-btn" id="theme-toggle" aria-label="Đổi giao diện sáng/tối" style="width: auto; height: auto; font-size: 13px; opacity: 0.8; background: none;">
                         <i class="fa-solid fa-moon" aria-hidden="true"></i>
                     </button>
-                    <a href="/favorites.html" class="action-btn favorite-btn" aria-label="Yêu thích" style="width: auto; height: auto; font-size: 13px; opacity: 0.8;">
+                    <a href="favorites.html" class="action-btn favorite-btn" aria-label="Yêu thích" style="width: auto; height: auto; font-size: 13px; opacity: 0.8;">
                         <i class="fa-regular fa-heart" aria-hidden="true"></i>
                     </a>
-                    <a href="/cart.html" class="action-btn cart-btn-toggle" id="cart-toggle-btn" aria-label="Giỏ hàng" style="width: auto; height: auto; font-size: 13px; opacity: 0.8; position: relative;">
+                    <a href="cart.html" class="action-btn cart-btn-toggle" id="cart-toggle-btn" aria-label="Giỏ hàng" style="width: auto; height: auto; font-size: 13px; opacity: 0.8; position: relative;">
                         <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
                         <span class="cart-count" style="position: absolute; top: -7px; right: -8px; background: var(--text-primary); color: var(--bg-elevated); font-size: 8px; width: 13px; height: 13px;" aria-live="polite" aria-label="0 sản phẩm trong giỏ">0</span>
                     </a>
                     ${currentUserJson ? `
-                    <a href="/orders.html" class="action-btn orders-btn" aria-label="Đơn hàng" style="width: auto; height: auto; font-size: 13px; opacity: 0.8;">
+                    <a href="orders.html" class="action-btn orders-btn" aria-label="Đơn hàng" style="width: auto; height: auto; font-size: 13px; opacity: 0.8;">
                         <i class="fa-solid fa-truck" aria-hidden="true"></i>
                     </a>
                     ` : ''}
@@ -115,27 +119,27 @@ class CustomHeader extends HTMLElement {
             <div class="sm-panel-inner">
               <ul class="sm-panel-list" role="list" data-numbering="true">
                 <li class="sm-panel-itemWrap">
-                  <a class="sm-panel-item" href="/" aria-label="Trang chủ">
+                  <a class="sm-panel-item" href="index.html" aria-label="Trang chủ">
                     <span class="sm-panel-itemLabel">Trang chủ</span>
                   </a>
                 </li>
                 <li class="sm-panel-itemWrap">
-                  <a class="sm-panel-item" href="/products.html?category=dien-thoai" aria-label="Điện thoại">
+                  <a class="sm-panel-item" href="products.html?category=dien-thoai" aria-label="Điện thoại">
                     <span class="sm-panel-itemLabel">Điện thoại</span>
                   </a>
                 </li>
                 <li class="sm-panel-itemWrap">
-                  <a class="sm-panel-item" href="/products.html?category=laptop" aria-label="Laptop">
+                  <a class="sm-panel-item" href="products.html?category=laptop" aria-label="Laptop">
                     <span class="sm-panel-itemLabel">Laptop</span>
                   </a>
                 </li>
                 <li class="sm-panel-itemWrap">
-                  <a class="sm-panel-item" href="/products.html?category=may-anh" aria-label="Máy ảnh">
+                  <a class="sm-panel-item" href="products.html?category=may-anh" aria-label="Máy ảnh">
                     <span class="sm-panel-itemLabel">Máy ảnh</span>
                   </a>
                 </li>
                 <li class="sm-panel-itemWrap">
-                  <a class="sm-panel-item" href="/cart.html" aria-label="Giỏ hàng">
+                  <a class="sm-panel-item" href="cart.html" aria-label="Giỏ hàng">
                     <span class="sm-panel-itemLabel">Giỏ hàng</span>
                   </a>
                 </li>
@@ -194,7 +198,6 @@ class CustomHeader extends HTMLElement {
             preContainer.innerHTML = this.colors.map((c, i) => `<div class="sm-prelayer" style="background: ${c}"></div>`).join('');
         }
 
-        // Initialize GSAP states
         if (typeof gsap !== 'undefined') {
             const panel = this.querySelector('#staggered-menu-panel');
             const preLayers = Array.from(this.querySelectorAll('.sm-prelayer'));
@@ -461,38 +464,28 @@ class CustomHeader extends HTMLElement {
         const themeBtn = this.querySelector('#theme-toggle');
         const header = this.querySelector('.main-header');
         const panel = this.querySelector('#staggered-menu-panel');
+        const signoutLink = this.querySelector('#signout-link');
 
         this.setupStaggeredLayers();
 
-        // Initialize auth modals on the page
         if (typeof initAuthModals === 'function') {
             initAuthModals();
         }
 
-        const signinLink = this.querySelector('#signin-link');
-        const signupLink = this.querySelector('#signup-link');
-        const signoutLink = this.querySelector('#signout-link');
-
-        if (signinLink) {
-            signinLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.openSignInModal();
-            });
-        }
-        if (signupLink) {
-            signupLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.openSignUpModal();
-            });
-        }
+        // LOGIC ĐĂNG XUẤT NHANH (QUICK LOGOUT)
         if (signoutLink) {
             signoutLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                localStorage.removeItem('currentUser');
+                // Chỉ xóa accessToken, giữ nguyên refreshToken và currentUser
+                localStorage.removeItem('accessToken');
+                
                 if (typeof window.showStatusPopup === 'function') {
-                    window.showStatusPopup(true, 'Đã đăng xuất thành công.');
+                    window.showStatusPopup(true, 'Đã khóa phiên làm việc hiện tại.');
+                } else {
+                    alert('Đã khóa phiên làm việc hiện tại.');
                 }
-                setTimeout(() => window.location.reload(), 1000);
+                
+                setTimeout(() => window.location.href = 'index.html', 1000);
             });
         }
 
@@ -564,7 +557,7 @@ class CustomFooter extends HTMLElement {
 
                 <!-- Brand -->
                 <div class="footer-brand">
-                    <a href="/" class="logo" style="font-weight: 500; font-size: 16px; letter-spacing: -0.01em; color: var(--text-primary); opacity: 0.9;" aria-label="E-Tech Store">E&#8209;Tech</a>
+                    <a href="index.html" class="logo" style="font-weight: 500; font-size: 16px; letter-spacing: -0.01em; color: var(--text-primary); opacity: 0.9;" aria-label="E-Tech Store">E&#8209;Tech</a>
                     <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.8; margin-top: 15px; max-width: 320px; font-weight: 400;">Nâng tầm trải nghiệm công nghệ của bạn. Dùng thử sản phẩm Apple, thiết bị cao cấp trước khi mua.</p>
                 </div>
 
@@ -695,87 +688,231 @@ function initAuthModals() {
         }, 400);
     };
 
-    document.getElementById('close-signin').onclick = window.closeAuthModal;
-    document.getElementById('close-signup').onclick = window.closeAuthModal;
-    document.getElementById('switch-to-signup').onclick = window.openSignUpModal;
-    document.getElementById('switch-to-signin').onclick = window.openSignInModal;
+    const closeSignin = document.getElementById('close-signin');
+    const closeSignup = document.getElementById('close-signup');
+    const switchToSignup = document.getElementById('switch-to-signup');
+    const switchToSignin = document.getElementById('switch-to-signin');
 
-    overlay.onclick = function (e) {
-        if (e.target === overlay) window.closeAuthModal();
+    if (closeSignin) closeSignin.onclick = window.closeAuthModal;
+    if (closeSignup) closeSignup.onclick = window.closeAuthModal;
+    if (switchToSignup) switchToSignup.onclick = window.openSignUpModal;
+    if (switchToSignin) switchToSignin.onclick = window.openSignInModal;
+
+    if (overlay) {
+        overlay.onclick = function (e) {
+            if (e.target === overlay) window.closeAuthModal();
+        };
+    }
+
+    const signinForm = document.getElementById('signin-form');
+    if (signinForm) {
+        signinForm.onsubmit = async function (e) {
+            e.preventDefault();
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+            const sessionId = localStorage.getItem('sessionId');
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-Id': sessionId
+                    },
+                    body: JSON.stringify({ email, password })
+                }).then(r => r.json());
+
+                if (res.success) {
+                    localStorage.setItem('currentUser', JSON.stringify(res.user));
+                    window.closeAuthModal();
+                    if (typeof window.showStatusPopup === 'function') {
+                        window.showStatusPopup(true, 'Đăng nhập thành công!');
+                    }
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    if (typeof window.showStatusPopup === 'function') {
+                        window.showStatusPopup(false, res.message || 'Đăng nhập thất bại.');
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                if (typeof window.showStatusPopup === 'function') {
+                    window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');
+                }
+            }
+        };
+    }
+
+    const signupForm = document.getElementById('signup-form');
+    if (signupForm) {
+        signupForm.onsubmit = async function (e) {
+            e.preventDefault();
+            const fullName = document.getElementById('signup-fullname').value;
+            const email = document.getElementById('signup-email').value;
+            const phoneNumber = document.getElementById('signup-phone').value;
+            const address = document.getElementById('signup-address').value;
+            const password = document.getElementById('signup-password').value;
+            const sessionId = localStorage.getItem('sessionId');
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-Id': sessionId
+                    },
+                    body: JSON.stringify({ fullName, email, phoneNumber, address, password })
+                }).then(r => r.json());
+
+                if (res.success) {
+                    localStorage.setItem('currentUser', JSON.stringify(res.user));
+                    window.closeAuthModal();
+                    if (typeof window.showStatusPopup === 'function') {
+                        window.showStatusPopup(true, 'Đăng ký thành công!');
+                    }
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    if (typeof window.showStatusPopup === 'function') {
+                        window.showStatusPopup(false, res.message || 'Đăng ký thất bại.');
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                if (typeof window.showStatusPopup === 'function') {
+                    window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');
+                }
+            }
+        };
+    }
+
+/* ============================================================
+   GLOBAL JWT GUARDIAN & RE-AUTH MODAL (CỤM 2) - BẢN BLUR BACKGROUND
+   ============================================================ */
+
+document.addEventListener('DOMContentLoaded', () => {
+    initReauthModal();
+});
+
+function initReauthModal() {
+    if (document.getElementById('reauth-modal-overlay')) return;
+
+    const overlayHtml = `
+    <div id="reauth-modal-overlay" class="auth-modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 9999; background: rgba(0,0,0,0.4); position: fixed; inset: 0; backdrop-filter: blur(2px);">
+        <div class="auth-modal auth-modal-static" style="width: 100%; max-width: 380px; background: var(--card-bg); padding: 32px 24px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; text-align: center;">
+            <button id="close-reauth" style="position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); transition: color 0.2s;">&times;</button>
+            
+            <div style="width: 64px; height: 64px; background: var(--bg-secondary); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--text-secondary);">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            
+            <h3 id="reauth-title" style="font-size: 20px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Chào Khách</h3>
+            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">Vui lòng nhập mật khẩu để tiếp tục.</p>
+            
+            <form id="reauth-form" style="text-align: left;">
+                <div class="auth-field-group">
+                    <input type="password" id="reauth-password" class="auth-input" required placeholder="Nhập mật khẩu của bạn" style="text-align: center; font-size: 16px; letter-spacing: 2px;">
+                </div>
+                <div id="reauth-error" style="color: var(--danger); font-size: 13px; margin-bottom: 16px; display: none; text-align: center;">Mật khẩu không chính xác.</div>
+                <button type="submit" class="auth-submit-btn" id="reauth-submit-btn" style="width: 100%; border-radius: 10px;">Xác nhận</button>
+            </form>
+        </div>
+    </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', overlayHtml);
+    const overlay = document.getElementById('reauth-modal-overlay');
+    const closeBtn = document.getElementById('close-reauth');
+
+    // 1. Khi bấm nút X -> Đẩy về trang chủ
+    closeBtn.onclick = () => {
+        window.location.href = '/'; 
+        // (Hoặc window.location.href = 'index.html'; tùy theo cách chạy dự án của bạn)
     };
 
-    document.getElementById('signin-form').onsubmit = async function (e) {
-        e.preventDefault();
-        const email = document.getElementById('signin-email').value;
-        const password = document.getElementById('signin-password').value;
-        const sessionId = localStorage.getItem('sessionId');
-
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Session-Id': sessionId
-                },
-                body: JSON.stringify({ email, password })
-            }).then(r => r.json());
-
-            if (res.success) {
-                localStorage.setItem('currentUser', JSON.stringify(res.user));
-                window.closeAuthModal();
-                if (typeof window.showStatusPopup === 'function') {
-                    window.showStatusPopup(true, 'Đăng nhập thành công!');
-                }
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                if (typeof window.showStatusPopup === 'function') {
-                    window.showStatusPopup(false, res.message || 'Đăng nhập thất bại.');
-                }
-            }
-        } catch (err) {
-            console.error(err);
-            if (typeof window.showStatusPopup === 'function') {
-                window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');
-            }
+    // 2. Khi bấm ra vùng tối bên ngoài popup -> Đẩy về trang chủ
+    overlay.onclick = (e) => {
+        // Chỉ kích hoạt nếu mục tiêu click chính xác là lớp phủ overlay (không phải cái form bên trong)
+        if (e.target === overlay) {
+            window.location.href = '/';
         }
     };
+}
 
-    document.getElementById('signup-form').onsubmit = async function (e) {
-        e.preventDefault();
-        const fullName = document.getElementById('signup-fullname').value;
-        const email = document.getElementById('signup-email').value;
-        const phoneNumber = document.getElementById('signup-phone').value;
-        const address = document.getElementById('signup-address').value;
-        const password = document.getElementById('signup-password').value;
-        const sessionId = localStorage.getItem('sessionId');
+window.executeWithAuth = function(actionCallback) {
+    // 1. THÊM ĐOẠN NÀY ĐỂ VƯỢT RÀO TẠM THỜI (Bỏ qua mọi bước check)
+    // actionCallback(); 
+    // return;
 
-        try {
-            const res = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Session-Id': sessionId
-                },
-                body: JSON.stringify({ fullName, email, phoneNumber, address, password })
-            }).then(r => r.json());
+    const refreshToken = localStorage.getItem('refreshToken');
+    const accessToken = localStorage.getItem('accessToken');
+    const userJson = localStorage.getItem('currentUser');
 
-            if (res.success) {
-                localStorage.setItem('currentUser', JSON.stringify(res.user));
-                window.closeAuthModal();
-                if (typeof window.showStatusPopup === 'function') {
-                    window.showStatusPopup(true, 'Đăng ký thành công!');
-                }
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                if (typeof window.showStatusPopup === 'function') {
-                    window.showStatusPopup(false, res.message || 'Đăng ký thất bại.');
-                }
-            }
-        } catch (err) {
-            console.error(err);
-            if (typeof window.showStatusPopup === 'function') {
-                window.showStatusPopup(false, 'Lỗi kết nối máy chủ.');
-            }
+    if (!refreshToken || !userJson) {
+        if (typeof showStatusPopup === 'function') {
+            showStatusPopup(false, 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
+        } else {
+            alert('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
         }
-    };
+        setTimeout(() => window.location.href = 'auth.html', 1000);
+        return;
+    }
+
+    const user = JSON.parse(userJson);
+
+    if (accessToken) {
+        actionCallback();
+    } else {
+        const modal = document.getElementById('reauth-modal-overlay');
+        const title = document.getElementById('reauth-title');
+        const form = document.getElementById('reauth-form');
+        const error = document.getElementById('reauth-error');
+        const submitBtn = document.getElementById('reauth-submit-btn');
+        const mainContent = document.querySelector('main'); // Chọn phần thân trang
+
+        if (modal) {
+            title.textContent = `Chào ${user.fullName.split(' ').pop()}`; 
+            error.style.display = 'none';
+            modal.style.display = 'flex';
+            
+            // Áp dụng hiệu ứng làm mờ cho thân trang (Trừ Header)
+            if (mainContent) mainContent.style.filter = 'blur(6px)';
+
+            form.onsubmit = null; 
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const password = document.getElementById('reauth-password').value;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Đang xác thực...';
+
+                try {
+                    const res = await fetch('/api/auth/customer/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone: user.phoneNumber, password: password }) 
+                    }).then(r => r.json());
+
+                    if (res.success || res.tokens) {
+                        localStorage.setItem('accessToken', res.tokens.accessToken);
+                        localStorage.setItem('refreshToken', res.tokens.refreshToken);
+                        modal.style.display = 'none';
+                        document.getElementById('reauth-password').value = '';
+                        
+                        // Bỏ làm mờ trang khi xác thực xong
+                        if (mainContent) mainContent.style.filter = 'none';
+                        
+                        actionCallback();
+                    } else {
+                        error.textContent = res.message || 'Mật khẩu không chính xác.';
+                        error.style.display = 'block';
+                    }
+                } catch (err) {
+                    error.textContent = 'Lỗi kết nối máy chủ.';
+                    error.style.display = 'block';
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Xác nhận';
+                }
+            };
+        }
+    }
+};
 }

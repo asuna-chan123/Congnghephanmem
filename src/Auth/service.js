@@ -3,10 +3,12 @@ const { comparePassword, generateTokens, isValidPassword, hashPassword } = requi
 const jwt = require('jsonwebtoken');
 
 const processRegistration = async (data) => {
-    const { phone, password } = data;
+    // 1. Nhận thêm fullName từ req.body
+    const { fullName, phone, password } = data;
 
-    if (!phone || !password) {
-        return { success: false, error: 'Vui lòng cung cấp đầy đủ số điện thoại và mật khẩu.' };
+    // 2. Kiểm tra điều kiện có cả fullName
+    if (!fullName || !phone || !password) {
+        return { success: false, error: 'Vui lòng cung cấp đầy đủ họ tên, số điện thoại và mật khẩu.' };
     }
 
     if (!isValidPassword(password)) {
@@ -16,7 +18,6 @@ const processRegistration = async (data) => {
         };
     }
 
-    // Kiểm tra trong bảng customers
     const userExists = await get('SELECT * FROM customers WHERE phone_number = ?', [phone]);
     if (userExists) {
         return { success: false, error: 'Số điện thoại này đã được đăng ký.' };
@@ -24,10 +25,10 @@ const processRegistration = async (data) => {
 
     const hashed = await hashPassword(password);
 
-    // Không lưu trường role, thay đổi tên cột theo supabase_update.sql
+    // 3. Cập nhật câu lệnh SQL: Thêm cột full_name và truyền giá trị fullName vào
     await query(
-        'INSERT INTO customers (phone_number, password_hash) VALUES (?, ?)', 
-        [phone, hashed]
+        'INSERT INTO customers (full_name, phone_number, password_hash) VALUES (?, ?, ?)', 
+        [fullName, phone, hashed]
     );
 
     const newUser = await get('SELECT customer_id, phone_number FROM customers WHERE phone_number = ?', [phone]);
@@ -89,4 +90,27 @@ const reAuthenticate = async (refreshToken, password) => {
     return generateTokens({ id: decoded.id, role: decoded.role }, decoded.role);
 };
 
-module.exports = { processRegistration, loginCustomer, loginStaff, reAuthenticate };
+const processForgotPassword = async (phone, newPassword) => {
+    if (!phone || !newPassword) {
+        return { success: false, error: 'Vui lòng cung cấp số điện thoại và mật khẩu mới.' };
+    }
+
+    if (!isValidPassword(newPassword)) {
+        return { 
+            success: false, 
+            error: 'Mật khẩu phải từ 8-32 ký tự, bao gồm ít nhất 1 chữ cái, 1 chữ số và 1 ký tự đặc biệt hợp lệ.' 
+        };
+    }
+
+    const userExists = await get('SELECT * FROM customers WHERE phone_number = ?', [phone]);
+    if (!userExists) {
+        return { success: false, error: 'Số điện thoại không tồn tại trong hệ thống.' };
+    }
+
+    const hashed = await hashPassword(newPassword);
+    await query('UPDATE customers SET password_hash = ? WHERE phone_number = ?', [hashed, phone]);
+
+    return { success: true };
+};
+
+module.exports = { processRegistration, loginCustomer, loginStaff, reAuthenticate, processForgotPassword };

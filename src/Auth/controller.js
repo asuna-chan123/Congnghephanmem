@@ -1,61 +1,77 @@
-const authService = require('./service'); //[cite: 10]
+const authService = require('./service'); 
 
-const register = async (req, res) => { //[cite: 11]
-    try { //[cite: 11]
-        const result = await authService.processRegistration(req.body); //[cite: 11]
+const register = async (req, res) => { 
+    try { 
+        const result = await authService.processRegistration(req.body); 
         
-        if (!result.success) { //[cite: 11]
-            return res.status(400).json({ error: result.error }); //[cite: 11]
-        } //[cite: 11]
+        if (!result.success) { 
+            return res.status(400).json({ error: result.error }); 
+        } 
         
-        return res.status(201).json({  //[cite: 11]
-            message: 'Đăng ký thành công',  //[cite: 11]
-            user: result.user  //[cite: 11]
-        }); //[cite: 11]
+        return res.status(201).json({  
+            message: 'Đăng ký thành công',  
+            user: result.user  
+        }); 
 
-    } catch (error) { //[cite: 11]
-        console.error(error); //[cite: 11]
-        return res.status(500).json({ error: 'Lỗi máy chủ nội bộ' }); //[cite: 11]
-    } //[cite: 11]
-}; //[cite: 11]
+    } catch (error) { 
+        console.error(error); 
+        return res.status(500).json({ error: 'Lỗi máy chủ nội bộ' }); 
+    } 
+}; 
 
-const customerLogin = async (req, res) => { //[cite: 10]
-    try { //[cite: 10]
-        const { phone, password } = req.body; //[cite: 10]
-        const tokens = await authService.loginCustomer(phone, password); //[cite: 10]
-        res.status(200).json({ message: "Đăng nhập khách hàng thành công", tokens }); //[cite: 10]
-    } catch (error) { //[cite: 10]
-        if (error.message === "USER_NOT_FOUND") return res.status(404).json({ message: "Số điện thoại không tồn tại!" }); //[cite: 10]
-        if (error.message === "INVALID_PASSWORD") return res.status(401).json({ message: "Mật khẩu không đúng!" }); //[cite: 10]
-        console.error("LỖI LOGIN THỰC TẾ:", error); //[cite: 10]
-        res.status(500).json({ message: "Lỗi máy chủ nội bộ." }); //[cite: 10]
-    } //[cite: 10]
-}; //[cite: 10]
+const customerLogin = async (req, res) => { 
+    try { 
+        const { phone, password } = req.body; 
+        const tokens = await authService.loginCustomer(phone, password); 
+        res.status(200).json({ message: "Đăng nhập khách hàng thành công", tokens }); 
+    } catch (error) { 
+        if (error.message === "USER_NOT_FOUND") return res.status(404).json({ message: "Số điện thoại không tồn tại!" }); 
+        if (error.message === "INVALID_PASSWORD") return res.status(401).json({ message: "Mật khẩu không đúng!" }); 
+        console.error("LỖI LOGIN THỰC TẾ:", error); 
+        res.status(500).json({ message: "Lỗi máy chủ nội bộ." }); 
+    } 
+}; 
 
-const staffLogin = async (req, res) => { //[cite: 10]
-    try { //[cite: 10]
-        const { staffId, password } = req.body; //[cite: 10]
-        const tokens = await authService.loginStaff(staffId, password); //[cite: 10]
-        res.status(200).json({ message: "Đăng nhập nhân viên thành công", tokens }); //[cite: 10]
-    } catch (error) { //[cite: 10]
-        if (error.message === "USER_NOT_FOUND") return res.status(404).json({ message: "Mã nhân viên không tồn tại!" }); //[cite: 10]
-        if (error.message === "INVALID_PASSWORD") return res.status(401).json({ message: "Mật khẩu không đúng!" }); //[cite: 10]
-        res.status(500).json({ message: "Lỗi máy chủ nội bộ." }); //[cite: 10]
-    } //[cite: 10]
-}; //[cite: 10]
+const staffLogin = async (req, res) => { 
+    try { 
+        const { staffId, password } = req.body; 
+        const tokens = await authService.loginStaff(staffId, password); 
+        res.status(200).json({ message: "Đăng nhập nhân viên thành công", tokens }); 
+    } catch (error) { 
+        if (error.message === "USER_NOT_FOUND") return res.status(404).json({ message: "Mã nhân viên không tồn tại!" }); 
+        if (error.message === "INVALID_PASSWORD") return res.status(401).json({ message: "Mật khẩu không đúng!" }); 
+        res.status(500).json({ message: "Lỗi máy chủ nội bộ." }); 
+    } 
+}; 
 
-const reAuth = async (req, res) => { //[cite: 10]
-    try { //[cite: 10]
-        const { refreshToken, password } = req.body; //[cite: 10]
-        const tokens = await authService.reAuthenticate(refreshToken, password); //[cite: 10]
-        res.status(200).json({ message: "Xác thực lại thành công", tokens }); //[cite: 10]
-    } catch (error) { //[cite: 10]
-        if (error.message === "TOKEN_EXPIRED" || error.message === "NO_TOKEN") { //[cite: 10]
-            return res.status(403).json({ code: "LOGIN_REQUIRED", message: "Phiên hết hạn, vui lòng đăng nhập lại!" }); //[cite: 10]
-        } //[cite: 10]
-        if (error.message === "INVALID_PASSWORD") return res.status(401).json({ message: "Mật khẩu không đúng!" }); //[cite: 10]
-        res.status(500).json({ message: "Lỗi máy chủ nội bộ." }); //[cite: 10]
-    } //[cite: 10]
-}; //[cite: 10]
+const reAuth = async (req, res) => { 
+    try { 
+        const { refreshToken, password } = req.body; 
+        const tokens = await authService.reAuthenticate(refreshToken, password); 
+        res.status(200).json({ message: "Xác thực lại thành công", tokens }); 
+    } catch (error) { 
+        if (error.message === "TOKEN_EXPIRED" || error.message === "NO_TOKEN") { 
+            return res.status(403).json({ code: "LOGIN_REQUIRED", message: "Phiên hết hạn, vui lòng đăng nhập lại!" }); 
+        } 
+        if (error.message === "INVALID_PASSWORD") return res.status(401).json({ message: "Mật khẩu không đúng!" }); 
+        res.status(500).json({ message: "Lỗi máy chủ nội bộ." }); 
+    } 
+}; 
 
-module.exports = { register, customerLogin, staffLogin, reAuth };
+const forgotPassword = async (req, res) => {
+    try {
+        const { phone, newPassword } = req.body;
+        const result = await authService.processForgotPassword(phone, newPassword);
+        
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        return res.status(200).json({ success: true, message: 'Cập nhật mật khẩu thành công' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Lỗi máy chủ nội bộ' });
+    }
+};
+
+module.exports = { register, customerLogin, staffLogin, reAuth, forgotPassword };

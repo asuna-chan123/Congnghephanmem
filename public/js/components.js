@@ -476,15 +476,19 @@ class CustomHeader extends HTMLElement {
         if (signoutLink) {
             signoutLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Chỉ xóa accessToken, giữ nguyên refreshToken và currentUser
+                
+                // Xóa toàn bộ dữ liệu đăng nhập khỏi localStorage
                 localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('currentUser');
                 
                 if (typeof window.showStatusPopup === 'function') {
-                    window.showStatusPopup(true, 'Đã khóa phiên làm việc hiện tại.');
+                    window.showStatusPopup(true, 'Đã đăng xuất thành công.');
                 } else {
-                    alert('Đã khóa phiên làm việc hiện tại.');
+                    alert('Đã đăng xuất thành công.');
                 }
                 
+                // Chuyển về trang đăng nhập/trang chủ
                 setTimeout(() => window.location.href = 'index.html', 1000);
             });
         }
@@ -786,34 +790,100 @@ function initAuthModals() {
     }
 
 /* ============================================================
-   GLOBAL JWT GUARDIAN & RE-AUTH MODAL (CỤM 2) - BẢN BLUR BACKGROUND
+   GLOBAL JWT GUARDIAN & RE-AUTH MODAL - THỜI GIAN THỰC (REAL-TIME)
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
     initReauthModal();
+    // Bật đồng hồ đếm ngược theo dõi thời gian sống của Token ngay khi tải trang
+    if (typeof window.setupTokenExpirationTimer === 'function') {
+        window.setupTokenExpirationTimer();
+    }
 });
+
+// Hàm giải mã JWT Token (Lấy thông tin không cần secret key)
+function parseJwt(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        return null;
+    }
+}
+
+// Biến lưu trữ Timer để có thể reset khi cần
+let tokenExpirationTimer = null;
+
+window.setupTokenExpirationTimer = function() {
+    // 1. DANH SÁCH CÁC TRANG MUỐN BẬT POPUP TỰ ĐỘNG
+    // Bạn có thể thêm bớt tên file HTML vào mảng này tùy ý
+    const protectedPages = ['customer.html', 'payment.html', 'orders.html'];
+    const currentPath = window.location.pathname;
+
+    // 2. KIỂM TRA BẢO VỆ: Nếu trang hiện tại không có chữ nào trùng với danh sách trên -> Tắt bộ đếm
+    const isProtected = protectedPages.some(page => currentPath.includes(page));
+    if (!isProtected) {
+        return; // Dừng lại luôn, không đếm giờ, không bật popup ở trang này!
+    }
+
+    // --- Phần đếm giờ cũ giữ nguyên ---
+    // Xóa timer cũ nếu có
+    if (tokenExpirationTimer) {
+        clearTimeout(tokenExpirationTimer);
+        tokenExpirationTimer = null;
+    }
+
+    const at = localStorage.getItem('accessToken');
+    const rt = localStorage.getItem('refreshToken');
+    const userJson = localStorage.getItem('currentUser');
+
+    // Nếu không có Token hoặc chưa đăng nhập thì không cần đếm giờ
+    if (!at || !rt || !userJson) return;
+
+    const decoded = parseJwt(at);
+    if (decoded && decoded.exp) {
+        const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+        // Tính thời gian còn lại (đơn vị: mili-giây)
+        const timeLeftMs = (decoded.exp - currentTimeInSeconds) * 1000;
+
+        if (timeLeftMs <= 0) {
+            window.triggerReauthPopup();
+        } else {
+            // Đặt đồng hồ báo thức
+            tokenExpirationTimer = setTimeout(() => {
+                window.triggerReauthPopup();
+            }, timeLeftMs);
+        }
+    }
+};
 
 function initReauthModal() {
     if (document.getElementById('reauth-modal-overlay')) return;
 
+    // Overlay dùng nền trong suốt để Header & Footer hiển thị rõ 100%
     const overlayHtml = `
-    <div id="reauth-modal-overlay" class="auth-modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 9999; background: rgba(0,0,0,0.4); position: fixed; inset: 0; backdrop-filter: blur(2px);">
-        <div class="auth-modal auth-modal-static" style="width: 100%; max-width: 380px; background: var(--card-bg); padding: 32px 24px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; text-align: center;">
+    <div id="reauth-modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 99999; background: rgba(0,0,0,0.1); position: fixed; inset: 0; pointer-events: auto;">
+        <div style="width: 100%; max-width: 380px; background: var(--card-bg, #ffffff); padding: 32px 24px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); position: relative; text-align: center; border: 1px solid var(--border, #e5e5e5);">
             <button id="close-reauth" style="position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); transition: color 0.2s;">&times;</button>
             
             <div style="width: 64px; height: 64px; background: var(--bg-secondary); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--text-secondary);">
                 <i class="fa-solid fa-lock"></i>
             </div>
             
-            <h3 id="reauth-title" style="font-size: 20px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Chào Khách</h3>
-            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">Vui lòng nhập mật khẩu để tiếp tục.</p>
+            <h3 id="reauth-title" style="font-size: 20px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Chào bạn</h3>
+            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">Phiên đăng nhập của bạn đã hết hạn.<br>Nhập lại mật khẩu để tiếp tục thao tác.</p>
             
             <form id="reauth-form" style="text-align: left;">
                 <div class="auth-field-group">
                     <input type="password" id="reauth-password" class="auth-input" required placeholder="Nhập mật khẩu của bạn" style="text-align: center; font-size: 16px; letter-spacing: 2px;">
                 </div>
                 <div id="reauth-error" style="color: var(--danger); font-size: 13px; margin-bottom: 16px; display: none; text-align: center;">Mật khẩu không chính xác.</div>
-                <button type="submit" class="auth-submit-btn" id="reauth-submit-btn" style="width: 100%; border-radius: 10px;">Xác nhận</button>
+                
+                <button type="submit" class="auth-submit-btn" id="reauth-submit-btn" style="width: 100%; border-radius: 10px;">Đăng nhập lại</button>
             </form>
         </div>
     </div>
@@ -822,97 +892,112 @@ function initReauthModal() {
     const overlay = document.getElementById('reauth-modal-overlay');
     const closeBtn = document.getElementById('close-reauth');
 
-    // 1. Khi bấm nút X -> Đẩy về trang chủ
-    closeBtn.onclick = () => {
-        window.location.href = '/'; 
-        // (Hoặc window.location.href = 'index.html'; tùy theo cách chạy dự án của bạn)
-    };
-
-    // 2. Khi bấm ra vùng tối bên ngoài popup -> Đẩy về trang chủ
+    closeBtn.onclick = () => window.location.href = '/'; 
     overlay.onclick = (e) => {
-        // Chỉ kích hoạt nếu mục tiêu click chính xác là lớp phủ overlay (không phải cái form bên trong)
-        if (e.target === overlay) {
-            window.location.href = '/';
-        }
+        if (e.target === overlay) window.location.href = '/';
     };
 }
 
-window.executeWithAuth = function(actionCallback) {
-    // 1. THÊM ĐOẠN NÀY ĐỂ VƯỢT RÀO TẠM THỜI (Bỏ qua mọi bước check)
-    // actionCallback(); 
-    // return;
+// Bật cờ kiểm soát để tránh bật Popup nhiều lần cùng lúc
+let isReauthPopupShowing = false;
 
+window.triggerReauthPopup = function() {
+    if (isReauthPopupShowing) return; 
+    
+    const modal = document.getElementById('reauth-modal-overlay');
+    const title = document.getElementById('reauth-title');
+    const form = document.getElementById('reauth-form');
+    const error = document.getElementById('reauth-error');
+    const submitBtn = document.getElementById('reauth-submit-btn');
+    const mainContent = document.querySelector('main');
+    
+    const userJson = localStorage.getItem('currentUser');
+    let phone = '';
+    
+    if (userJson) {
+        try {
+            const user = JSON.parse(userJson);
+            phone = user.phoneNumber || user.phone; 
+            const name = user.fullName ? user.fullName.split(' ').pop() : 'bạn';
+            title.textContent = `Chào ${name}`; 
+        } catch(e) {}
+    }
+
+    if (modal) {
+        isReauthPopupShowing = true; 
+        error.style.display = 'none';
+        modal.style.display = 'flex';
+        
+        if (mainContent) {
+            mainContent.style.transition = 'all 0.3s ease';
+            mainContent.style.willChange = 'filter, opacity';
+            mainContent.style.transform = 'translateZ(0)';
+            mainContent.style.filter = 'blur(8px)';
+            mainContent.style.opacity = '0.3'; 
+            mainContent.style.pointerEvents = 'none'; 
+        }
+
+        form.onsubmit = null; 
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('reauth-password').value;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Đang xác thực...';
+
+            try {
+                const res = await fetch('/api/auth/customer/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phone, password: password }) 
+                }).then(r => r.json());
+
+                if (res.success || res.tokens) {
+                    localStorage.setItem('accessToken', res.tokens.accessToken);
+                    localStorage.setItem('refreshToken', res.tokens.refreshToken);
+                    
+                    // --- CHỈ CẦN 1 DÒNG NÀY ĐỂ F5 LẠI TOÀN BỘ TRANG ---
+                    window.location.reload();
+                    
+                } else {
+                    error.textContent = res.message || 'Mật khẩu không chính xác.';
+                    error.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Đăng nhập lại';
+                }
+            } catch (err) {
+                error.textContent = 'Lỗi kết nối máy chủ.';
+                error.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Đăng nhập lại';
+            }
+        };
+    }
+};
+
+window.executeWithAuth = function(actionCallback) {
     const refreshToken = localStorage.getItem('refreshToken');
     const accessToken = localStorage.getItem('accessToken');
     const userJson = localStorage.getItem('currentUser');
 
     if (!refreshToken || !userJson) {
         if (typeof showStatusPopup === 'function') {
-            showStatusPopup(false, 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
-        } else {
-            alert('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
+            showStatusPopup(false, 'Tài khoản chưa được đăng nhập.');
         }
         setTimeout(() => window.location.href = 'auth.html', 1000);
         return;
     }
 
-    const user = JSON.parse(userJson);
-
     if (accessToken) {
-        actionCallback();
-    } else {
-        const modal = document.getElementById('reauth-modal-overlay');
-        const title = document.getElementById('reauth-title');
-        const form = document.getElementById('reauth-form');
-        const error = document.getElementById('reauth-error');
-        const submitBtn = document.getElementById('reauth-submit-btn');
-        const mainContent = document.querySelector('main'); // Chọn phần thân trang
-
-        if (modal) {
-            title.textContent = `Chào ${user.fullName.split(' ').pop()}`; 
-            error.style.display = 'none';
-            modal.style.display = 'flex';
-            
-            // Áp dụng hiệu ứng làm mờ cho thân trang (Trừ Header)
-            if (mainContent) mainContent.style.filter = 'blur(6px)';
-
-            form.onsubmit = null; 
-            form.onsubmit = async (e) => {
-                e.preventDefault();
-                const password = document.getElementById('reauth-password').value;
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Đang xác thực...';
-
-                try {
-                    const res = await fetch('/api/auth/customer/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ phone: user.phoneNumber, password: password }) 
-                    }).then(r => r.json());
-
-                    if (res.success || res.tokens) {
-                        localStorage.setItem('accessToken', res.tokens.accessToken);
-                        localStorage.setItem('refreshToken', res.tokens.refreshToken);
-                        modal.style.display = 'none';
-                        document.getElementById('reauth-password').value = '';
-                        
-                        // Bỏ làm mờ trang khi xác thực xong
-                        if (mainContent) mainContent.style.filter = 'none';
-                        
-                        actionCallback();
-                    } else {
-                        error.textContent = res.message || 'Mật khẩu không chính xác.';
-                        error.style.display = 'block';
-                    }
-                } catch (err) {
-                    error.textContent = 'Lỗi kết nối máy chủ.';
-                    error.style.display = 'block';
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Xác nhận';
-                }
-            };
+        const decoded = parseJwt(accessToken);
+        if (decoded && decoded.exp && Math.floor(Date.now() / 1000) >= decoded.exp) {
+             // Gọi Popup trống, khi xác thực xong nó sẽ tự reload trang
+             window.triggerReauthPopup();
+        } else {
+             actionCallback();
         }
+    } else {
+        // Gọi Popup trống, khi xác thực xong nó sẽ tự reload trang
+        window.triggerReauthPopup();
     }
 };
 }

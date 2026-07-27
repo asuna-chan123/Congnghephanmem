@@ -11,9 +11,8 @@
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/cart.css"> <!-- Tái sử dụng CSS của giỏ hàng -->
+    <link rel="stylesheet" href="css/cart.css">
     <style>
-        /* Một chút CSS bổ sung nhỏ cho phần chọn phương thức thanh toán */
         .payment-method-card {
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
@@ -56,24 +55,20 @@
         <div class="cart-page-wrapper">
             <h1 style="margin-bottom: 24px; font-size: 28px;">Thanh toán an toàn</h1>
             
-            <!-- LAYOUT CHIA 2 CỘT TỪ CART.CSS -->
             <div class="cart-layout">
                 
                 <!-- CỘT TRÁI: THÔNG TIN GIAO HÀNG & PHƯƠNG THỨC -->
                 <div class="cart-items-column">
                     
-                    <!-- 1. Địa chỉ giao hàng -->
+                    <!-- 1. Thông tin người nhận -->
                     <div class="summary-box">
-                        <h3 style="margin-bottom: 16px; font-size: 18px;"><i class="fa-solid fa-location-dot" style="color: var(--accent); margin-right: 8px;"></i> Thông tin giao hàng</h3>
+                        <h3 style="margin-bottom: 16px; font-size: 18px;"><i class="fa-solid fa-user-check" style="color: var(--accent); margin-right: 8px;"></i> Thông tin người nhận</h3>
                         <div class="address-box">
                             <label style="font-size: 13px; font-weight: 600;">Họ tên người nhận:</label>
                             <input type="text" id="shipping-name" class="address-input" placeholder="Nhập họ tên">
                             
                             <label style="font-size: 13px; font-weight: 600; display: block; margin-top: 16px;">Số điện thoại:</label>
                             <input type="tel" id="shipping-phone" class="address-input" placeholder="Nhập số điện thoại">
-
-                            <label style="font-size: 13px; font-weight: 600; display: block; margin-top: 16px;">Địa chỉ chi tiết:</label>
-                            <input type="text" id="shipping-address" class="address-input" placeholder="Số nhà, đường, phường, quận...">
                         </div>
                     </div>
 
@@ -89,11 +84,11 @@
                             </div>
                         </div>
 
-                        <div class="payment-method-card" data-method="cod">
-                            <div class="method-icon"><i class="fa-solid fa-truck"></i></div>
+                        <div class="payment-method-card" data-method="store">
+                            <div class="method-icon"><i class="fa-solid fa-store"></i></div>
                             <div class="method-info">
-                                <h4>Thanh toán khi nhận hàng (COD)</h4>
-                                <p>Kiểm tra hàng trước khi thanh toán</p>
+                                <h4>Thanh toán tại cửa hàng</h4>
+                                <p>Kiểm tra hàng trực tiếp tại cửa hàng trước khi thanh toán</p>
                             </div>
                         </div>
                     </div>
@@ -109,7 +104,7 @@
                             <span id="subtotal">0 ₫</span>
                         </div>
                         <div class="summary-row">
-                            <span>Phí vận chuyển</span>
+                            <span>Tiền cọc</span>
                             <span class="text-free">Miễn phí</span>
                         </div>
                         

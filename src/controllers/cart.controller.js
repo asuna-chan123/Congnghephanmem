@@ -1,5 +1,6 @@
 const CartModel = require('../models/cart.model');
 const OrderModel = require('../models/order.model');
+const walletService = require('../Payment/service');
 
 //get cart
 class CartController {
@@ -117,19 +118,36 @@ class CartController {
     }
   }
 
-  static async checkout(req, res) {
+static async checkout(req, res) {
     try {
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      // Ưu tiên lấy customerId từ token (req.user.id) nếu bạn dùng middleware verifyToken, 
+      // hoặc fallback về header cũ.
+      const customerId = req.user?.id || (req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null);
+      
       if (!customerId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập trước khi thanh toán.' });
       }
 
-      const { selectedItemIds } = req.body;
-      if (!selectedItemIds || selectedItemIds.length === 0) {
-        return res.status(400).json({ success: false, message: 'Vui lòng chọn ít nhất một sản phẩm để thanh toán.' });
+      // Nhận toàn bộ payload từ Frontend gửi lên
+      const { selectedItemIds, paymentMethod, shippingDetails, totalAmount } = req.body;
+
+      // XỬ LÝ THANH TOÁN BẰNG VÍ E-TECH
+      if (paymentMethod === 'wallet') {
+          if (!totalAmount || totalAmount <= 0) {
+              return res.status(400).json({ success: false, message: 'Số tiền thanh toán không hợp lệ.' });
+          }
+          try {
+              // Gọi hàm Rút tiền/Trừ tiền cọc. Nếu số dư không đủ, nó sẽ tự văng lỗi (throw Error)
+              await walletService.createWithdrawal(customerId, totalAmount);
+          } catch (walletError) {
+              return res.status(400).json({ success: false, message: walletError.message || "Số dư ví không đủ để đặt cọc." });
+          }
       }
 
-      const result = await OrderModel.createOrderFromCart(customerId, selectedItemIds);
+      // TẠO ĐƠN HÀNG
+      // Lưu ý: Cần đảm bảo OrderModel.createOrderFromCart của bạn đã sẵn sàng nhận thêm paymentMethod và shippingDetails
+      const result = await OrderModel.createOrderFromCart(customerId, selectedItemIds, paymentMethod, shippingDetails);
+      
       res.json({ success: true, message: 'Thanh toán thành công. Đơn hàng đã được khởi tạo.', order: result });
     } catch (error) {
       console.error('Error during checkout:', error);

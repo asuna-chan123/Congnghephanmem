@@ -109,7 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showAlert(alertBox, 'Đăng nhập thành công!', true);
             // Cập nhật thông tin dựa trên cơ chế JWT của bạn
-            localStorage.setItem('currentUser', JSON.stringify({ phoneNumber: phone, fullName: 'Khách hàng' }));
+            const userInfo = data.user || data.customer || { 
+                id: data.id || data.userId, // Cố gắng lấy ID từ response
+                phoneNumber: phone, 
+                fullName: data.fullName || 'Khách hàng' 
+            };
+            localStorage.setItem('currentUser', JSON.stringify(userInfo));
             localStorage.setItem('accessToken', data.tokens.accessToken);
             localStorage.setItem('refreshToken', data.tokens.refreshToken);
             

@@ -16,8 +16,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-                window.location.href = 'auth.html';
+                // KHÔNG xóa refreshToken để giữ lại thông tin session
+                
+                // Gọi hiển thị Popup thay vì chuyển hướng
+                if (typeof window.triggerReauthPopup === 'function') {
+                    window.triggerReauthPopup();
+                } else {
+                    window.location.href = '/'; // Đề phòng lỗi
+                }
+                throw new Error('Phiên đăng nhập đã hết hạn'); // Dừng API hiện tại
             }
             return data;
         } catch (e) {

@@ -1,28 +1,36 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Khởi tạo các DOM Element
     const methodCards = document.querySelectorAll('.payment-method-card');
     const confirmBtn = document.getElementById('confirm-payment-btn');
-    let selectedMethod = 'wallet'; // Mặc định dùng Ví
+    let selectedMethod = 'wallet'; 
     let orderTotal = 0;
+    let selectedItemIds = [];
 
-    // Lấy token để gọi API bảo mật
     const token = localStorage.getItem('accessToken');
     
-    // Hàm fetch kèm Token
     async function authFetch(url, options = {}) {
+        // Lấy thông tin user từ localStorage để trích xuất ID
+        const userJson = localStorage.getItem('currentUser');
+        let customerId = null;
+        if (userJson) {
+            try {
+                const user = JSON.parse(userJson);
+                customerId = user.id; // Lấy ID của khách hàng
+            } catch(e) {}
+        }
+
         const headers = {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            // Bổ sung header x-customer-id để Backend (Cart/Order) nhận diện được khách hàng
+            ...(customerId ? { 'x-customer-id': customerId } : {}), 
             ...(options.headers || {})
         };
         const res = await fetch(url, { ...options, headers });
         return res.json();
     }
 
-    // Tiện ích format tiền
     const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
 
-    // 2. Logic chọn phương thức thanh toán UI
     methodCards.forEach(card => {
         card.addEventListener('click', () => {
             methodCards.forEach(c => c.classList.remove('selected'));
@@ -31,34 +39,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // 3. Tải thông tin người dùng và Giỏ hàng
     async function loadCheckoutData() {
         try {
-            // A. Tải thông tin profile để tự điền form (nếu đã đăng nhập)
             if (token) {
-                const profile = await authFetch('/api/customer/profile');
-                if (profile && profile.id) {
-                    document.getElementById('shipping-name').value = profile.hoTen || '';
-                    document.getElementById('shipping-phone').value = profile.phone || '';
-                    document.getElementById('shipping-address').value = profile.diaChi || '';
+                // 1. Tải thông tin người dùng để tự điền form
+                const profileRes = await authFetch('/api/customer/profile');
+                if (profileRes && profileRes.success && profileRes.data) {
+                    const profile = profileRes.data;
+                    document.getElementById('shipping-name').value = profile.hoTen || profile.fullName || '';
+                    document.getElementById('shipping-phone').value = profile.phone || profile.phoneNumber || '';
                 }
 
-                // Lấy số dư ví để hiển thị
-                const wallet = await authFetch('/api/customer/wallet');
-                if (wallet && wallet.balance !== undefined) {
-                    document.getElementById('current-balance').textContent = formatCurrency(wallet.balance);
+                // 2. Lấy số dư ví thực tế từ API chuẩn của module Payment
+                const walletRes = await authFetch('/api/payment/info');
+                if (walletRes && walletRes.success && walletRes.data) {
+                    document.getElementById('current-balance').textContent = formatCurrency(walletRes.data.balance || 0);
                 }
             }
 
-            // B. Tải giỏ hàng để tính tiền (Giả định bạn có API /api/cart)
-            // Thay thế bằng API thực tế của bạn
+            // 3. Tải giỏ hàng
             const cartData = await authFetch('/api/cart'); 
             
             if (cartData && cartData.success) {
                 const items = cartData.cart || [];
                 document.getElementById('total-items').textContent = items.length;
+
+                selectedItemIds = items.map(item => item.id || item.cart_item_id);
                 
-                // Tính tổng tiền (Giả lập logic cộng dồn giá)
                 orderTotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
                 
                 document.getElementById('subtotal').textContent = formatCurrency(orderTotal);
@@ -72,40 +79,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     loadCheckoutData();
 
-    // 4. Xử lý sự kiện Bấm Thanh Toán
     confirmBtn.addEventListener('click', async () => {
-        // Lấy dữ liệu form
+        // Chỉ lấy Họ tên và Số điện thoại (Đã bỏ địa chỉ)
         const shippingName = document.getElementById('shipping-name').value.trim();
         const shippingPhone = document.getElementById('shipping-phone').value.trim();
-        const shippingAddress = document.getElementById('shipping-address').value.trim();
 
-        if (!shippingName || !shippingPhone || !shippingAddress) {
-            alert("Vui lòng điền đầy đủ thông tin giao hàng!");
+        if (!shippingName || !shippingPhone) {
+            alert("Vui lòng điền đầy đủ họ tên và số điện thoại!");
             return;
         }
 
-        // Cập nhật UI nút bấm
         confirmBtn.disabled = true;
         confirmBtn.textContent = 'Đang xử lý...';
 
         try {
-            // Gọi API Module Payment để xử lý thanh toán
-            const response = await authFetch('/api/payment/process', {
+            const response = await authFetch('/api/cart/checkout', {
                 method: 'POST',
                 body: JSON.stringify({
                     paymentMethod: selectedMethod,
                     shippingDetails: {
                         name: shippingName,
-                        phone: shippingPhone,
-                        address: shippingAddress
+                        phone: shippingPhone
                     },
-                    totalAmount: orderTotal
+                    totalAmount: orderTotal,
+                    selectedItemIds: selectedItemIds
                 })
             });
 
             if (response.success) {
                 alert("Thanh toán thành công! Đơn hàng của bạn đang được xử lý.");
-                window.location.href = '/orders.html'; // Chuyển về trang Lịch sử đơn hàng
+                window.location.href = '/orders.html'; 
             } else {
                 alert(response.message || response.error || "Thanh toán thất bại, vui lòng kiểm tra lại số dư.");
                 confirmBtn.disabled = false;

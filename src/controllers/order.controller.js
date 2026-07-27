@@ -36,7 +36,7 @@ class OrderController {
     }
   }
 
-  static async updateShipping(req, res) {
+static async updateShipping(req, res) {
     try {
       const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
       if (!customerId) {
@@ -44,19 +44,21 @@ class OrderController {
       }
 
       const orderId = parseInt(req.params.id, 10);
-      const { shippingName, shippingPhone, shippingAddress } = req.body;
+      // Chỉ lấy shippingName và shippingPhone
+      const { shippingName, shippingPhone } = req.body;
 
-      if (!shippingName || !shippingPhone || !shippingAddress) {
-        return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ họ tên, SĐT và địa chỉ.' });
+      if (!shippingName || !shippingPhone) {
+        return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ họ tên và SĐT.' });
       }
 
-      await OrderModel.updateShippingInfo(customerId, orderId, shippingName, shippingPhone, shippingAddress);
+      // Truyền null hoặc chuỗi rỗng vào vị trí của shippingAddress để tương thích với Model cũ
+      await OrderModel.updateShippingInfo(customerId, orderId, shippingName, shippingPhone, null);
       res.json({ success: true, message: 'Cập nhật thông tin giao hàng thành công.' });
     } catch (error) {
       console.error('Error updating shipping info:', error);
       res.status(400).json({ success: false, message: error.message || 'Server Error' });
     }
-  }
+}
 
   static async extendOrder(req, res) {
     try {

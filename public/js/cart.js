@@ -54,6 +54,10 @@ function renderCartItems() {
         const isChecked = selectedItemIds.includes(item.uniqueId);
         const card = document.createElement('div');
         card.className = 'cart-item-card';
+        const rentalDays = item.rentalDays || 1;
+        const itemRentalTotal = (item.price * rentalDays);
+        const itemDeposit = item.deposit || 0;
+
         card.innerHTML = `
             <!-- Checkbox -->
             <div class="cart-item-checkbox-col">
@@ -74,13 +78,22 @@ function renderCartItems() {
                 ${item.rental_start_date && item.rental_end_date ? `
                 <span class="cart-item-dates" style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">
                     <i class="fa-regular fa-calendar-days" style="margin-right: 4px; color: var(--accent);"></i>
-                    Thuê: ${new Date(item.rental_start_date).toLocaleDateString('vi-VN')} - ${new Date(item.rental_end_date).toLocaleDateString('vi-VN')}
+                    Thuê ${rentalDays} ngày (${new Date(item.rental_start_date).toLocaleDateString('vi-VN')} - ${new Date(item.rental_end_date).toLocaleDateString('vi-VN')})
                 </span>
                 ` : ''}
-                <span class="cart-item-price">${formatCurrency(item.price)} <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary)">/ ngày</span></span>
+                
+                <div style="margin-top: 6px;">
+                    <span class="cart-item-price" style="font-size: 14px; font-weight: 600; color: var(--accent);">
+                        Tiền thuê: ${formatCurrency(itemRentalTotal)} 
+                        <small style="font-size: 11px; font-weight: normal; color: var(--text-tertiary)">(${formatCurrency(item.price)}/ngày)</small>
+                    </span>
+                    <span style="display: block; font-size: 12px; color: #666; margin-top: 2px;">
+                        Tiền cọc: <strong>${formatCurrency(itemDeposit)}</strong>
+                    </span>
+                </div>
             </div>
 
-            <!-- Quantity Stepper & Trash -->
+            <!-- Controls -->
             <div class="cart-item-controls-col">
                 <div class="cart-item-stepper-wrapper">
                     <div class="cart-quantity-stepper">
@@ -101,22 +114,28 @@ function renderCartItems() {
 }
 
 function recalculateTotals() {
-    let itemsTotal = 0;
-    let itemCount = 0;
+    let totalRent = 0;
+    let totalDeposit = 0;
 
     cartList.forEach(item => {
         if (selectedItemIds.includes(item.uniqueId)) {
-            itemsTotal += (item.price * item.quantity);
-            itemCount += item.quantity;
+            const days = item.rentalDays || 1;
+            const qty = item.quantity || 1;
+            
+            totalRent += (item.price * days * qty);
+            totalDeposit += ((item.deposit || 0) * qty);
         }
     });
 
-    const subtotal = itemsTotal; // Let's keep it clean
-    const delivery = 0; // free delivery
-    const total = subtotal + delivery;
+    const grandTotal = totalRent + totalDeposit;
 
-    document.getElementById('summary-subtotal').textContent = formatCurrency(subtotal);
-    document.getElementById('summary-total').textContent = formatCurrency(total);
+    const subtotalEl = document.getElementById('summary-subtotal');
+    const depositEl = document.getElementById('summary-deposit');
+    const totalEl = document.getElementById('summary-total');
+
+    if (subtotalEl) subtotalEl.textContent = formatCurrency(totalRent);
+    if (depositEl) depositEl.textContent = formatCurrency(totalDeposit);
+    if (totalEl) totalEl.textContent = formatCurrency(grandTotal);
 }
 
 function updateSelectAllCheckboxState() {

@@ -14,13 +14,19 @@ class CartController {
 
       const cartItems = await CartModel.getCartBySessionId(sessionId, customerId);
 
-      let total = 0;
+      let totalRent = 0;
+      let totalDeposit = 0;
+
       cartItems.forEach(item => {
-        total += (item.price * item.quantity);
+        totalRent += (item.price * item.rentalDays * item.quantity);
+        totalDeposit += (item.deposit * item.quantity);
       });
 
-      res.json({ success: true, cart: cartItems, total });
-    } catch (error) {
+      const total = totalRent + totalDeposit;
+
+      res.json({ success: true, cart: cartItems, total, totalRent, totalDeposit });
+    } 
+    catch (error) {
       console.error('Error fetching cart:', error);
       res.status(500).json({ success: false, message: 'Server Error' });
     }

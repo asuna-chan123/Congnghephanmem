@@ -1,19 +1,20 @@
 const { query, get } = require('./db');
 
 class OrderModel {
-  static async createOrderFromCart(customerId, selectedItemIds) {
+  // 1. Cập nhật để nhận đủ tham số từ Controller
+  static async createOrderFromCart(customerId, selectedItemIds, paymentMethod, shippingDetails) {
     if (!selectedItemIds || selectedItemIds.length === 0) {
       throw new Error('Không có sản phẩm nào được chọn để thanh toán.');
     }
 
-    // Get cart items matching selected IDs
+    // 2. Sửa câu lệnh SQL: Chấp nhận cả những sản phẩm có customer_id là NULL (được thêm vào trước khi đăng nhập)
     const placeholders = selectedItemIds.map(() => '?').join(',');
     const cartSql = `
       SELECT ci.cart_item_id, ci.variant_id, ci.quantity, ci.rental_start_date, ci.rental_end_date,
              dv.daily_rental_price, (dv.daily_rental_price * 10) as deposit_amount
       FROM cart_items ci
       JOIN device_variants dv ON ci.variant_id = dv.variant_id
-      WHERE ci.cart_item_id IN (${placeholders}) AND ci.customer_id = ?
+      WHERE ci.cart_item_id IN (${placeholders}) AND (ci.customer_id = ? OR ci.customer_id IS NULL)
     `;
     const cartItems = await query(cartSql, [...selectedItemIds, customerId]);
 
@@ -34,13 +35,11 @@ class OrderModel {
     }
 
     // Calculate dates & amounts
-    // Use first item's dates as root order dates
     const orderStartDate = cartItems[0].rental_start_date || new Date().toISOString().split('T')[0];
     const orderEndDate = cartItems[0].rental_end_date || new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
     let orderSubtotal = 0;
     let orderDeposit = 0;
-
     const detailsToInsert = [];
 
     for (const item of cartItems) {
@@ -65,14 +64,10 @@ class OrderModel {
     const orderTotal = orderSubtotal + orderDeposit;
     const orderCode = 'ORD-' + Date.now().toString().slice(-8);
 
-    // Fetch customer details for shipping default
-    const customer = await get(
-      `SELECT full_name, phone_number, address FROM customers WHERE customer_id = ?`,
-      [customerId]
-    );
-    const shippingName = customer ? customer.full_name : '';
-    const shippingPhone = customer ? customer.phone_number : '';
-    const shippingAddress = customer ? customer.address : '';
+    // 3. SỬA Ở ĐÂY: Ưu tiên lấy thông tin Họ tên, SĐT từ form thanh toán gửi lên
+    const shippingName = shippingDetails?.name || '';
+    const shippingPhone = shippingDetails?.phone || '';
+    const shippingAddress = shippingDetails?.address || ''; 
 
     // 1. Insert into rental_orders
     const insertOrderSql = `

@@ -8,24 +8,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('accessToken');
     
     async function authFetch(url, options = {}) {
-        // Lấy thông tin user từ localStorage để trích xuất ID
+        // 2. Di chuyển việc lấy Token và User vào BÊN TRONG hàm 
+        // để đảm bảo luôn lấy dữ liệu mới nhất mỗi khi gọi API
+        const token = localStorage.getItem('accessToken');
         const userJson = localStorage.getItem('currentUser');
+        const sessionId = localStorage.getItem('sessionId'); // Lấy sessionId từ bước sửa lỗi trước
+
         let customerId = null;
         if (userJson) {
             try {
                 const user = JSON.parse(userJson);
-                customerId = user.id; // Lấy ID của khách hàng
-            } catch(e) {}
+                // Lưu ý: Đảm bảo field chứa ID của bạn tên là 'id'. 
+                // Nếu database của bạn dùng '_id' hoặc 'userId' thì hãy thêm vào như dưới đây:
+                customerId = user.id || user._id || user.userId; 
+            } catch(e) {
+                console.error("Lỗi khi đọc thông tin user:", e);
+            }
         }
 
         const headers = {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            // Bổ sung header x-customer-id để Backend (Cart/Order) nhận diện được khách hàng
-            ...(customerId ? { 'x-customer-id': customerId } : {}), 
+            ...(customerId ? { 'x-customer-id': customerId.toString() } : {}), 
+            ...(sessionId ? { 'x-session-id': sessionId } : {}), 
             ...(options.headers || {})
         };
+        
         const res = await fetch(url, { ...options, headers });
+        
+        // 3. Thêm logic tự động bắt lỗi 401 (Chưa đăng nhập / Hết hạn token)
+        if (res.status === 401) {
+            alert("Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn. Vui lòng đăng nhập lại để thanh toán.");
+            window.location.href = '/auth.html'; // Đổi thành tên file HTML trang đăng nhập của bạn
+            throw new Error("Unauthorized");
+        }
+        
         return res.json();
     }
 
@@ -64,11 +81,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const items = cartData.cart || [];
                 document.getElementById('total-items').textContent = items.length;
 
-                selectedItemIds = items.map(item => item.id || item.cart_item_id);
+                selectedItemIds = items.map(item => item.cart_item_id);
                 
-                orderTotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+                // Sử dụng chính xác các giá trị Backend tính toán
+                const subtotal = cartData.totalRent || 0; 
+                const deposit = cartData.totalDeposit || 0;
                 
-                document.getElementById('subtotal').textContent = formatCurrency(orderTotal);
+                // Tính tổng cộng dựa trên Tiền thuê + Tiền cọc
+                orderTotal = subtotal + deposit; 
+                
+                // Cập nhật giao diện
+                document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+                
+                const depositEl = document.getElementById('deposit-amount');
+                if (depositEl) {
+                    depositEl.textContent = formatCurrency(deposit);
+                }
+                
                 document.getElementById('final-total').textContent = formatCurrency(orderTotal);
             }
 

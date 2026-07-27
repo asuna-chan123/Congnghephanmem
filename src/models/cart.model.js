@@ -32,16 +32,23 @@ class CartModel {
 
     return items.map(item => {
       const price = item.product_trial_price;
+      const deposit = item.product_price; // Trong SQL của bạn (dv.daily_rental_price * 10) đang được as product_price
       const name = `Thuê ${item.product_name} (${item.color}, ${item.capacity})`;
       const image = item.product_image_url;
-      const typeName = 'Thuê thiết bị';
+
+      const startDate = new Date(item.rental_start_date);
+      const endDate = new Date(item.rental_end_date);
+      const diffTime = Math.abs(endDate - startDate);
+      const rentalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1 || 1;
 
       return {
         cart_item_id: item.cart_item_id,
-        uniqueId: item.cart_item_id, // alias for frontend
+        uniqueId: item.cart_item_id, 
         id: item.variant_id,
         name,
         price: parseFloat(price) || 0,
+        deposit: parseFloat(deposit) || 0, // Thêm trường tiền cọc
+        rentalDays: rentalDays,            // Thêm trường số ngày thuê
         image,
         type: 'trial',
         quantity: item.quantity,

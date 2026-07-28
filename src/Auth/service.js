@@ -12,9 +12,9 @@ const processRegistration = async (data) => {
     }
 
     if (!isValidPassword(password)) {
-        return { 
-            success: false, 
-            error: 'Mật khẩu phải từ 8-32 ký tự, bao gồm ít nhất 1 chữ cái, 1 chữ số và 1 ký tự đặc biệt hợp lệ.' 
+        return {
+            success: false,
+            error: 'Mật khẩu phải từ 8-32 ký tự, bao gồm ít nhất 1 chữ cái, 1 chữ số và 1 ký tự đặc biệt hợp lệ.'
         };
     }
 
@@ -27,15 +27,15 @@ const processRegistration = async (data) => {
 
     // 3. Cập nhật câu lệnh SQL: Thêm cột full_name và truyền giá trị fullName vào
     await query(
-        'INSERT INTO customers (full_name, phone_number, password_hash) VALUES (?, ?, ?)', 
+        'INSERT INTO customers (full_name, phone_number, password_hash) VALUES (?, ?, ?)',
         [fullName, phone, hashed]
     );
 
     const newUser = await get('SELECT customer_id, phone_number FROM customers WHERE phone_number = ?', [phone]);
 
-    return { 
-        success: true, 
-        user: { id: newUser.customer_id, phone: newUser.phone_number } 
+    return {
+        success: true,
+        user: { id: newUser.customer_id, phone: newUser.phone_number }
     };
 };
 
@@ -73,7 +73,7 @@ const reAuthenticate = async (refreshToken, password) => {
     }
 
     let user, isMatch;
-    
+
     // Kiểm tra token thuộc về bảng nào
     if (decoded.role === 'customer') {
         user = await get('SELECT * FROM customers WHERE customer_id = ?', [decoded.id]);
@@ -96,9 +96,9 @@ const processForgotPassword = async (phone, newPassword) => {
     }
 
     if (!isValidPassword(newPassword)) {
-        return { 
-            success: false, 
-            error: 'Mật khẩu phải từ 8-32 ký tự, bao gồm ít nhất 1 chữ cái, 1 chữ số và 1 ký tự đặc biệt hợp lệ.' 
+        return {
+            success: false,
+            error: 'Mật khẩu phải từ 8-32 ký tự, bao gồm ít nhất 1 chữ cái, 1 chữ số và 1 ký tự đặc biệt hợp lệ.'
         };
     }
 

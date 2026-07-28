@@ -67,7 +67,7 @@ class OrderModel {
     // 3. SỬA Ở ĐÂY: Ưu tiên lấy thông tin Họ tên, SĐT từ form thanh toán gửi lên
     const shippingName = shippingDetails?.name || '';
     const shippingPhone = shippingDetails?.phone || '';
-    const shippingAddress = shippingDetails?.address || ''; 
+    const shippingAddress = shippingDetails?.address || '';
 
     // 1. Insert into rental_orders
     const insertOrderSql = `

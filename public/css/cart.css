@@ -4,7 +4,8 @@
     max-width: 1200px;
     margin: 40px auto;
     padding: 0 24px;
-    margin-top: 100px; /* Offset from fixed header */
+    margin-top: 100px;
+    /* Offset from fixed header */
 }
 
 .cart-layout {
@@ -52,11 +53,11 @@
     transition: all 0.2s ease;
 }
 
-.xiaomi-checkbox-wrapper:hover input ~ .xiaomi-checkbox-mark {
+.xiaomi-checkbox-wrapper:hover input~.xiaomi-checkbox-mark {
     border-color: var(--accent);
 }
 
-.xiaomi-checkbox-wrapper input:checked ~ .xiaomi-checkbox-mark {
+.xiaomi-checkbox-wrapper input:checked~.xiaomi-checkbox-mark {
     background-color: var(--accent);
     border-color: var(--accent);
 }
@@ -72,7 +73,7 @@
     margin-bottom: 2px;
 }
 
-.xiaomi-checkbox-wrapper input:checked ~ .xiaomi-checkbox-mark:after {
+.xiaomi-checkbox-wrapper input:checked~.xiaomi-checkbox-mark:after {
     display: block;
 }
 
@@ -224,7 +225,7 @@
 }
 
 .cart-stepper-val {
-    width: 38px;
+    width: 44px;
     text-align: center;
     font-size: 13px;
     font-weight: 600;
@@ -232,12 +233,21 @@
     outline: none;
     background: none;
     color: var(--text-primary);
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: text;
+    -moz-appearance: textfield;
+}
+
+.cart-stepper-val::-webkit-outer-spin-button,
+.cart-stepper-val::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .stepper-limit-hint {
     font-size: 10px;
-    color: #ff9f0a; /* warning color */
+    color: #ff9f0a;
+    /* warning color */
     font-weight: 500;
 }
 
@@ -289,7 +299,8 @@
 .accent-price-large {
     font-size: 24px;
     font-weight: 800;
-    color: var(--accent); /* Apple Accent Blue */
+    color: var(--accent);
+    /* Apple Accent Blue */
 }
 
 .summary-divider {
@@ -342,7 +353,8 @@
 
 .checkout-submit-btn {
     width: 100%;
-    background-color: var(--text-primary); /* Apple ink black */
+    background-color: var(--text-primary);
+    /* Apple ink black */
     color: var(--card-bg);
     border: none;
     border-radius: var(--radius-pill);

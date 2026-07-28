@@ -23,12 +23,17 @@ async function apiFetch(url, options = {}) {
         'X-Session-Id': getSessionId(),
         ...(options.headers || {})
     };
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
     const currentUserJson = localStorage.getItem('currentUser');
     if (currentUserJson) {
         try {
             const user = JSON.parse(currentUserJson);
-            if (user && user.id) {
-                headers['X-Customer-Id'] = user.id.toString();
+            const customerId = user.id || user.customerId || user.customer_id;
+            if (customerId) {
+                headers['X-Customer-Id'] = customerId.toString();
             }
         } catch (e) {
             console.error('Error parsing user from localStorage', e);

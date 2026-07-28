@@ -1,6 +1,7 @@
 // State variables
 let cartList = [];
 let selectedItemIds = [];
+let isInitialLoad = true;
 
 // #checkout-submit-btn
 document.addEventListener('DOMContentLoaded', () => {
@@ -26,13 +27,14 @@ async function loadCartPage() {
         cartLayout.style.display = 'grid';
         emptyCartView.style.display = 'none';
 
-        // Select all items by default on first load
-        if (selectedItemIds.length === 0 && cartList.length > 0) {
-            selectedItemIds = cartList.map(item => item.uniqueId);
+        // Select all items by default on initial load
+        if (isInitialLoad) {
+            selectedItemIds = cartList.map(item => String(item.uniqueId));
+            isInitialLoad = false;
         } else {
-            // Filter out selected items that no longer exist in the cart
-            const currentIds = cartList.map(item => item.uniqueId);
-            selectedItemIds = selectedItemIds.filter(id => currentIds.includes(id));
+            // Keep user's current selection, but filter out items no longer in cart
+            const currentIds = cartList.map(item => String(item.uniqueId));
+            selectedItemIds = selectedItemIds.map(id => String(id)).filter(id => currentIds.includes(id));
         }
 
         renderCartItems();
@@ -51,18 +53,20 @@ function renderCartItems() {
     container.innerHTML = '';
 
     cartList.forEach(item => {
-        const isChecked = selectedItemIds.includes(item.uniqueId);
+        const idStr = String(item.uniqueId);
+        const isChecked = selectedItemIds.includes(idStr);
         const card = document.createElement('div');
         card.className = 'cart-item-card';
         const rentalDays = item.rentalDays || 1;
-        const itemRentalTotal = (item.price * rentalDays);
-        const itemDeposit = item.deposit || 0;
+        const qty = item.quantity || 1;
+        const itemRentalTotal = (item.price * rentalDays * qty);
+        const itemDeposit = (item.deposit || 0) * qty;
 
         card.innerHTML = `
             <!-- Checkbox -->
             <div class="cart-item-checkbox-col">
                 <label class="xiaomi-checkbox-wrapper">
-                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItemSelect('${item.uniqueId}', this.checked)">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItemSelect('${idStr}', this.checked)">
                     <span class="xiaomi-checkbox-mark"></span>
                 </label>
             </div>
@@ -85,10 +89,10 @@ function renderCartItems() {
                 <div style="margin-top: 6px;">
                     <span class="cart-item-price" style="font-size: 14px; font-weight: 600; color: var(--accent);">
                         Tiền thuê: ${formatCurrency(itemRentalTotal)} 
-                        <small style="font-size: 11px; font-weight: normal; color: var(--text-tertiary)">(${formatCurrency(item.price)}/ngày)</small>
+                        <small style="font-size: 11px; font-weight: normal; color: var(--text-tertiary)">(${formatCurrency(item.price)}/ngày${qty > 1 ? ` x ${qty}` : ''})</small>
                     </span>
                     <span style="display: block; font-size: 12px; color: #666; margin-top: 2px;">
-                        Tiền cọc: <strong>${formatCurrency(itemDeposit)}</strong>
+                        Tiền cọc: <strong>${formatCurrency(itemDeposit)}</strong> ${qty > 1 ? `<small style="font-size: 11px; color: var(--text-tertiary); font-weight: normal;">(${formatCurrency(item.deposit)} x ${qty})</small>` : ''}
                     </span>
                 </div>
             </div>
@@ -97,14 +101,23 @@ function renderCartItems() {
             <div class="cart-item-controls-col">
                 <div class="cart-item-stepper-wrapper">
                     <div class="cart-quantity-stepper">
-                        <button class="cart-stepper-btn" onclick="adjustCartQty('${item.uniqueId}', -1)"><i class="fa-solid fa-minus"></i></button>
-                        <input type="text" class="cart-stepper-val" value="${item.quantity}" readonly>
-                        <button class="cart-stepper-btn" onclick="adjustCartQty('${item.uniqueId}', 1)"><i class="fa-solid fa-plus"></i></button>
+                        <button class="cart-stepper-btn" onclick="adjustCartQty('${idStr}', -1)"><i class="fa-solid fa-minus"></i></button>
+                        <input type="number" 
+                               class="cart-stepper-val" 
+                               value="${item.quantity}" 
+                               min="1" 
+                               max="${item.stock_quantity || 999}"
+                               inputmode="numeric"
+                               pattern="[0-9]*"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                               onkeydown="if(['e','E','+','-','.',','].includes(event.key)) event.preventDefault(); if(event.key === 'Enter') this.blur();"
+                               onchange="updateCartQtyManual('${idStr}', this.value, ${item.stock_quantity || 999})">
+                        <button class="cart-stepper-btn" onclick="adjustCartQty('${idStr}', 1)"><i class="fa-solid fa-plus"></i></button>
                     </div>
                     <span class="stepper-limit-hint">* Còn lại ${item.stock_quantity || 0} sản phẩm</span>
                 </div>
                 
-                <button class="cart-item-trash-btn" onclick="removeAndReload('${item.uniqueId}')" title="Xóa sản phẩm">
+                <button class="cart-item-trash-btn" onclick="removeAndReload('${idStr}')" title="Xóa sản phẩm">
                     <i class="fa-regular fa-trash-can"></i>
                 </button>
             </div>
@@ -118,10 +131,10 @@ function recalculateTotals() {
     let totalDeposit = 0;
 
     cartList.forEach(item => {
-        if (selectedItemIds.includes(item.uniqueId)) {
+        if (selectedItemIds.includes(String(item.uniqueId))) {
             const days = item.rentalDays || 1;
             const qty = item.quantity || 1;
-            
+
             totalRent += (item.price * days * qty);
             totalDeposit += ((item.deposit || 0) * qty);
         }
@@ -147,17 +160,18 @@ function updateSelectAllCheckboxState() {
         return;
     }
 
-    const allSelected = cartList.every(item => selectedItemIds.includes(item.uniqueId));
+    const allSelected = cartList.length > 0 && cartList.every(item => selectedItemIds.includes(String(item.uniqueId)));
     selectAllCheckbox.checked = allSelected;
 }
 
 window.toggleItemSelect = function (uniqueId, isChecked) {
+    const idStr = String(uniqueId);
     if (isChecked) {
-        if (!selectedItemIds.includes(uniqueId)) {
-            selectedItemIds.push(uniqueId);
+        if (!selectedItemIds.includes(idStr)) {
+            selectedItemIds.push(idStr);
         }
     } else {
-        selectedItemIds = selectedItemIds.filter(id => id !== uniqueId);
+        selectedItemIds = selectedItemIds.filter(id => String(id) !== idStr);
     }
     recalculateTotals();
     updateSelectAllCheckboxState();
@@ -165,7 +179,7 @@ window.toggleItemSelect = function (uniqueId, isChecked) {
 
 window.toggleSelectAll = function (checkbox) {
     if (checkbox.checked) {
-        selectedItemIds = cartList.map(item => item.uniqueId);
+        selectedItemIds = cartList.map(item => String(item.uniqueId));
     } else {
         selectedItemIds = [];
     }
@@ -173,75 +187,111 @@ window.toggleSelectAll = function (checkbox) {
     recalculateTotals();
 };
 
-window.deleteSelectedItems = function () {
-    executeWithAuth(async () => {
-        if (selectedItemIds.length === 0) {
-            alert('Vui lòng chọn ít nhất một sản phẩm để xóa!');
-            return;
-        }
+window.deleteSelectedItems = async function () {
+    if (selectedItemIds.length === 0) {
+        alert('Vui lòng chọn ít nhất một sản phẩm để xóa!');
+        return;
+    }
 
-        if (!confirm('Bạn có chắc chắn muốn xóa các sản phẩm đã chọn khỏi giỏ hàng?')) {
-            return;
-        }
+    if (!confirm('Bạn có chắc chắn muốn xóa các sản phẩm đã chọn khỏi giỏ hàng?')) {
+        return;
+    }
 
-        try {
-            for (const id of selectedItemIds) {
-                await apiFetch(`/api/cart/${id}`, { method: 'DELETE' });
-            }
-            selectedItemIds = [];
-            loadCart(); // update header badge
-            loadCartPage(); // refresh cart list
-        } catch (e) {
-            console.error('Error deleting selected items:', e);
-            alert('Lỗi khi xóa các mục đã chọn.');
+    try {
+        for (const id of selectedItemIds) {
+            await apiFetch(`/api/cart/${id}`, { method: 'DELETE' });
         }
-    });
+        selectedItemIds = [];
+        loadCart(); // update header badge
+        loadCartPage(); // refresh cart list
+    } catch (e) {
+        console.error('Error deleting selected items:', e);
+        alert('Lỗi khi xóa các mục đã chọn.');
+    }
 };
 
-window.adjustCartQty = function (uniqueId, change) {
-    executeWithAuth(async () => {
-        const item = cartList.find(i => i.uniqueId === uniqueId);
-        if (!item) return;
+window.adjustCartQty = async function (uniqueId, change) {
+    const idStr = String(uniqueId);
+    const item = cartList.find(i => String(i.uniqueId) === idStr);
+    if (!item) return;
 
-        const newQty = item.quantity + change;
-        if (newQty < 1) return;
+    const newQty = item.quantity + change;
+    if (newQty < 1) return;
 
-        const maxQty = item.stock_quantity || 5;
-        if (newQty > maxQty) {
-            alert(`Rất tiếc, kho hàng chỉ còn lại ${maxQty} sản phẩm này.`);
-            return;
+    const maxQty = item.stock_quantity || 999;
+    if (newQty > maxQty) {
+        alert(`Rất tiếc, kho hàng chỉ còn lại ${maxQty} sản phẩm này.`);
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/cart/${idStr}`, {
+            method: 'PUT',
+            body: JSON.stringify({ quantity: newQty })
+        });
+        if (res.success) {
+            loadCart();
+            loadCartPage();
+        } else {
+            alert('Lỗi cập nhật số lượng: ' + res.message);
         }
-
-        try {
-            const res = await apiFetch(`/api/cart/${uniqueId}`, {
-                method: 'PUT',
-                body: JSON.stringify({ quantity: newQty })
-            });
-            if (res.success) {
-                loadCart(); 
-                loadCartPage(); 
-            } else {
-                alert('Lỗi cập nhật số lượng: ' + res.message);
-            }
-        } catch (e) {
-            console.error('Error updating quantity:', e);
-            alert('Lỗi kết nối máy chủ khi cập nhật số lượng.');
-        }
-    });
+    } catch (e) {
+        console.error('Error updating quantity:', e);
+        alert('Lỗi kết nối máy chủ khi cập nhật số lượng.');
+    }
 };
 
-window.removeAndReload = function (cartItemId) {
-    executeWithAuth(async () => {
-        try {
-            const res = await apiFetch(`/api/cart/${cartItemId}`, { method: 'DELETE' });
-            if (res.success) {
-                loadCart(); 
-                loadCartPage(); 
-            }
-        } catch (e) {
-            console.error('Error removing cart item:', e);
+window.updateCartQtyManual = async function (uniqueId, rawVal, maxStock = 999) {
+    const idStr = String(uniqueId);
+    const item = cartList.find(i => String(i.uniqueId) === idStr);
+    if (!item) return;
+
+    let sanitized = String(rawVal).replace(/[^0-9]/g, '');
+    let newQty = parseInt(sanitized, 10);
+    if (isNaN(newQty) || newQty < 1) {
+        newQty = 1;
+    }
+
+    const maxQty = maxStock || item.stock_quantity || 999;
+    if (newQty > maxQty) {
+        alert(`Rất tiếc, kho hàng chỉ còn lại ${maxQty} sản phẩm này.`);
+        newQty = maxQty;
+    }
+
+    if (newQty === item.quantity) {
+        renderCartItems();
+        return;
+    }
+
+    try {
+        const res = await apiFetch(`/api/cart/${idStr}`, {
+            method: 'PUT',
+            body: JSON.stringify({ quantity: newQty })
+        });
+        if (res.success) {
+            loadCart();
+            loadCartPage();
+        } else {
+            alert('Lỗi cập nhật số lượng: ' + res.message);
+            loadCartPage();
         }
-    });
+    } catch (e) {
+        console.error('Error updating quantity manually:', e);
+        alert('Lỗi kết nối máy chủ khi cập nhật số lượng.');
+        loadCartPage();
+    }
+};
+
+window.removeAndReload = async function (cartItemId) {
+    try {
+        const res = await apiFetch(`/api/cart/${cartItemId}`, { method: 'DELETE' });
+        if (res.success) {
+            loadCart();
+            loadCartPage();
+        }
+    } catch (e) {
+        console.error('Error removing cart item:', e);
+    }
 };
 
 window.toggleWhyMi = function () {
@@ -270,6 +320,13 @@ document.getElementById('checkout-submit-btn')?.addEventListener('click', (e) =>
         }
         return;
     }
+
+    // Convert uniqueId back to cart_item_id if available, or filter cartList
+    const selectedCartItemIds = cartList
+        .filter(item => selectedItemIds.includes(String(item.uniqueId)))
+        .map(item => item.cart_item_id || item.uniqueId);
+
+    sessionStorage.setItem('checkout_selected_items', JSON.stringify(selectedCartItemIds));
 
     executeWithAuth(() => {
         window.location.href = 'payment.html';

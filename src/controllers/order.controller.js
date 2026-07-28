@@ -1,9 +1,26 @@
 const OrderModel = require('../models/order.model');
+const jwt = require('jsonwebtoken');
+
+function getCustomerIdFromReq(req) {
+  let customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+  if (!customerId && req.headers['authorization']) {
+    try {
+      const token = req.headers['authorization'].replace(/^Bearer\s+/i, '');
+      const decoded = jwt.decode(token) || (process.env.JWT_SECRET ? jwt.verify(token, process.env.JWT_SECRET) : null);
+      if (decoded && decoded.id) {
+        customerId = parseInt(decoded.id, 10);
+      }
+    } catch (e) {
+      console.error('Error parsing customer token:', e.message);
+    }
+  }
+  return customerId;
+}
 
 class OrderController {
   static async getOrders(req, res) {
     try {
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const customerId = getCustomerIdFromReq(req);
       if (!customerId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để xem đơn hàng.' });
       }
@@ -18,7 +35,7 @@ class OrderController {
 
   static async cancelOrder(req, res) {
     try {
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const customerId = getCustomerIdFromReq(req);
       if (!customerId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
       }
@@ -36,9 +53,9 @@ class OrderController {
     }
   }
 
-static async updateShipping(req, res) {
+  static async updateShipping(req, res) {
     try {
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const customerId = getCustomerIdFromReq(req);
       if (!customerId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
       }
@@ -58,11 +75,11 @@ static async updateShipping(req, res) {
       console.error('Error updating shipping info:', error);
       res.status(400).json({ success: false, message: error.message || 'Server Error' });
     }
-}
+  }
 
   static async extendOrder(req, res) {
     try {
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const customerId = getCustomerIdFromReq(req);
       if (!customerId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
       }
@@ -84,7 +101,7 @@ static async updateShipping(req, res) {
 
   static async getExtendCost(req, res) {
     try {
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const customerId = getCustomerIdFromReq(req);
       if (!customerId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
       }
@@ -106,7 +123,7 @@ static async updateShipping(req, res) {
 
   static async returnOrder(req, res) {
     try {
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const customerId = getCustomerIdFromReq(req);
       if (!customerId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
       }
@@ -120,6 +137,31 @@ static async updateShipping(req, res) {
       res.json({ success: true, message: 'Yêu cầu trả hàng đã được gửi thành công.' });
     } catch (error) {
       console.error('Error returning order:', error);
+      res.status(400).json({ success: false, message: error.message || 'Server Error' });
+    }
+  }
+
+  static async reportIssue(req, res) {
+    try {
+      const customerId = getCustomerIdFromReq(req);
+      if (!customerId) {
+        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+      }
+
+      const orderId = parseInt(req.params.id, 10);
+      const { note } = req.body;
+
+      if (!note || !note.trim()) {
+        return res.status(400).json({ success: false, message: 'Vui lòng nhập nội dung mô tả lỗi.' });
+      }
+
+      await OrderModel.reportIssue(customerId, orderId, note.trim());
+      res.json({
+        success: true,
+        message: 'Yêu cầu hỗ trợ kỹ thuật của bạn đã được ghi nhận. Tổng đài viên sẽ gọi hỗ trợ trong vòng 15 phút.'
+      });
+    } catch (error) {
+      console.error('Error reporting issue:', error);
       res.status(400).json({ success: false, message: error.message || 'Server Error' });
     }
   }

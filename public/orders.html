@@ -34,14 +34,81 @@
             min-height: 70vh;
         }
 
+        .orders-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
         .orders-title {
             font-family: "SF Pro Display", "Outfit", -apple-system, sans-serif;
-            font-size: 34px;
-            font-weight: 600;
+            font-size: 32px;
+            font-weight: 700;
             color: #1d1d1f;
             letter-spacing: -0.374px;
-            margin-bottom: 32px;
-            text-align: center;
+            margin: 0;
+        }
+
+        .refresh-btn {
+            background: #ffffff;
+            border: 1px solid #d2d2d7;
+            border-radius: 9999px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #0066cc;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .refresh-btn:hover {
+            background: #f5f5f7;
+            border-color: #0066cc;
+        }
+
+        .orders-status-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scrollbar-width: none;
+        }
+
+        .orders-status-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 9999px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #515154;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .tab-btn.active {
+            background: #0066cc;
+            border-color: #0066cc;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 102, 204, 0.25);
         }
 
         .orders-list {
@@ -277,7 +344,21 @@
     <custom-header></custom-header>
 
     <main class="orders-page-wrapper">
-        <h1 class="orders-title">Đơn hàng của tôi</h1>
+        <div class="orders-header-bar">
+            <h1 class="orders-title">Đơn hàng của tôi</h1>
+            <button id="refresh-orders-btn" class="refresh-btn" onclick="window.fetchAndRenderOrders()" title="Tải lại danh sách đơn hàng">
+                <i class="fa-solid fa-rotate-right"></i> Tải lại dữ liệu
+            </button>
+        </div>
+
+        <div class="orders-status-tabs" id="orders-status-tabs">
+            <button class="tab-btn active" data-status="all" onclick="window.filterOrdersByStatus('all')">Tất cả</button>
+            <button class="tab-btn" data-status="pending" onclick="window.filterOrdersByStatus('pending')">Chờ duyệt</button>
+            <button class="tab-btn" data-status="confirmed" onclick="window.filterOrdersByStatus('confirmed')">Đã duyệt / Giao</button>
+            <button class="tab-btn" data-status="active" onclick="window.filterOrdersByStatus('active')">Đang thuê</button>
+            <button class="tab-btn" data-status="completed" onclick="window.filterOrdersByStatus('completed')">Hoàn thành</button>
+            <button class="tab-btn" data-status="cancelled" onclick="window.filterOrdersByStatus('cancelled')">Đã hủy</button>
+        </div>
 
         <div id="orders-container">
             <div class="no-orders">
@@ -292,79 +373,169 @@
     <script src="js/app.js"></script>
     <script src="js/components.js"></script>
     <script>
-        // load orders
-        document.addEventListener('DOMContentLoaded', async () => {
+        window.allOrders = [];
+        window.currentStatusFilter = 'all';
+
+        // Helper function to get customer ID from localStorage
+        function getCustomerIdFromStorage() {
+            const userStr = localStorage.getItem('currentUser');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    const id = user.id || user.customerId || user.customer_id;
+                    if (id) return id;
+                } catch (e) {}
+            }
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                try {
+                    const base64Url = token.split('.')[1];
+                    if (base64Url) {
+                        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                        const payload = JSON.parse(window.atob(base64));
+                        return payload.id || payload.customerId || payload.customer_id || null;
+                    }
+                } catch (e) {}
+            }
+            return null;
+        }
+
+        // Load & pull order history
+        window.fetchAndRenderOrders = async () => {
             const container = document.getElementById('orders-container');
-            const currentUserJson = localStorage.getItem('currentUser');
-
-
-            if (!currentUserJson) {
+            const refreshBtn = document.getElementById('refresh-orders-btn');
+            
+            const customerId = getCustomerIdFromStorage();
+            if (!customerId) {
                 container.innerHTML = `
                     <div class="no-orders">
                         <i class="fa-solid fa-user-lock"></i>
                         <p>Vui lòng đăng nhập để xem lịch sử đơn hàng của bạn.</p>
-                        <a href="#" class="no-orders-btn" onclick="window.openSignInModal(); return false;">Đăng nhập ngay</a>
+                        <a href="auth.html" class="no-orders-btn">Đăng nhập ngay</a>
                     </div>
                 `;
                 return;
             }
 
+            if (refreshBtn) {
+                refreshBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang tải...`;
+                refreshBtn.disabled = true;
+            }
+
             try {
                 const res = await apiFetch('/api/orders');
-                if (!res.success || !res.orders || res.orders.length === 0) {
+                if (!res.success || !res.orders) {
                     container.innerHTML = `
                         <div class="no-orders">
-                            <i class="fa-solid fa-box-open"></i>
-                            <p>Bạn chưa có đơn hàng nào.</p>
-                            <a href="/" class="no-orders-btn">Thuê thiết bị ngay</a>
+                            <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i>
+                            <p>${res.message || 'Không thể lấy dữ liệu lịch sử đơn hàng.'}</p>
+                            <a href="#" class="no-orders-btn" onclick="window.fetchAndRenderOrders(); return false;">Thử lại</a>
                         </div>
                     `;
                     return;
                 }
 
-                container.innerHTML = '';
-                const listDiv = document.createElement('div');
-                listDiv.className = 'orders-list';
+                window.allOrders = res.orders;
+                window.renderFilteredOrders();
 
-                res.orders.forEach(order => {
-                    const card = document.createElement('div');
-                    card.className = 'order-card';
+            } catch (error) {
+                console.error('Error rendering orders:', error);
+                container.innerHTML = `
+                    <div class="no-orders">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i>
+                        <p>Lỗi kết nối khi tải lịch sử đơn hàng. Vui lòng tải lại.</p>
+                        <a href="#" class="no-orders-btn" onclick="window.fetchAndRenderOrders(); return false;">Tải lại</a>
+                    </div>
+                `;
+            } finally {
+                if (refreshBtn) {
+                    refreshBtn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Tải lại dữ liệu`;
+                    refreshBtn.disabled = false;
+                }
+            }
+        };
 
-                    console.log('Order data:', order);
+        window.filterOrdersByStatus = (status) => {
+            window.currentStatusFilter = status;
+            document.querySelectorAll('#orders-status-tabs .tab-btn').forEach(btn => {
+                if (btn.getAttribute('data-status') === status) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            window.renderFilteredOrders();
+        };
 
-                    // Formatted dates
-                    const orderDateStr = new Date(order.create_date).toLocaleDateString('vi-VN', {
-                        year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                    });
-                    const startStr = new Date(order.rental_start_date).toLocaleDateString('vi-VN');
-                    const endStr = new Date(order.expected_return_date).toLocaleDateString('vi-VN');
-                    const totalStr = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total_amount);
+        window.renderFilteredOrders = () => {
+            const container = document.getElementById('orders-container');
+            let filtered = window.allOrders || [];
 
-                    // Translate status
-                    let statusText = 'Chờ duyệt';
-                    let statusClass = 'status-pending';
-                    if (order.rental_order_status === 'confirmed') {
-                        statusText = 'Đã duyệt';
-                        statusClass = 'status-confirmed';
-                    } else if (order.rental_order_status === 'active') {
-                        statusText = 'Đang thuê';
-                        statusClass = 'status-active';
-                    } else if (order.rental_order_status === 'completed') {
-                        statusText = 'Hoàn thành';
-                        statusClass = 'status-completed';
-                    } else if (order.rental_order_status === 'cancelled') {
-                        statusText = 'Đã hủy';
-                        statusClass = 'status-cancelled';
-                    } else if (order.rental_order_status === 'delivering') {
-                        statusText = 'Đang giao hàng';
-                        statusClass = 'status-delivering';
-                    } else if (order.rental_order_status === 'returning') {
-                        statusText = 'Đang hoàn trả';
-                        statusClass = 'status-returning';
-                    }
+            if (window.currentStatusFilter !== 'all') {
+                if (window.currentStatusFilter === 'confirmed') {
+                    filtered = filtered.filter(o => o.rental_order_status === 'confirmed' || o.rental_order_status === 'delivering');
+                } else {
+                    filtered = filtered.filter(o => o.rental_order_status === window.currentStatusFilter);
+                }
+            }
 
-                    // Render items
-                    let itemsHtml = '';
+            if (filtered.length === 0) {
+                let msg = 'Bạn chưa có đơn hàng nào.';
+                if (window.currentStatusFilter !== 'all') {
+                    msg = 'Không tìm thấy đơn hàng nào ở trạng thái này.';
+                }
+                container.innerHTML = `
+                    <div class="no-orders">
+                        <i class="fa-solid fa-box-open"></i>
+                        <p>${msg}</p>
+                        <a href="products.html" class="no-orders-btn">Thuê thiết bị ngay</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            const listDiv = document.createElement('div');
+            listDiv.className = 'orders-list';
+
+            filtered.forEach(order => {
+                const card = document.createElement('div');
+                card.className = 'order-card';
+
+                // Formatted dates
+                const orderDateStr = new Date(order.create_date).toLocaleDateString('vi-VN', {
+                    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                const startStr = new Date(order.rental_start_date).toLocaleDateString('vi-VN');
+                const endStr = new Date(order.expected_return_date).toLocaleDateString('vi-VN');
+                const totalStr = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total_amount);
+
+                // Translate status
+                let statusText = 'Chờ duyệt';
+                let statusClass = 'status-pending';
+                if (order.rental_order_status === 'confirmed') {
+                    statusText = 'Đã duyệt';
+                    statusClass = 'status-confirmed';
+                } else if (order.rental_order_status === 'active') {
+                    statusText = 'Đang thuê';
+                    statusClass = 'status-active';
+                } else if (order.rental_order_status === 'completed') {
+                    statusText = 'Hoàn thành';
+                    statusClass = 'status-completed';
+                } else if (order.rental_order_status === 'cancelled') {
+                    statusText = 'Đã hủy';
+                    statusClass = 'status-cancelled';
+                } else if (order.rental_order_status === 'delivering') {
+                    statusText = 'Đang giao hàng';
+                    statusClass = 'status-delivering';
+                } else if (order.rental_order_status === 'returning') {
+                    statusText = 'Đang hoàn trả';
+                    statusClass = 'status-returning';
+                }
+
+                // Render items
+                let itemsHtml = '';
+                if (order.items && order.items.length > 0) {
                     order.items.forEach(item => {
                         const priceStr = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.unit_rental_price);
                         itemsHtml += `
@@ -378,72 +549,66 @@
                             </div>
                         `;
                     });
+                }
 
-                    const oId = order.rental_order_id || order.rentalOrderId;
-                    const firstItemDeviceId = order.items && order.items.length > 0 ? order.items[0].device_id : '';
+                const oId = order.rental_order_id || order.rentalOrderId;
+                const firstItemDeviceId = order.items && order.items.length > 0 ? order.items[0].device_id : '';
 
-                    card.innerHTML = `
-                        <div class="order-header">
-                            <div class="order-info-left">
-                                <span class="order-code">Mã đơn: ${order.order_code}</span>
-                                <span class="order-date">Ngày đặt: ${orderDateStr}</span>
-                            </div>
-                            <span class="order-status-badge ${statusClass}">${statusText}</span>
+                card.innerHTML = `
+                    <div class="order-header">
+                        <div class="order-info-left">
+                            <span class="order-code">Mã đơn: ${order.order_code}</span>
+                            <span class="order-date">Ngày đặt: ${orderDateStr}</span>
                         </div>
-                        <div class="order-body">
-                            ${itemsHtml}
-                        </div>
-                        <div class="order-shipping-info" style="padding: 12px 24px; border-top: 1px dashed #e5e5e7; background: #fafafc; font-size: 13px; color: #515154; text-align: left;">
-                            <div style="font-weight: 600; color: #1d1d1f; margin-bottom: 4px;"><i class="fa-solid fa-location-dot" style="margin-right: 6px; color:#0066cc;"></i>Thông tin giao hàng:</div>
-                            <div>Người nhận: <strong>${order.shipping_name || 'Chưa cập nhật'}</strong> | SĐT: <strong>${order.shipping_phone || 'Chưa cập nhật'}</strong></div>
-                            <div style="margin-top: 2px;">Địa chỉ: <strong>${order.shipping_address || 'Chưa cập nhật'}</strong></div>
-                        </div>
-                        <div class="order-footer">
-                            <span class="order-rental-dates">
-                                <i class="fa-regular fa-calendar-days"></i> Thời gian: ${startStr} - ${endStr}
-                            </span>
-                            <span class="order-total-price">Tổng cộng: ${totalStr}</span>
-                        </div>
-                        <div class="order-actions-bar" style="padding: 16px 24px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 12px; background: #fafafc;">
-                            ${order.rental_order_status === 'pending'
-                            ? `
-                                  <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.showEditShippingModal(${oId}, '${(order.shipping_name || '').replace(/'/g, "\\'")}', '${(order.shipping_phone || '').replace(/'/g, "\\'")}', '${(order.shipping_address || '').replace(/'/g, "\\'")}')">Sửa thông tin giao hàng</button>
-                                  <button class="no-orders-btn" style="background-color: transparent; color: #dc2626; border: 1px solid #dc2626; padding: 8px 18px; font-size: 13px;" onclick="window.cancelOrder(${oId})">Hủy đơn</button>
-                                  `
-                            : order.rental_order_status === 'confirmed'
-                                ? `<button class="no-orders-btn" style="background-color: transparent; color: #dc2626; border: 1px solid #dc2626; padding: 8px 18px; font-size: 13px;" onclick="window.cancelOrder(${oId})">Hủy đơn</button>`
-                                //cancel order
-                                : order.rental_order_status === 'active'
+                        <span class="order-status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="order-body">
+                        ${itemsHtml}
+                    </div>
+                    <div class="order-shipping-info" style="padding: 12px 24px; border-top: 1px dashed #e5e5e7; background: #fafafc; font-size: 13px; color: #515154; text-align: left;">
+                        <div style="font-weight: 600; color: #1d1d1f; margin-bottom: 4px;"><i class="fa-solid fa-location-dot" style="margin-right: 6px; color:#0066cc;"></i>Thông tin giao hàng:</div>
+                        <div>Người nhận: <strong>${order.shipping_name || 'Chưa cập nhật'}</strong> | SĐT: <strong>${order.shipping_phone || 'Chưa cập nhật'}</strong></div>
+                        <div style="margin-top: 2px;">Địa chỉ: <strong>${order.shipping_address || 'Chưa cập nhật'}</strong></div>
+                    </div>
+                    <div class="order-footer">
+                        <span class="order-rental-dates">
+                            <i class="fa-regular fa-calendar-days"></i> Thời gian: ${startStr} - ${endStr}
+                        </span>
+                        <span class="order-total-price">Tổng cộng: ${totalStr}</span>
+                    </div>
+                    <div class="order-actions-bar" style="padding: 16px 24px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 12px; background: #fafafc;">
+                        ${order.rental_order_status === 'pending'
+                        ? `
+                              <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.showEditShippingModal(${oId}, '${(order.shipping_name || '').replace(/'/g, "\\'")}', '${(order.shipping_phone || '').replace(/'/g, "\\'")}', '${(order.shipping_address || '').replace(/'/g, "\\'")}')">Sửa thông tin giao hàng</button>
+                              <button class="no-orders-btn" style="background-color: transparent; color: #dc2626; border: 1px solid #dc2626; padding: 8px 18px; font-size: 13px;" onclick="window.cancelOrder(${oId})">Hủy đơn</button>
+                              `
+                        : order.rental_order_status === 'confirmed'
+                            ? `<button class="no-orders-btn" style="background-color: transparent; color: #dc2626; border: 1px solid #dc2626; padding: 8px 18px; font-size: 13px;" onclick="window.cancelOrder(${oId})">Hủy đơn</button>`
+                            : order.rental_order_status === 'active'
+                                ? `
+                              <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.showExtendModal(${oId}, '${order.expected_return_date}')">Gia hạn</button>
+                              <button class="no-orders-btn" style="background-color: transparent; color: #8b5cf6; border: 1px solid #8b5cf6; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.returnOrder(${oId})">Trả hàng</button>
+                              <button class="no-orders-btn" style="background-color: transparent; color: #d97706; border: 1px solid #d97706; padding: 8px 18px; font-size: 13px;" onclick="window.reportIssue(${oId})">Báo lỗi thiết bị</button>
+                              `
+                                : order.rental_order_status === 'completed'
                                     ? `
-                                  <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.showExtendModal(${oId}, '${order.expected_return_date}')">Gia hạn</button>
-                                  <button class="no-orders-btn" style="background-color: transparent; color: #8b5cf6; border: 1px solid #8b5cf6; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.returnOrder(${oId})">Trả hàng</button>
-                                  <button class="no-orders-btn" style="background-color: transparent; color: #d97706; border: 1px solid #d97706; padding: 8px 18px; font-size: 13px;" onclick="window.reportIssue(${oId})">Báo lỗi thiết bị</button>
-                                  `
-                                    : order.rental_order_status === 'completed'
-                                        ? `
-                                  <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.reviewOrder(${oId})">Đánh giá</button>
-                                  <button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.redirectToProductDetails(${firstItemDeviceId})">Đặt lại</button>
-                                  `
-                                        : order.rental_order_status === 'cancelled'
-                                            ? `<button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.redirectToProductDetails(${firstItemDeviceId})">Đặt lại</button>`
-                                            : ''
-                        }
-                        </div>
-                    `;
-                    listDiv.appendChild(card);
-                });
-
-                container.appendChild(listDiv);
-
-            } catch (error) {
-                console.error('Error rendering orders:', error);
-                container.innerHTML = `
-                    <div class="no-orders">
-                        <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i>
-                        <p>Lỗi tải đơn hàng của bạn. Vui lòng tải lại trang.</p>
+                              <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.reviewOrder(${oId}, ${firstItemDeviceId})">Đánh giá</button>
+                              <button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.redirectToProductDetails(${firstItemDeviceId})">Đặt lại</button>
+                              `
+                                    : order.rental_order_status === 'cancelled'
+                                        ? `<button class="no-orders-btn" style="padding: 8px 18px; font-size: 13px;" onclick="window.redirectToProductDetails(${firstItemDeviceId})">Đặt lại</button>`
+                                        : ''
+                    }
                     </div>
                 `;
-            }
+                listDiv.appendChild(card);
+            });
+
+            container.appendChild(listDiv);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.fetchAndRenderOrders();
         });
 
         window.showConfirmPopup = (message, onConfirm, okText = 'Xác nhận hủy') => {
@@ -872,11 +1037,127 @@
         };
 
         window.reportIssue = (orderId) => {
-            window.showStatusPopup(true, 'Yêu cầu hỗ trợ kỹ thuật của bạn đã được ghi nhận. Tổng đài viên sẽ gọi hỗ trợ trong vòng 15 phút.');
+            const existing = document.getElementById('report-issue-modal');
+            if (existing) existing.remove();
+
+            const modal = document.createElement('div');
+            modal.id = 'report-issue-modal';
+            modal.style = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(8px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 999999;
+                opacity: 0;
+                transition: opacity 0.25s ease;
+            `;
+
+            modal.innerHTML = `
+                <div style="
+                    background: #ffffff;
+                    border-radius: 18px;
+                    padding: 28px;
+                    width: 90%;
+                    max-width: 450px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+                    transform: translateY(20px);
+                    transition: transform 0.25s ease;
+                ">
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: #d97706;"></i>
+                    </div>
+                    <h4 style="font-size: 18px; font-weight: 600; color: #1d1d1f; margin: 0 0 10px 0; text-align: center; font-family: sans-serif;">Báo Lỗi Thiết Bị</h4>
+                    <p style="font-size: 13px; color: #515154; margin: 0 0 16px 0; text-align: center; font-family: sans-serif; line-height: 1.4;">
+                        Vui lòng mô tả chi tiết sự cố bạn đang gặp phải với thiết bị.
+                    </p>
+                    
+                    <div style="margin-bottom: 20px; text-align: left;">
+                        <label style="display: block; font-size: 12px; font-weight: 500; color: #7a7a7a; margin-bottom: 6px; font-family: sans-serif;">Nội dung sự cố / Báo lỗi</label>
+                        <textarea id="issue-note-input" placeholder="Ví dụ: Máy bị nóng, màn hình chớp tắt, không nhận sạc..." style="width: 100%; height: 90px; padding: 10px 12px; border: 1px solid #d2d2d7; border-radius: 10px; font-size: 14px; font-family: inherit; resize: vertical; box-sizing: border-box; outline: none;"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button id="close-report-btn" style="
+                            background: #f5f5f7;
+                            color: #1d1d1f;
+                            border: none;
+                            padding: 10px 22px;
+                            border-radius: 9999px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                        ">Hủy bỏ</button>
+                        <button id="submit-report-btn" style="
+                            background: #d97706;
+                            color: #ffffff;
+                            border: none;
+                            padding: 10px 22px;
+                            border-radius: 9999px;
+                            font-size: 14px;
+                            font-weight: 500;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                        ">Gửi báo lỗi</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modal.children[0].style.transform = 'translateY(0)';
+            }, 10);
+
+            const close = () => {
+                modal.style.opacity = '0';
+                modal.children[0].style.transform = 'translateY(20px)';
+                setTimeout(() => modal.remove(), 250);
+            };
+
+            modal.querySelector('#close-report-btn').addEventListener('click', close);
+            modal.querySelector('#submit-report-btn').addEventListener('click', async () => {
+                const note = modal.querySelector('#issue-note-input').value.trim();
+                if (!note) {
+                    window.showStatusPopup(false, 'Vui lòng nhập nội dung mô tả sự cố.');
+                    return;
+                }
+
+                try {
+                    const res = await apiFetch(`/api/orders/${orderId}/report-issue`, {
+                        method: 'POST',
+                        body: JSON.stringify({ note })
+                    });
+
+                    if (res.success) {
+                        close();
+                        window.showStatusPopup(true, res.message || 'Yêu cầu hỗ trợ kỹ thuật của bạn đã được ghi nhận. Tổng đài viên sẽ gọi hỗ trợ trong vòng 15 phút.', false);
+                        if (typeof window.fetchAndRenderOrders === 'function') {
+                            window.fetchAndRenderOrders();
+                        }
+                    } else {
+                        window.showStatusPopup(false, res.message || 'Không thể gửi báo lỗi.');
+                    }
+                } catch (err) {
+                    console.error('Error reporting issue:', err);
+                    window.showStatusPopup(false, 'Lỗi kết nối khi gửi báo lỗi.');
+                }
+            });
         };
 
-        window.reviewOrder = (orderId) => {
-            window.showStatusPopup(true, 'Cảm ơn bạn! Tính năng đánh giá đang được cập nhật.');
+        window.reviewOrder = (orderId, deviceId) => {
+            if (deviceId) {
+                window.redirectToProductDetails(deviceId);
+            } else {
+                window.showStatusPopup(false, 'Không tìm thấy thông tin sản phẩm để đánh giá.');
+            }
         };
 
         window.reorderItems = async (encodedItems) => {

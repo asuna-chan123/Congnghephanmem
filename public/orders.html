@@ -560,7 +560,8 @@
 
                 const oId = order.rental_order_id || order.rentalOrderId;
                 const firstItemDeviceId = order.items && order.items.length > 0 ? order.items[0].device_id : '';
-
+                // tạo nút thanh toán khi đơn ở trạng thái pending và chưa thanh toán
+                // yêu cầy gia hạn đơn thuê
                 card.innerHTML = `
                     <div class="order-header">
                         <div class="order-info-left">
@@ -586,6 +587,7 @@
                     <div class="order-actions-bar" style="padding: 16px 24px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 12px; background: #fafafc;">
                         ${order.rental_order_status === 'pending'
                         ? `
+
                               <button class="no-orders-btn" style="background-color: transparent; color: #0066cc; border: 1px solid #0066cc; padding: 8px 18px; font-size: 13px; margin-right: 8px;" onclick="window.showEditShippingModal(${oId}, '${(order.shipping_name || '').replace(/'/g, "\\'")}', '${(order.shipping_phone || '').replace(/'/g, "\\'")}', '${(order.shipping_address || '').replace(/'/g, "\\'")}')">Sửa thông tin giao hàng</button>
                               <button class="no-orders-btn" style="background-color: transparent; color: #dc2626; border: 1px solid #dc2626; padding: 8px 18px; font-size: 13px;" onclick="window.cancelOrder(${oId})">Hủy đơn</button>
                               `
@@ -608,6 +610,7 @@
                     }
                     </div>
                 `;
+
                 listDiv.appendChild(card);
             });
 
@@ -828,6 +831,7 @@
             });
         };
 
+        //Có thể gia hạn đơn thuê
         window.redirectToProductDetails = (deviceId) => {
             if (!deviceId) {
                 window.showStatusPopup(false, 'Không tìm thấy thông tin sản phẩm.');
@@ -923,7 +927,7 @@
                     </div>
                 </div>
             `;
-
+            //Chọn ngày muốn gia hạn
             document.body.appendChild(modal);
 
             const dateInput = modal.querySelector('#extend-date-input');
@@ -936,6 +940,7 @@
                     return;
                 }
                 try {
+                    //Hiển thị phí phát sinh
                     const res = await apiFetch(`/api/orders/${orderId}/extend-cost?newReturnDate=${val}`);
                     if (res.success) {
                         costContainer.style.display = 'flex';
@@ -968,7 +973,7 @@
             };
 
             dateInput.addEventListener('change', updateExtendCost);
-            // Trigger calculation immediately
+            //Tính toán ngay
             updateExtendCost();
 
             setTimeout(() => {
@@ -976,6 +981,7 @@
                 modal.children[0].style.transform = 'translateY(0)';
             }, 10);
 
+            //Thanh toán gia hạn
             const close = () => {
                 modal.style.opacity = '0';
                 modal.children[0].style.transform = 'translateY(20px)';

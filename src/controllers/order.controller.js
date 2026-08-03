@@ -101,7 +101,7 @@ class OrderController {
       res.status(400).json({ success: false, message: error.message || 'Server Error' });
     }
   }
-
+  //Truy xuất dữ liệu đến model 
   static async getExtendCost(req, res) {
     try {
       const customerId = getCustomerIdFromReq(req);

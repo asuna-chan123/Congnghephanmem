@@ -221,7 +221,7 @@ class OrderModel {
     if (order.rental_order_status !== 'pending') {
       throw new Error('Chỉ có thể thay đổi thông tin giao hàng khi đơn ở trạng thái Chờ duyệt.');
     }
-
+    //Đơn hàng không phải trạng thái đang thuê
     await query(
       `UPDATE rental_orders SET shipping_name = ?, shipping_phone = ?, shipping_address = ? WHERE rental_order_id = ?`,
       [name, phone, address, orderId]
@@ -249,10 +249,10 @@ class OrderModel {
     const currentReturnDate = new Date(order.expected_return_date);
     const proposedReturnDate = new Date(newReturnDate);
 
-    // Reset times to midnight for date-only comparison
+    // Đặt lại thời gian về 00:00:00 để so sánh ngày
     currentReturnDate.setHours(0, 0, 0, 0);
     proposedReturnDate.setHours(0, 0, 0, 0);
-
+    //Ngày gia hạn không hợp lệ 
     if (proposedReturnDate <= currentReturnDate) {
       throw new Error('Ngày gia hạn mới phải sau ngày trả hiện tại.');
     }
@@ -279,14 +279,14 @@ class OrderModel {
       const extraCost = detail.unit_rental_price * extraDays * detail.rental_quantity;
       totalExtraCost += extraCost;
 
-      // Update detail rental days
+      // Cập nhật dữ liệu gia hạn
       await query(
         `UPDATE rental_order_details SET rental_days = rental_days + ? WHERE rental_order_detail_id = ?`,
         [extraDays, detail.rental_order_detail_id]
       );
     }
 
-    // Update order with new date and updated amounts
+    // Cập nhật đơn hàng với ngày mới và số tiền mới
     await query(
       `UPDATE rental_orders 
        SET expected_return_date = ?, 
@@ -298,7 +298,7 @@ class OrderModel {
 
     return true;
   }
-
+  //Tính chi phí gia hạn trả về controller
   static async calculateExtendCost(customerId, orderId, newReturnDate) {
     const order = await get(
       `SELECT rental_order_id, rental_order_status, expected_return_date 

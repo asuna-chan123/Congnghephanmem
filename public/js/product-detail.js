@@ -72,7 +72,7 @@ function renderStars(rating) {
     return starsHtml;
 }
 
-// Fetch Detailed Data
+// Lấy dữ liệu chi tiết thiết bị
 async function loadProductDetails() {
     if (!productId) {
         detailLayout.innerHTML = `<div class="error-msg">Không tìm thấy mã sản phẩm. <a href="/">Quay lại trang chủ</a></div>`;
@@ -80,6 +80,7 @@ async function loadProductDetails() {
     }
 
     try {
+        // Controller
         const response = await fetch(`/api/products/${productId}`);
         const data = await response.json();
 
@@ -89,7 +90,7 @@ async function loadProductDetails() {
             qa = data.qa || [];
             rentals = data.rentals;
 
-            // Normalize product.images to always be an array of objects { url, color, isPrimary }
+            // Chuẩn hóa `product.images` 
             if (product.images) {
                 product.images = product.images.map(img => {
                     if (typeof img === 'string') {
@@ -101,7 +102,7 @@ async function loadProductDetails() {
 
             currentSelectedImage = product.image_url;
 
-            // Check favorites via backend API
+            // Kiểm tra danh sách yêu thích 
             const favRes = await apiFetch(`/api/favorites/check/${product.id}`);
             isFavorited = favRes.success && favRes.favorited;
 
@@ -125,26 +126,26 @@ async function loadProductDetails() {
     }
 }
 
-// Render Main Product Info & Booking Section
+// Hiển thị thông tin chính của sản phẩm và phần đặt chỗ
 function renderDetails() {
     const isOutOfStock = product.stock_quantity <= 0;
 
-    // Create standard tech options
+    // Tạo thông tin công nghệ tiêu chuẩn
     const capacities = product.variants && product.variants.length > 0
         ? [...new Set(product.variants.map(v => v.capacity).filter(Boolean))]
         : ['Tiêu chuẩn'];
 
-    // Set initial active state if not already set
+    // Khởi tạo trạng thái ban đầu
     if (!activeCapacity) activeCapacity = capacities[0];
 
-    // Filter variants by the currently active capacity to find available colors
+    // Lọc các biến thể theo dung lượng hiện tại để tìm màu sắc khả dụng
     const activeVariants = product.variants && product.variants.length > 0
         ? product.variants.filter(v => v.capacity === activeCapacity)
         : [];
     const colors = [...new Set(activeVariants.map(v => v.color).filter(Boolean))];
     if (colors.length === 0) colors.push('Đen');
 
-    // Auto-select a color that has stock > 0 for this capacity, if available
+    // Tự động chọn một màu có số lượng tồn kho > 0 cho dung lượng này, nếu có
     const inStockColors = activeVariants.filter(v => v.stock_quantity > 0).map(v => v.color);
     if (inStockColors.length > 0 && (!activeColor || !inStockColors.includes(activeColor))) {
         activeColor = inStockColors[0];
@@ -152,12 +153,12 @@ function renderDetails() {
         activeColor = colors[0];
     }
 
-    // Pre-calculate minimum date (tomorrow)
+    // Tính toán ngày bắt đầu cho phép đặt hàng (ngày mai)
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const minDateStr = tomorrow.toISOString().split('T')[0];
 
-    // Secondary Gallery Thumbnails list
+    //Danh sách ảnh thu nhỏ phụ
     const galleryThumbnails = product.images && product.images.length > 0 ? product.images : [{ url: product.image_url, color: null, isPrimary: true }];
 
     const thumbnailHtml = galleryThumbnails.map((img, index) => `
@@ -166,7 +167,7 @@ function renderDetails() {
         </div>
     `).join('');
 
-    // Highlight specs for Huawei style Model Card
+
     let modelHighlights = [
         "Thiết kế tinh tế mang tính biểu tượng",
         "Hiệu năng tối ưu đáp ứng mọi nhu cầu làm việc",
@@ -675,7 +676,7 @@ function updateGalleryForColor(color) {
 
 
 
-// Validate Datepicker selection against booked ranges
+// Kiểm chứng lựa chọn từ Datepicker so với các khoảng thời gian đã được đặt.
 function validateRentalDates() {
     const startInput = document.getElementById('rent-start-date');
     const endInput = document.getElementById('rent-end-date');
@@ -689,12 +690,13 @@ function validateRentalDates() {
         return true;
     }
 
+    //Chưa chọn ngày kết thúc trước ngày bắt đầu
     if (startDate > endDate) {
         msgDiv.innerHTML = `<span style="color:#ef4444; font-size:12px; font-weight:600;"><i class="fa-solid fa-circle-xmark"></i> Ngày kết thúc phải sau ngày bắt đầu!</span>`;
         return false;
     }
 
-    // Check overlap with booked dates
+    //Kiểm tra trùng lịch
     const overlap = rentals.some(r => {
         const rStart = r.start_date ? r.start_date.substring(0, 10) : '';
         const rEnd = r.end_date ? r.end_date.substring(0, 10) : '';
@@ -706,14 +708,14 @@ function validateRentalDates() {
         return false;
     }
 
-    // Calculate rental days
+    // Tính số ngày thuê
     const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     msgDiv.innerHTML = `<span style="color:var(--accent); font-size:12px; font-weight:600;"><i class="fa-solid fa-circle-check"></i> Thiết bị sẵn sàng! Tổng số ngày thuê: ${diffDays} ngày.</span>`;
     return true;
 }
 
-// Handle Add to Cart from Detail Screen
+// Thêm sản phẩm vào giỏ hàng
 async function handleDetailAction() {
     if (product.stock_quantity <= 0) {
         showStatusPopup(false, 'Sản phẩm đã hết hàng!');
@@ -733,6 +735,7 @@ async function handleDetailAction() {
     const startInput = document.getElementById('rent-start-date');
     const endInput = document.getElementById('rent-end-date');
 
+    //Chưa chọn đầy đủ
     if (!startInput.value || !endInput.value) {
         showStatusPopup(false, 'Vui lòng chọn ngày bắt đầu và kết thúc thuê!');
         return;
@@ -743,6 +746,7 @@ async function handleDetailAction() {
         return;
     }
 
+    //Dữ liệu hợp lệ khi thêm vào giỏ hàng
     try {
         const res = await apiFetch('/api/cart/add', {
             method: 'POST',
@@ -764,7 +768,7 @@ async function handleDetailAction() {
     }
 }
 
-// Favorites Toggle
+// Bật tắt yêu thích
 async function toggleFavorite() {
     const favBtn = document.getElementById('fav-btn');
     try {

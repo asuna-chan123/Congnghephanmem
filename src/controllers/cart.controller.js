@@ -2,7 +2,7 @@ const CartModel = require('../models/cart.model');
 const OrderModel = require('../models/order.model');
 const walletService = require('../Payment/service');
 
-//get cart
+//tải giỏ hàng
 class CartController {
   static async getCart(req, res) {
     try {
@@ -11,7 +11,7 @@ class CartController {
       if (!sessionId && !customerId) {
         return res.status(400).json({ success: false, message: 'Session ID or Customer ID is required' });
       }
-
+      //truy xuất dữ liệu
       const cartItems = await CartModel.getCartBySessionId(sessionId, customerId);
 
       let totalRent = 0;
@@ -24,14 +24,16 @@ class CartController {
 
       const total = totalRent + totalDeposit;
 
+      //trả dữ liệu về ui
       res.json({ success: true, cart: cartItems, total, totalRent, totalDeposit });
-    } 
+    }
     catch (error) {
       console.error('Error fetching cart:', error);
       res.status(500).json({ success: false, message: 'Server Error' });
     }
   }
 
+  //Gửi yêu cầu thêm vào giỏ hàng
   static async addToCart(req, res) {
     try {
       const sessionId = req.headers['x-session-id'];
@@ -47,6 +49,7 @@ class CartController {
 
       const qty = parseInt(quantity, 10) || 1;
 
+      //Truy xuất dữ liệu
       await CartModel.addItem(sessionId, customerId, productId || null, qty, variantId || null, rentalStartDate || null, rentalEndDate || null);
       res.json({ success: true, message: 'Added to cart' });
     } catch (error) {
@@ -124,12 +127,12 @@ class CartController {
     }
   }
 
-static async checkout(req, res) {
+  static async checkout(req, res) {
     try {
       // Ưu tiên lấy customerId từ token (req.user.id) nếu bạn dùng middleware verifyToken, 
       // hoặc fallback về header cũ.
       const customerId = req.user?.id || (req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null);
-      
+
       if (!customerId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập trước khi thanh toán.' });
       }
@@ -139,21 +142,21 @@ static async checkout(req, res) {
 
       // XỬ LÝ THANH TOÁN BẰNG VÍ E-TECH
       if (paymentMethod === 'wallet') {
-          if (!totalAmount || totalAmount <= 0) {
-              return res.status(400).json({ success: false, message: 'Số tiền thanh toán không hợp lệ.' });
-          }
-          try {
-              // Gọi hàm Rút tiền/Trừ tiền cọc. Nếu số dư không đủ, nó sẽ tự văng lỗi (throw Error)
-              await walletService.createWithdrawal(customerId, totalAmount);
-          } catch (walletError) {
-              return res.status(400).json({ success: false, message: walletError.message || "Số dư ví không đủ để đặt cọc." });
-          }
+        if (!totalAmount || totalAmount <= 0) {
+          return res.status(400).json({ success: false, message: 'Số tiền thanh toán không hợp lệ.' });
+        }
+        try {
+          // Gọi hàm Rút tiền/Trừ tiền cọc. Nếu số dư không đủ, nó sẽ tự văng lỗi (throw Error)
+          await walletService.createWithdrawal(customerId, totalAmount);
+        } catch (walletError) {
+          return res.status(400).json({ success: false, message: walletError.message || "Số dư ví không đủ để đặt cọc." });
+        }
       }
 
       // TẠO ĐƠN HÀNG
       // Lưu ý: Cần đảm bảo OrderModel.createOrderFromCart của bạn đã sẵn sàng nhận thêm paymentMethod và shippingDetails
       const result = await OrderModel.createOrderFromCart(customerId, selectedItemIds, paymentMethod, shippingDetails);
-      
+
       res.json({ success: true, message: 'Thanh toán thành công. Đơn hàng đã được khởi tạo.', order: result });
     } catch (error) {
       console.error('Error during checkout:', error);

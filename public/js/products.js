@@ -103,7 +103,7 @@ function formatCurrency(value) {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 }
 
-// Yêu cầu dữ liệu từ Server
+// Yêu cầu dữ liệu từ Server/ Chuyển tiếp dữ liệu
 async function fetchCatalogData() {
     try {
         const response = await fetch('/api/products');
@@ -243,7 +243,7 @@ function setupEventListeners() {
         });
     });
 
-    // Clear filters button
+    // Xóa bộ lọc
     clearAllFiltersBtn.addEventListener('click', () => {
         currentCategory = 'all';
         selectedTags.clear();
@@ -258,7 +258,7 @@ function setupEventListeners() {
         filterTrialOnly.checked = false;
         filterInStock.checked = false;
 
-        // Reset sort radio option
+        // Reset tùy chọn radio sắp xếp
         const defaultRadio = document.querySelector('input[name="sort-option"][value="default"]');
         if (defaultRadio) defaultRadio.checked = true;
 
@@ -272,7 +272,7 @@ function setupEventListeners() {
         renderAll();
     });
 
-    // Header search input change
+    // Tìm kiếm bằng header
     const input = getHeaderSearchInput();
     if (input) {
         input.addEventListener('input', (e) => {
@@ -282,7 +282,7 @@ function setupEventListeners() {
     }
 }
 
-// Update URL parameters without reload
+// Cập nhật tham số URL mà không tải lại trang
 function updateUrlParams() {
     const url = new URL(window.location);
     if (currentCategory && currentCategory !== 'all') {
@@ -583,46 +583,46 @@ function createChip(text, onRemove) {
     activeFiltersRow.appendChild(chip);
 }
 
-// Render Products Grid matching filters & sort
+// Hiển thi sản phẩm sau khi lọc
 function renderProducts() {
     catalogGrid.innerHTML = '';
 
-    // 1. Filter
+    // 1. Lọc sản phẩm
     let filtered = products.filter(p => {
-        // Category Filter
+        // Lọc theo danh mục
         if (currentCategory !== 'all') {
             const catObj = categories.find(c => c.slug === currentCategory);
             if (!catObj || p.category_id !== catObj.id) return false;
         }
 
-        // Brand Filter
+        // Lọc theo hãng
         if (selectedBrands.size > 0 && !selectedBrands.has(p.manufacturer)) return false;
 
-        // Tag Filter (Multi-condition: OR logic, matches any selected tag)
+        // Lọc theo thẻ (logic OR: khớp với bất kỳ thẻ được chọn nào)
         if (selectedTags.size > 0) {
             const prodTags = p.tags ? p.tags.split(',') : [];
             const hasMatchingTag = prodTags.some(t => selectedTags.has(t));
             if (!hasMatchingTag) return false;
         }
 
-        // Search Filter
+        // Tìm kiếm
         if (searchKeyword) {
             if (!p.name.toLowerCase().includes(searchKeyword.toLowerCase())) return false;
         }
 
-        // Trial Only
+        // Chỉ dùng thử
         if (showTrialOnly && !p.is_try_before_buy) return false;
 
-        // In Stock Only
+        // Còn hàng
         if (showInStockOnly && p.stock_quantity <= 0) return false;
 
         return true;
     });
 
-    // Update count labels
+    // Hiển thị số lượng sản phẩm khi tìm kiếm thành công
     resultsCountLabel.textContent = `Tìm thấy ${filtered.length} sản phẩm`;
 
-    // Title updating
+    // Cập nhật tiêu đề
     if (currentCategory !== 'all') {
         const catObj = categories.find(c => c.slug === currentCategory);
         catalogTitle.textContent = catObj ? catObj.name : 'Thiết bị';
@@ -641,7 +641,7 @@ function renderProducts() {
         filtered.sort((a, b) => b.price - a.price);
     }
 
-    // 3. Render
+    // Tìm kiếm không thành công
     if (filtered.length === 0) {
         catalogGrid.innerHTML = `
             <div class="empty-state">

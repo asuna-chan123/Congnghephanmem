@@ -170,8 +170,9 @@ class OrderModel {
 
     return orders;
   }
-
+  //Kiểm tra sự tồn tại và cập nhật trạng thái đơn hàng thành hủy 
   static async cancelOrder(customerId, orderId) {
+    //Kiểm tra sự tồn tại của đơn hàng và trạng thái đơn hàng
     const order = await get(
       `SELECT rental_order_id, rental_order_status 
       FROM rental_orders WHERE rental_order_id = ?
@@ -179,18 +180,17 @@ class OrderModel {
       [orderId, customerId]
     );
 
+    //Kiểm tra sự tồn tại của đơn hàng 
     if (!order) {
       throw new Error('Đơn hàng không tồn tại.');
     }
-
+    //Kiểm tra trạng thái của đơn hàng 
     if (order.rental_order_status !== 'pending' && order.rental_order_status !== 'confirmed') {
       throw new Error('Chỉ có thể hủy đơn hàng ở trạng thái Chờ duyệt hoặc Đã duyệt.');
     }
-
-    // 1. Update order status to 'cancelled'
+    //Cập nhật trạng thái đơn hàng thành hủy 
     await query(`UPDATE rental_orders SET rental_order_status = 'cancelled' WHERE rental_order_id = ?`, [orderId]);
-
-    // 2. Free up device units associated with this order
+    //Giải phóng thiết bị đã được gán cho đơn hàng
     const boundUnits = await query(`
       SELECT rou.unit_id 
       FROM rental_order_units rou
@@ -207,6 +207,7 @@ class OrderModel {
     return true;
   }
 
+  // trả dữ liệu về controller
   static async updateShippingInfo(customerId, orderId, name, phone, address) {
     const order = await get(
       `SELECT rental_order_id, rental_order_status FROM rental_orders WHERE rental_order_id = ? AND customer_id = ?`,

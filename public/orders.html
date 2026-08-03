@@ -65,7 +65,7 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         }
 
         .refresh-btn:hover {
@@ -346,18 +346,25 @@
     <main class="orders-page-wrapper">
         <div class="orders-header-bar">
             <h1 class="orders-title">Đơn hàng của tôi</h1>
-            <button id="refresh-orders-btn" class="refresh-btn" onclick="window.fetchAndRenderOrders()" title="Tải lại danh sách đơn hàng">
+            <button id="refresh-orders-btn" class="refresh-btn" onclick="window.fetchAndRenderOrders()"
+                title="Tải lại danh sách đơn hàng">
                 <i class="fa-solid fa-rotate-right"></i> Tải lại dữ liệu
             </button>
         </div>
 
         <div class="orders-status-tabs" id="orders-status-tabs">
-            <button class="tab-btn active" data-status="all" onclick="window.filterOrdersByStatus('all')">Tất cả</button>
-            <button class="tab-btn" data-status="pending" onclick="window.filterOrdersByStatus('pending')">Chờ duyệt</button>
-            <button class="tab-btn" data-status="confirmed" onclick="window.filterOrdersByStatus('confirmed')">Đã duyệt / Giao</button>
-            <button class="tab-btn" data-status="active" onclick="window.filterOrdersByStatus('active')">Đang thuê</button>
-            <button class="tab-btn" data-status="completed" onclick="window.filterOrdersByStatus('completed')">Hoàn thành</button>
-            <button class="tab-btn" data-status="cancelled" onclick="window.filterOrdersByStatus('cancelled')">Đã hủy</button>
+            <button class="tab-btn active" data-status="all" onclick="window.filterOrdersByStatus('all')">Tất
+                cả</button>
+            <button class="tab-btn" data-status="pending" onclick="window.filterOrdersByStatus('pending')">Chờ
+                duyệt</button>
+            <button class="tab-btn" data-status="confirmed" onclick="window.filterOrdersByStatus('confirmed')">Đã duyệt
+                / Giao</button>
+            <button class="tab-btn" data-status="active" onclick="window.filterOrdersByStatus('active')">Đang
+                thuê</button>
+            <button class="tab-btn" data-status="completed" onclick="window.filterOrdersByStatus('completed')">Hoàn
+                thành</button>
+            <button class="tab-btn" data-status="cancelled" onclick="window.filterOrdersByStatus('cancelled')">Đã
+                hủy</button>
         </div>
 
         <div id="orders-container">
@@ -384,7 +391,7 @@
                     const user = JSON.parse(userStr);
                     const id = user.id || user.customerId || user.customer_id;
                     if (id) return id;
-                } catch (e) {}
+                } catch (e) { }
             }
             const token = localStorage.getItem('accessToken');
             if (token) {
@@ -395,7 +402,7 @@
                         const payload = JSON.parse(window.atob(base64));
                         return payload.id || payload.customerId || payload.customer_id || null;
                     }
-                } catch (e) {}
+                } catch (e) { }
             }
             return null;
         }
@@ -404,7 +411,7 @@
         window.fetchAndRenderOrders = async () => {
             const container = document.getElementById('orders-container');
             const refreshBtn = document.getElementById('refresh-orders-btn');
-            
+
             const customerId = getCustomerIdFromStorage();
             if (!customerId) {
                 container.innerHTML = `
@@ -422,7 +429,7 @@
                 refreshBtn.disabled = true;
             }
 
-            try {
+            try { // gọi controller
                 const res = await apiFetch('/api/orders');
                 if (!res.success || !res.orders) {
                     container.innerHTML = `
@@ -454,7 +461,7 @@
                 }
             }
         };
-
+        //Chọn đơn muốn xem trạng thái
         window.filterOrdersByStatus = (status) => {
             window.currentStatusFilter = status;
             document.querySelectorAll('#orders-status-tabs .tab-btn').forEach(btn => {
@@ -466,7 +473,7 @@
             });
             window.renderFilteredOrders();
         };
-
+        // Kiểm tra đơn thuê
         window.renderFilteredOrders = () => {
             const container = document.getElementById('orders-container');
             let filtered = window.allOrders || [];
@@ -478,7 +485,7 @@
                     filtered = filtered.filter(o => o.rental_order_status === window.currentStatusFilter);
                 }
             }
-
+            //Chưa có đơn hàng nào
             if (filtered.length === 0) {
                 let msg = 'Bạn chưa có đơn hàng nào.';
                 if (window.currentStatusFilter !== 'all') {
@@ -607,10 +614,12 @@
             container.appendChild(listDiv);
         };
 
+        //Theo dõi trạng thái đơn thuê
         document.addEventListener('DOMContentLoaded', () => {
             window.fetchAndRenderOrders();
         });
 
+        // Hiển thị popup xác nhận
         window.showConfirmPopup = (message, onConfirm, okText = 'Xác nhận hủy') => {
             const existing = document.getElementById('custom-confirm-popup');
             if (existing) existing.remove();
@@ -1005,14 +1014,18 @@
         window.cancelOrder = async (orderId) => {
             window.showConfirmPopup('Bạn có chắc chắn muốn hủy đơn hàng này không?', async () => {
                 try {
+                    // Chuyển tiếp đến controller để xử lý yêu cầu hủy đơn hàng
                     const res = await apiFetch(`/api/orders/${orderId}/cancel`, { method: 'POST' });
                     if (res.success) {
+                        //Nhận phản hồi từ controller
                         window.showStatusPopup(true, 'Đã hủy đơn hàng thành công!', false);
                         setTimeout(() => window.location.reload(), 1500);
                     } else {
+                        //nhận phản hồi từ controller
                         window.showStatusPopup(false, res.message || 'Lỗi hủy đơn hàng.');
                     }
                 } catch (e) {
+                    //nhận phản hồi từ controller
                     console.error('Error cancelling order:', e);
                     window.showStatusPopup(false, 'Không thể hủy đơn hàng vào lúc này.');
                 }

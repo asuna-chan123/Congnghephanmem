@@ -21,6 +21,7 @@ class ProductModel {
     return db.query(sql);
   }
 
+  //Chi tiết thiết bị
   static async getProductsByCategory(categoryId) {
     const sql = `
       SELECT 
@@ -99,6 +100,7 @@ class ProductModel {
     return db.query(sql);
   }
 
+  //Lấy thông tin sản phẩm theo id và trả dữ liệu về controller
   static async getProductById(productId) {
     const sql = `
       SELECT 

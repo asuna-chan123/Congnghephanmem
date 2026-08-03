@@ -22,9 +22,10 @@ class OrderController {
     try {
       const customerId = getCustomerIdFromReq(req);
       if (!customerId) {
+        // Kiểm tra đăng nhập
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để xem đơn hàng.' });
       }
-
+      //Gọi đến model để lấy dữ liệu
       const orders = await OrderModel.getOrdersByCustomerId(customerId);
       res.json({ success: true, orders });
     } catch (error) {
@@ -44,10 +45,12 @@ class OrderController {
       if (!orderId) {
         return res.status(400).json({ success: false, message: 'Mã đơn hàng không hợp lệ.' });
       }
-
+      //Truyền dữ liệu đến model để xử lý 
       await OrderModel.cancelOrder(customerId, orderId);
       res.json({ success: true, message: 'Đơn hàng đã được hủy thành công.' });
-    } catch (error) {
+    }
+    //Nhận phản hồi từ model
+    catch (error) {
       console.error('Error cancelling order:', error);
       res.status(400).json({ success: false, message: error.message || 'Server Error' });
     }

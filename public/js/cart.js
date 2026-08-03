@@ -1,20 +1,21 @@
-// State variables
+// Các biến trạng thái
 let cartList = [];
 let selectedItemIds = [];
 let isInitialLoad = true;
 
-// #checkout-submit-btn
+// kiểm tra nút thanh toán
 document.addEventListener('DOMContentLoaded', () => {
     loadCartPage();
     loadRelatedItems();
 });
 
-//load cart page
+// Tải trang giỏ hàng
 async function loadCartPage() {
     const cartItemsContainer = document.getElementById('cart-items-container');
     const emptyCartView = document.getElementById('empty-cart-view');
     const cartLayout = document.getElementById('cart-layout');
 
+    //gọi controller
     try {
         const data = await apiFetch('/api/cart');
         if (!data.success || !data.cart || data.cart.length === 0) {
@@ -27,12 +28,11 @@ async function loadCartPage() {
         cartLayout.style.display = 'grid';
         emptyCartView.style.display = 'none';
 
-        // Select all items by default on initial load
+        // Tải giỏ hàng
         if (isInitialLoad) {
             selectedItemIds = cartList.map(item => String(item.uniqueId));
             isInitialLoad = false;
         } else {
-            // Keep user's current selection, but filter out items no longer in cart
             const currentIds = cartList.map(item => String(item.uniqueId));
             selectedItemIds = selectedItemIds.map(id => String(id)).filter(id => currentIds.includes(id));
         }

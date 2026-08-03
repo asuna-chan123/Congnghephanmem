@@ -32,7 +32,7 @@ class CartModel {
 
     return items.map(item => {
       const price = item.product_trial_price;
-      const deposit = item.product_price; // Trong SQL của bạn (dv.daily_rental_price * 10) đang được as product_price
+      const deposit = item.product_price;
       const name = `Thuê ${item.product_name} (${item.color}, ${item.capacity})`;
       const image = item.product_image_url;
 
@@ -43,12 +43,12 @@ class CartModel {
 
       return {
         cart_item_id: item.cart_item_id,
-        uniqueId: item.cart_item_id, 
+        uniqueId: item.cart_item_id,
         id: item.variant_id,
         name,
         price: parseFloat(price) || 0,
-        deposit: parseFloat(deposit) || 0, // Thêm trường tiền cọc
-        rentalDays: rentalDays,            // Thêm trường số ngày thuê
+        deposit: parseFloat(deposit) || 0,
+        rentalDays: rentalDays,
         image,
         type: 'trial',
         quantity: item.quantity,

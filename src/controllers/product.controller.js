@@ -2,8 +2,10 @@ const ProductModel = require('../models/product.model');
 const ReviewModel = require('../models/review.model');
 
 class ProductController {
+  // Gọi Model để xử lý yêu cầu
   static async getAllProductsList(req, res) {
     try {
+      //Nhận phản hồi từ Model 
       const products = await ProductModel.getAllProducts();
       const categories = await ProductModel.getAllCategories();
       res.json({
@@ -28,18 +30,19 @@ class ProductController {
         return res.status(400).json({ success: false, message: 'Invalid product ID.' });
       }
 
+      //Yêu cầu dữ liệu từ Model
       const product = await ProductModel.getProductById(productId);
       if (!product) {
         return res.status(404).json({ success: false, message: 'Product not found.' });
       }
 
-      // Fetch reviews and Q&A
+      // Lấy danh sách đánh giá và hỏi đáp
       const reviewsQA = await ReviewModel.getReviewsAndQA(productId);
 
-      // Fetch related products
+      // Lấy danh sách các sản phẩm có liên quan
       const related = await ProductModel.getRelatedProducts(product.category_id, product.id);
 
-      // Fetch rentals (blocked dates)
+      // Lấy danh sách các ngày đã được đặt trước đó
       const rentals = await ProductModel.getProductRentals(productId);
 
       res.json({

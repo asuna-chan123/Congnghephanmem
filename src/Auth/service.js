@@ -47,7 +47,15 @@ const loginCustomer = async (phone, password) => {
     if (!isMatch) throw new Error("INVALID_PASSWORD");
 
     // Gắn cứng role 'customer' vào token để hệ thống ủy quyền (authorization) hoạt động
-    return generateTokens({ id: user.customer_id, role: 'customer' }, 'customer');
+    const tokens = generateTokens({ id: user.customer_id, role: 'customer' }, 'customer');
+    const customerInfo = {
+        id: user.customer_id,
+        customer_id: user.customer_id,
+        fullName: user.full_name,
+        phoneNumber: user.phone_number,
+        email: user.email
+    };
+    return { tokens, user: customerInfo, customer: customerInfo };
 };
 
 const loginStaff = async (staffPhone, password) => {

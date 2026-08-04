@@ -22,8 +22,13 @@ const register = async (req, res) => {
 const customerLogin = async (req, res) => {
     try {
         const { phone, password } = req.body;
-        const tokens = await authService.loginCustomer(phone, password);
-        res.status(200).json({ message: "Đăng nhập khách hàng thành công", tokens });
+        const result = await authService.loginCustomer(phone, password);
+        res.status(200).json({ 
+            message: "Đăng nhập khách hàng thành công", 
+            tokens: result.tokens,
+            user: result.user,
+            customer: result.customer
+        });
     } catch (error) {
         if (error.message === "USER_NOT_FOUND") return res.status(404).json({ message: "Số điện thoại không tồn tại!" });
         if (error.message === "INVALID_PASSWORD") return res.status(401).json({ message: "Mật khẩu không đúng!" });

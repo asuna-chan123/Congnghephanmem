@@ -1,4 +1,24 @@
 const ReviewModel = require('../models/review.model');
+const jwt = require('jsonwebtoken');
+
+function getCustomerIdFromReq(req) {
+  let customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+  if (!customerId && req.user && req.user.id) {
+    customerId = parseInt(req.user.id, 10);
+  }
+  if (!customerId && req.headers['authorization']) {
+    try {
+      const token = req.headers['authorization'].replace(/^Bearer\s+/i, '');
+      const decoded = jwt.decode(token) || (process.env.JWT_ACCESS_SECRET ? jwt.verify(token, process.env.JWT_ACCESS_SECRET) : null);
+      if (decoded && decoded.id) {
+        customerId = parseInt(decoded.id, 10);
+      }
+    } catch (e) {
+      console.error('Error parsing customer token in ReviewController:', e.message);
+    }
+  }
+  return customerId;
+}
 
 class ReviewController {
   static async getReviewsAndQA(req, res) {
@@ -8,7 +28,7 @@ class ReviewController {
         return res.status(400).json({ success: false, message: 'Invalid Product ID' });
       }
 
-      const currentCustomerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const currentCustomerId = getCustomerIdFromReq(req);
       const data = await ReviewModel.getReviewsAndQA(productId, currentCustomerId);
       res.json({ success: true, ...data });
     } catch (error) {
@@ -20,7 +40,7 @@ class ReviewController {
   static async checkEligibility(req, res) {
     try {
       const productId = parseInt(req.params.productId, 10);
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const customerId = getCustomerIdFromReq(req);
       if (!customerId) {
         return res.json({ success: true, eligible: false, message: 'Vui lòng đăng nhập.' });
       }
@@ -35,7 +55,7 @@ class ReviewController {
 
   static async addReview(req, res) {
     try {
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const customerId = getCustomerIdFromReq(req);
       if (!customerId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để đánh giá.' });
       }
@@ -56,7 +76,7 @@ class ReviewController {
 
   static async addQA(req, res) {
     try {
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const customerId = getCustomerIdFromReq(req);
       if (!customerId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để đặt câu hỏi.' });
       }
@@ -77,7 +97,7 @@ class ReviewController {
 
   static async addReply(req, res) {
     try {
-      const customerId = req.headers['x-customer-id'] ? parseInt(req.headers['x-customer-id'], 10) : null;
+      const customerId = getCustomerIdFromReq(req);
       const staffId = req.headers['x-staff-id'] ? parseInt(req.headers['x-staff-id'], 10) : null;
       if (!customerId && !staffId) {
         return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để phản hồi.' });

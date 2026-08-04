@@ -27,18 +27,43 @@ async function apiFetch(url, options = {}) {
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
+    let customerId = null;
     const currentUserJson = localStorage.getItem('currentUser');
     if (currentUserJson) {
         try {
             const user = JSON.parse(currentUserJson);
-            const customerId = user.id || user.customerId || user.customer_id;
-            if (customerId) {
-                headers['X-Customer-Id'] = customerId.toString();
-            }
+            customerId = user.id || user.customerId || user.customer_id;
         } catch (e) {
             console.error('Error parsing user from localStorage', e);
         }
     }
+
+    if (!customerId && token) {
+        try {
+            const base64Url = token.split('.')[1];
+            if (base64Url) {
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                const decoded = JSON.parse(jsonPayload);
+                if (decoded && decoded.id) {
+                    customerId = decoded.id;
+                    if (currentUserJson) {
+                        const u = JSON.parse(currentUserJson);
+                        u.id = decoded.id;
+                        u.customer_id = decoded.id;
+                        localStorage.setItem('currentUser', JSON.stringify(u));
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error auto-repairing customerId from JWT token', e);
+        }
+    }
+
+    if (customerId) {
+        headers['X-Customer-Id'] = customerId.toString();
+    }
+
     const res = await fetch(url, {
         ...options,
         headers

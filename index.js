@@ -12,6 +12,7 @@ const reviewRoutes = require('./src/routes/review.route');
 const authModule = require('./src/Auth/routes'); 
 const customerModule = require('./src/Customer/routes');
 const paymentModule = require('./src/Payment/routes');
+const adminRoutes = require('./src/routes/admin.route');
 
 // Giám sát & Logging
 const logger = require('./src/utils/logger');
@@ -49,6 +50,7 @@ app.use('/api', reviewRoutes);
 app.use('/api/auth', authModule);
 app.use('/api/customer', customerModule);
 app.use('/api/payment', paymentModule);
+app.use('/api/admin', adminRoutes);
 
 // Clean routes
 app.get('/products', (req, res) => {

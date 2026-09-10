@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Tech Store — Hệ Thống Quản Trị Nghiệp Vụ & Điều Hành</title>
+    <title>E-Tech Store — Hệ Thống Quản Trị Nghiệp Vụ (Full CRUD, Variants & Images)</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,6 +12,9 @@
             --admin-card: #ffffff;
             --admin-border: rgba(0, 0, 0, 0.08);
             --admin-accent: #0071e3;
+            --admin-danger: #ff3b30;
+            --admin-success: #34c759;
+            --admin-warning: #ff9f0a;
         }
 
         body {
@@ -80,6 +83,22 @@
             box-shadow: 0 6px 16px rgba(240, 90, 40, 0.35);
         }
 
+        .btn-primary {
+            background: #0071e3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover { background: #005bb5; }
+
         .btn-outline {
             border: 1px solid var(--admin-border);
             background: white;
@@ -92,20 +111,18 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            cursor: pointer;
             transition: all 0.2s;
         }
-
-        .btn-outline:hover {
-            background: #f0f0f2;
-        }
+        .btn-outline:hover { background: #f0f0f2; }
 
         .admin-container {
-            max-width: 1320px;
+            max-width: 1380px;
             margin: 0 auto;
             padding: 24px 24px 80px;
         }
 
-        /* Banner thông tin phân biệt 2 Admin */
+        /* Banner thông tin */
         .info-banner {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             color: #f8fafc;
@@ -182,7 +199,7 @@
         .icon-orange { background: rgba(255, 159, 10, 0.1); color: #ff9f0a; }
         .icon-purple { background: rgba(175, 82, 222, 0.1); color: #af52de; }
 
-        /* Tabs điều hướng nghiệp vụ */
+        /* Tabs điều hướng */
         .tab-bar {
             display: flex;
             gap: 8px;
@@ -204,24 +221,17 @@
             align-items: center;
             gap: 8px;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
-        .tab-btn:hover {
-            color: #1d1d1f;
-        }
-
+        .tab-btn:hover { color: #1d1d1f; }
         .tab-btn.active {
             color: #0071e3;
             border-bottom-color: #0071e3;
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
         /* Bảng dữ liệu quản trị */
         .admin-table-card {
@@ -260,6 +270,33 @@
             font-size: 13px;
         }
 
+        /* Filter Pills */
+        .filter-group {
+            display: flex;
+            background: #f0f0f2;
+            padding: 3px;
+            border-radius: 20px;
+            gap: 2px;
+        }
+
+        .filter-btn {
+            border: none;
+            background: transparent;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6e6e73;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: white;
+            color: #1d1d1f;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -271,23 +308,23 @@
             background: #fbfbfd;
             color: #6e6e73;
             font-weight: 600;
-            padding: 12px 18px;
+            padding: 12px 16px;
             border-bottom: 1px solid var(--admin-border);
         }
 
         td {
-            padding: 14px 18px;
+            padding: 12px 16px;
             border-bottom: 1px solid var(--admin-border);
             color: #1d1d1f;
             vertical-align: middle;
         }
 
-        tr:last-child td {
-            border-bottom: none;
-        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
 
-        tr:hover td {
-            background: #fafafa;
+        tr.row-deleted td {
+            background: #fff8f8;
+            opacity: 0.85;
         }
 
         .badge-status {
@@ -302,68 +339,221 @@
         .badge-pending { background: rgba(255, 159, 10, 0.12); color: #d97706; }
         .badge-rented { background: rgba(0, 113, 227, 0.12); color: #0071e3; }
         .badge-canceled { background: rgba(255, 59, 48, 0.12); color: #dc2626; }
+        .badge-deleted { background: rgba(142, 142, 147, 0.15); color: #6e6e73; }
 
         .btn-action {
             border: none;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
+        .btn-edit { background: #f0f0f2; color: #1d1d1f; }
+        .btn-edit:hover { background: #e5e5ea; }
+        .btn-soft-delete { background: rgba(255, 59, 48, 0.1); color: #ff3b30; }
+        .btn-soft-delete:hover { background: #ff3b30; color: white; }
+        .btn-restore { background: rgba(52, 199, 89, 0.1); color: #34c759; }
+        .btn-restore:hover { background: #34c759; color: white; }
         .btn-approve { background: #0071e3; color: white; }
         .btn-approve:hover { background: #005bb5; }
-        .btn-cancel { background: #ff3b30; color: white; }
-        .btn-cancel:hover { background: #cc2920; }
 
         .tech-image {
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             object-fit: cover;
             border-radius: 8px;
             background: #e5e5ea;
         }
 
-        /* Tab DevOps QA Section */
-        .qa-suite-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.15);
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 4px;
         }
 
-        .qa-card {
+        /* Modal Apple-style */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-backdrop.show { display: flex; }
+
+        .modal-box {
             background: white;
-            border: 1px solid var(--admin-border);
-            border-radius: 14px;
-            padding: 22px;
+            border-radius: 18px;
+            width: 560px;
+            max-width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: modalFadeIn 0.25s ease;
         }
 
-        .qa-card h4 {
-            margin: 0 0 10px;
-            font-size: 16px;
+        .modal-box-lg {
+            width: 920px;
+            max-width: 95%;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--admin-border);
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
+        }
+        .modal-header h3 { margin: 0; font-size: 16px; font-weight: 600; }
+        .modal-close {
+            background: none; border: none; font-size: 20px; color: #8e8e93; cursor: pointer;
         }
 
-        .qa-card p {
+        .modal-body {
+            padding: 20px 24px;
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
+        .modal-subtab-bar {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--admin-border);
+            margin-bottom: 18px;
+        }
+
+        .modal-subtab-btn {
+            background: none;
+            border: none;
+            padding: 8px 14px;
             font-size: 13px;
+            font-weight: 600;
             color: #6e6e73;
-            line-height: 1.5;
-            margin-bottom: 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
         }
 
-        .code-block {
-            background: #1e1e24;
-            color: #4ade80;
-            font-family: monospace;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            overflow-x: auto;
+        .modal-subtab-btn.active {
+            color: #0071e3;
+            border-bottom-color: #0071e3;
+        }
+
+        .form-group {
             margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6e6e73;
+            margin-bottom: 5px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            font-size: 13px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            border-color: #0071e3;
+        }
+
+        .modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--admin-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #fafafa;
+        }
+
+        /* Image Gallery */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .image-card {
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fbfbfd;
+            position: relative;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            background: #e5e5ea;
+        }
+
+        .image-card-info {
+            padding: 8px 10px;
+            font-size: 11.5px;
+            flex-grow: 1;
+        }
+
+        .image-card-actions {
+            padding: 6px 10px 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .badge-primary-img {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: #0071e3;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Toast notification */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1e293b;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            gap: 8px;
         }
     </style>
 </head>
@@ -381,11 +571,15 @@
 
         <div class="admin-nav-actions">
             <a href="/" class="btn-outline"><i class="fa-solid fa-store"></i> Xem Cửa Hàng</a>
-            <a href="/orders" class="btn-outline"><i class="fa-solid fa-box"></i> Đơn Thuê</a>
             <!-- NÚT CHUYỂN SANG ADMIN KỸ THUẬT GRAFANA -->
-            <a href="http://localhost:3001" target="_blank" class="btn-grafana">
+            <a href="http://localhost:3001/d/devops-tech-rental" target="_blank" class="btn-grafana" title="Mở Dashboard Giám sát Vận hành & Hiệu năng">
                 <i class="fa-solid fa-chart-line"></i>
-                Admin Kỹ Thuật (Grafana :3001)
+                Grafana DevOps
+                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
+            </a>
+            <a href="http://localhost:3001/d/qa-loadtest-tech-rental" target="_blank" class="btn-grafana" style="background: linear-gradient(135deg, #7c3aed, #a855f7); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);" title="Mở Dashboard Kiểm định Chất lượng & Test Tải">
+                <i class="fa-solid fa-vial-circle-check"></i>
+                Grafana QA Test
                 <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
             </a>
         </div>
@@ -396,15 +590,17 @@
         <!-- Banner giải thích & điều hướng -->
         <div class="info-banner">
             <div class="info-banner-content">
-                <h3><i class="fa-solid fa-shield-halved" style="color: #60a5fa;"></i> Phân Hệ Quản Trị Hệ Thống Cho Thuê Thiết Bị Công Nghệ</h3>
+                <h3><i class="fa-solid fa-shield-halved" style="color: #60a5fa;"></i> Phân Hệ Quản Trị Nghiệp Vụ Đa Phân Loại & Giám Sát Grafana</h3>
                 <p>
-                    Trang hiện tại là <strong>Admin Nghiệp vụ (:3000/admin)</strong> dùng để quản lý kho máy móc, duyệt đơn thuê và số dư ký cọc của khách hàng.<br>
-                    Để phục vụ môn <strong>Kiểm định chất lượng phần mềm</strong> (giám sát CPU/RAM, QPS, Latency p95, Error Tracking và K6 Load Test), vui lòng mở <strong>Admin Kỹ thuật Grafana tại cổng 3001</strong>.
+                    Quản lý toàn diện từng thiết bị với nhiều <strong>màu sắc (colors)</strong>, <strong>dung lượng (storage_capacities)</strong>, giá thuê riêng biệt (<strong>daily_rental_price</strong> trong <code>device_variants</code>), xóa mềm dữ liệu và <strong>giám sát hiệu năng hệ thống (DevOps & QA) qua Grafana</strong>.
                 </p>
             </div>
-            <div>
-                <a href="http://localhost:3001" target="_blank" class="btn-grafana" style="white-space: nowrap; padding: 10px 20px; font-size: 14px;">
-                    <i class="fa-solid fa-gauge-high"></i> Mở Grafana Dashboard
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="http://localhost:3001/d/devops-tech-rental" target="_blank" class="btn-grafana" style="white-space: nowrap; padding: 9px 16px; font-size: 13px;">
+                    <i class="fa-solid fa-chart-area"></i> Dashboard DevOps
+                </a>
+                <a href="http://localhost:3001/d/qa-loadtest-tech-rental" target="_blank" class="btn-grafana" style="background: linear-gradient(135deg, #7c3aed, #a855f7); white-space: nowrap; padding: 9px 16px; font-size: 13px;">
+                    <i class="fa-solid fa-vial-circle-check"></i> Dashboard QA Test
                 </a>
             </div>
         </div>
@@ -413,191 +609,654 @@
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-info">
-                    <span>Thiết Bị Sẵn Sàng Cho Thuê</span>
+                    <span>Thiết Bị Đang Kinh Doanh</span>
                     <h2 id="kpi-products">--</h2>
                 </div>
-                <div class="kpi-icon icon-blue">
-                    <i class="fa-solid fa-laptop"></i>
-                </div>
+                <div class="kpi-icon icon-blue"><i class="fa-solid fa-laptop"></i></div>
             </div>
 
             <div class="kpi-card">
                 <div class="kpi-info">
-                    <span>Đơn Thuê Đang Xử Lý</span>
+                    <span>Đơn Thuê Trong Hệ Thống</span>
                     <h2 id="kpi-orders">--</h2>
                 </div>
-                <div class="kpi-icon icon-green">
-                    <i class="fa-solid fa-clipboard-check"></i>
-                </div>
+                <div class="kpi-icon icon-green"><i class="fa-solid fa-clipboard-check"></i></div>
             </div>
 
             <div class="kpi-card">
                 <div class="kpi-info">
-                    <span>Thời Gian Phản Hồi Database</span>
-                    <h2 id="kpi-latency">-- ms</h2>
+                    <span>Khách Hàng Đăng Ký</span>
+                    <h2 id="kpi-customers">--</h2>
                 </div>
-                <div class="kpi-icon icon-orange">
-                    <i class="fa-solid fa-database"></i>
-                </div>
+                <div class="kpi-icon icon-purple"><i class="fa-solid fa-users"></i></div>
             </div>
 
             <div class="kpi-card">
                 <div class="kpi-info">
-                    <span>Trạng Thái Cụm Giám Sát</span>
-                    <h2 id="kpi-monitoring" style="color: #34c759; font-size: 18px;">Hoạt Động</h2>
+                    <span>Danh Mục Thiết Bị</span>
+                    <h2 id="kpi-categories">--</h2>
                 </div>
-                <div class="kpi-icon icon-purple">
-                    <i class="fa-solid fa-server"></i>
-                </div>
+                <div class="kpi-icon icon-orange"><i class="fa-solid fa-layer-group"></i></div>
             </div>
         </div>
 
-        <!-- Thanh Tabs chuyển đổi chức năng -->
+        <!-- Thanh Tabs -->
         <div class="tab-bar">
             <button class="tab-btn active" onclick="switchTab('tab-products')">
-                <i class="fa-solid fa-boxes-stacked"></i> Kho Thiết Bị Công Nghệ
+                <i class="fa-solid fa-boxes-stacked"></i> Kho Thiết Bị (Devices)
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-categories')">
+                <i class="fa-solid fa-layer-group"></i> Danh Mục (Categories)
             </button>
             <button class="tab-btn" onclick="switchTab('tab-orders')">
-                <i class="fa-solid fa-receipt"></i> Đơn Thuê & Giao Nhận
+                <i class="fa-solid fa-receipt"></i> Đơn Thuê & Giao Hàng (Orders)
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-customers')">
+                <i class="fa-solid fa-users"></i> Khách Hàng (Customers)
             </button>
             <button class="tab-btn" onclick="switchTab('tab-payments')">
-                <i class="fa-solid fa-wallet"></i> Duyệt Ví & Tiền Cọc
+                <i class="fa-solid fa-wallet"></i> Giao Dịch & Ví (Payments)
             </button>
-            <button class="tab-btn" onclick="switchTab('tab-qa')">
-                <i class="fa-solid fa-flask-vial"></i> Kiểm Định & DevOps (QA Suite)
+            <button class="tab-btn" onclick="switchTab('tab-monitoring')" style="color: #ea580c; font-weight: 700;">
+                <i class="fa-solid fa-gauge-high"></i> Giám Sát DevOps & QA (Grafana)
             </button>
         </div>
 
-        <!-- TAB 1: KHO THIẾT BỊ -->
+        <!-- ============================================== -->
+        <!-- TAB 1: KHO THIẾT BỊ (DEVICES & VARIANTS) -->
+        <!-- ============================================== -->
         <div id="tab-products" class="tab-content active">
             <div class="admin-table-card">
                 <div class="table-header-tools">
-                    <div class="search-box">
-                        <i class="fa-solid fa-magnifying-glass" style="color: #8e8e93;"></i>
-                        <input type="text" id="searchProductInput" placeholder="Tìm theo tên máy, danh mục..." onkeyup="filterProducts()">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass" style="color: #8e8e93;"></i>
+                            <input type="text" id="searchProductInput" placeholder="Tìm theo tên máy, hãng..." onkeyup="filterProducts()">
+                        </div>
+                        <div class="filter-group">
+                            <button class="filter-btn active" onclick="setDeviceFilter('active', this)">Đang Kinh Doanh</button>
+                            <button class="filter-btn" onclick="setDeviceFilter('deleted', this)">Đã Xóa Mềm (Thùng Rác)</button>
+                            <button class="filter-btn" onclick="setDeviceFilter('all', this)">Tất Cả</button>
+                        </div>
                     </div>
                     <div>
-                        <span id="productCountBadge" style="font-size: 13px; color: #6e6e73; font-weight: 500;">Đang nạp dữ liệu...</span>
+                        <button class="btn-primary" onclick="openAddDeviceModal()">
+                            <i class="fa-solid fa-plus"></i> Thêm Thiết Bị Mới
+                        </button>
                     </div>
                 </div>
 
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 70px;">Hình Ảnh</th>
+                            <th style="width: 55px;">Ảnh</th>
                             <th>Tên Thiết Bị</th>
                             <th>Danh Mục</th>
-                            <th>Giá Thuê / Ngày</th>
-                            <th>Giá Trị Cọc</th>
-                            <th>Số Lượng Kho</th>
+                            <th>Hãng SX</th>
+                            <th style="color: #0071e3;">Giá Thuê / Ngày</th>
+                            <th>Phân Loại & Ảnh</th>
+                            <th>Tồn Kho</th>
                             <th>Trạng Thái</th>
+                            <th style="text-align: center; width: 170px;">Thao Tác</th>
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
-                        <tr>
-                            <td colspan="7" style="text-align: center; color: #8e8e93; padding: 30px;">
-                                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải danh sách thiết bị từ PostgreSQL...
-                            </td>
-                        </tr>
+                        <tr><td colspan="9" style="text-align: center; padding: 30px;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- TAB 2: ĐƠN THUÊ -->
+        <!-- ============================================== -->
+        <!-- TAB 2: DANH MỤC (CATEGORIES) -->
+        <!-- ============================================== -->
+        <div id="tab-categories" class="tab-content">
+            <div class="admin-table-card">
+                <div class="table-header-tools">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <h4 style="margin: 0; font-size: 15px;">Danh Mục Thiết Bị Công Nghệ</h4>
+                        <div class="filter-group">
+                            <button class="filter-btn active" onclick="setCategoryFilter('active', this)">Đang Hoạt Động</button>
+                            <button class="filter-btn" onclick="setCategoryFilter('deleted', this)">Đã Xóa Mềm</button>
+                            <button class="filter-btn" onclick="setCategoryFilter('all', this)">Tất Cả</button>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="openAddCategoryModal()">
+                        <i class="fa-solid fa-plus"></i> Thêm Danh Mục
+                    </button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Mã</th>
+                            <th style="width: 80px;">Hình Ảnh</th>
+                            <th>Tên Danh Mục</th>
+                            <th>Số Thiết Bị Đang Có</th>
+                            <th>Trạng Thái</th>
+                            <th style="text-align: center; width: 160px;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoriesTableBody">
+                        <tr><td colspan="6" style="text-align: center; padding: 30px;">Đang tải danh mục...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 3: ĐƠN THUÊ (RENTAL ORDERS) -->
+        <!-- ============================================== -->
         <div id="tab-orders" class="tab-content">
             <div class="admin-table-card">
                 <div class="table-header-tools">
-                    <h4 style="margin: 0; font-size: 15px;">Danh Sách Đơn Đặt Thuê Thiết Bị</h4>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <h4 style="margin: 0; font-size: 15px;">Toàn Bộ Đơn Đặt Thuê</h4>
+                        <div class="filter-group">
+                            <button class="filter-btn active" onclick="setOrderFilter('', this)">Tất Cả</button>
+                            <button class="filter-btn" onclick="setOrderFilter('pending', this)">Chờ Duyệt</button>
+                            <button class="filter-btn" onclick="setOrderFilter('active', this)">Đang Thuê</button>
+                            <button class="filter-btn" onclick="setOrderFilter('completed', this)">Hoàn Tất</button>
+                            <button class="filter-btn" onclick="setOrderFilter('cancelled', this)">Đã Hủy</button>
+                        </div>
+                    </div>
                     <button class="btn-outline" onclick="loadOrders()"><i class="fa-solid fa-rotate-right"></i> Làm Mới</button>
                 </div>
-
                 <table>
                     <thead>
                         <tr>
                             <th>Mã Đơn</th>
                             <th>Khách Hàng / SĐT</th>
                             <th>Thời Gian Thuê</th>
-                            <th>Tổng Tiền</th>
+                            <th>Tiền Thuê & Cọc</th>
                             <th>Trạng Thái</th>
-                            <th style="text-align: center;">Thao Tác</th>
+                            <th style="text-align: center; width: 220px;">Duyệt / Cập Nhật Trạng Thái</th>
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody">
-                        <tr>
-                            <td colspan="6" style="text-align: center; color: #8e8e93; padding: 30px;">
-                                Đang tải danh sách đơn thuê...
-                            </td>
-                        </tr>
+                        <tr><td colspan="6" style="text-align: center; padding: 30px;">Đang tải đơn thuê...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- TAB 3: DUYỆT GIAO DỊCH VÍ -->
-        <div id="tab-payments" class="tab-content">
+        <!-- ============================================== -->
+        <!-- TAB 4: KHÁCH HÀNG (CUSTOMERS CRUD) -->
+        <!-- ============================================== -->
+        <div id="tab-customers" class="tab-content">
             <div class="admin-table-card">
                 <div class="table-header-tools">
-                    <h4 style="margin: 0; font-size: 15px;">Yêu Cầu Nạp / Hoàn Tiền Đặt Cọc Chờ Duyệt</h4>
-                    <button class="btn-outline" onclick="loadPendingPayments()"><i class="fa-solid fa-rotate-right"></i> Làm Mới</button>
+                    <h4 style="margin: 0; font-size: 15px;">Danh Sách Khách Hàng Đăng Ký</h4>
+                    <button class="btn-outline" onclick="loadCustomers()"><i class="fa-solid fa-rotate-right"></i> Làm Mới</button>
                 </div>
-
                 <table>
                     <thead>
                         <tr>
-                            <th>Mã Giao Dịch</th>
-                            <th>Khách Hàng</th>
-                            <th>Loại Yêu Cầu</th>
-                            <th>Số Tiền</th>
-                            <th>Thời Điểm</th>
-                            <th style="text-align: center;">Duyệt Nghiệp Vụ</th>
+                            <th>ID</th>
+                            <th>Họ Và Tên</th>
+                            <th>Số Điện Thoại</th>
+                            <th>Email</th>
+                            <th>Số Đơn Thuê</th>
+                            <th>Trạng Thái</th>
+                            <th style="text-align: center; width: 170px;">Thao Tác</th>
                         </tr>
                     </thead>
-                    <tbody id="paymentsTableBody">
-                        <tr>
-                            <td colspan="6" style="text-align: center; color: #8e8e93; padding: 30px;">
-                                Không có yêu cầu nạp hoặc rút cọc nào đang chờ.
-                            </td>
-                        </tr>
+                    <tbody id="customersTableBody">
+                        <tr><td colspan="7" style="text-align: center; padding: 30px;">Đang tải khách hàng...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- TAB 4: KIỂM ĐỊNH CHẤT LƯỢNG & DEVOPS -->
-        <div id="tab-qa" class="tab-content">
-            <div class="qa-suite-grid">
-                <div class="qa-card">
-                    <h4><i class="fa-solid fa-chart-pie" style="color: #f05a28;"></i> Admin Kỹ Thuật (Grafana)</h4>
-                    <p>Mở giao diện Grafana để quan sát trực tiếp các biểu đồ QPS, Response Time p95, Error Rate, và Live Log từ Loki.</p>
-                    <a href="http://localhost:3001" target="_blank" class="btn-grafana" style="width: 100%; justify-content: center; box-sizing: border-box;">
-                        Mở Grafana (:3001)
-                    </a>
+        <!-- ============================================== -->
+        <!-- TAB 5: GIAO DỊCH & VÍ (PAYMENTS) -->
+        <!-- ============================================== -->
+        <div id="tab-payments" class="tab-content">
+            <div class="admin-table-card">
+                <div class="table-header-tools">
+                    <h4 style="margin: 0; font-size: 15px;">Lịch Sử Giao Dịch & Đặt Cọc</h4>
+                    <button class="btn-outline" onclick="loadPayments()"><i class="fa-solid fa-rotate-right"></i> Làm Mới</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã GD</th>
+                            <th>Khách Hàng</th>
+                            <th>Mã Đơn</th>
+                            <th>Số Tiền</th>
+                            <th>Loại GD</th>
+                            <th>Trạng Thái</th>
+                            <th style="text-align: center; width: 160px;">Duyệt Nghiệp Vụ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                        <tr><td colspan="7" style="text-align: center; padding: 30px;">Đang tải giao dịch...</td></tr>
+                    </tbody>
+                </table>
+        <!-- ============================================== -->
+        <!-- TAB 6: GIÁM SÁT KỸ THUẬT DEVOPS & QA (GRAFANA) -->
+        <!-- ============================================== -->
+        <div id="tab-monitoring" class="tab-content">
+            <!-- 4 Service Health Status Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                <div style="background: white; border-radius: 12px; padding: 18px; border: 1px solid var(--admin-border); box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(249, 115, 22, 0.1); color: #f97316; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <strong style="font-size: 14px;">Grafana Dashboard</strong>
+                            <span class="badge-status badge-active" style="font-size: 10px;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Cổng 3001</span>
+                        </div>
+                        <small style="color: #64748b; font-size: 12px;">Trực quan hóa biểu đồ & KPIs</small>
+                    </div>
                 </div>
 
-                <div class="qa-card">
-                    <h4><i class="fa-solid fa-vial-virus" style="color: #0071e3;"></i> Chạy Kịch Bản Kiểm Thử K6</h4>
-                    <p>Chạy kịch bản mô phỏng 100 - 500 người dùng đồng thời thuê thiết bị. Dữ liệu sẽ stream tự động vào Prometheus và vẽ đồ thị.</p>
-                    <div class="code-block">.\monitoring\k6\run-test.ps1 -VUs 100 -Duration "1m"</div>
-                    <button class="btn-outline" style="width: 100%; justify-content: center;" onclick="alert('Hãy mở Terminal PowerShell tại thư mục dự án và chạy câu lệnh trên!')">
-                        <i class="fa-solid fa-terminal"></i> Xem Hướng Dẫn Chạy Test
-                    </button>
+                <div style="background: white; border-radius: 12px; padding: 18px; border: 1px solid var(--admin-border); box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="fa-solid fa-fire"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <strong style="font-size: 14px;">Prometheus Engine</strong>
+                            <span class="badge-status badge-active" style="font-size: 10px;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Cổng 9090</span>
+                        </div>
+                        <small style="color: #64748b; font-size: 12px;">Thu thập Metrics CPU, RAM, Latency</small>
+                    </div>
                 </div>
 
-                <div class="qa-card">
-                    <h4><i class="fa-solid fa-book" style="color: #34c759;"></i> Tài Liệu Vận Hành & Báo Cáo</h4>
-                    <p>Xem toàn bộ tài liệu hướng dẫn xuất Snapshot đồ thị, điều tra log lỗi làm Bug Report cho môn học trong file <code>README_MONITORING.md</code>.</p>
-                    <a href="http://localhost:9090" target="_blank" class="btn-outline" style="width: 100%; justify-content: center; box-sizing: border-box;">
-                        <i class="fa-solid fa-magnifying-glass-chart"></i> Mở Prometheus (:9090)
-                    </a>
+                <div style="background: white; border-radius: 12px; padding: 18px; border: 1px solid var(--admin-border); box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="fa-solid fa-file-lines"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <strong style="font-size: 14px;">Loki Central Log</strong>
+                            <span class="badge-status badge-active" style="font-size: 10px;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Cổng 3100</span>
+                        </div>
+                        <small style="color: #64748b; font-size: 12px;">Nhật ký lỗi & Winston Live Streams</small>
+                    </div>
+                </div>
+
+                <div style="background: white; border-radius: 12px; padding: 18px; border: 1px solid var(--admin-border); box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <strong style="font-size: 14px;">Node Exporter</strong>
+                            <span class="badge-status badge-active" style="font-size: 10px;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Cổng 9100</span>
+                        </div>
+                        <small style="color: #64748b; font-size: 12px;">Giám sát phần cứng Server</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Featured Dashboards Comparison Cards -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <!-- Dashboard 1: DevOps -->
+                <div style="background: white; border-radius: 14px; border: 1px solid var(--admin-border); box-shadow: 0 4px 16px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="background: linear-gradient(135deg, #f97316, #ea580c); padding: 18px 22px; color: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h4 style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-chart-area"></i> 1. Dashboard DevOps & Vận Hành Hệ Thống
+                            </h4>
+                            <span style="background: rgba(255,255,255,0.25); font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600;">DevOps & SRE</span>
+                        </div>
+                        <p style="margin: 6px 0 0; font-size: 12.5px; opacity: 0.95;">
+                            Giám sát tài nguyên máy chủ và hiệu năng ứng dụng theo thời gian thực (RED Method).
+                        </p>
+                    </div>
+                    <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div style="font-size: 13px; color: #334155; line-height: 1.6;">
+                            <strong style="display: block; margin-bottom: 8px; color: #0f172a;">Tính Năng Chi Tiết Trên Grafana:</strong>
+                            <ul style="margin: 0 0 16px; padding-left: 20px;">
+                                <li><strong>CPU & RAM Node.js</strong>: Đo lường % CPU và dung lượng RAM tiêu hao theo thời gian thực.</li>
+                                <li><strong>Throughput (RPS)</strong>: Tần suất yêu cầu / giây mà Web Server đang phục vụ.</li>
+                                <li><strong>Độ trễ phản hồi (Response Latency)</strong>: Đo lường chính xác các phân vị P50, P95, P99.</li>
+                                <li><strong>Tỉ lệ lỗi HTTP Status</strong>: Phân loại chi tiết mã trả về 2xx, 4xx, 5xx.</li>
+                                <li><strong>Top Endpoints</strong>: Thống kê các API được gọi nhiều nhất (đơn hàng, thiết bị, giỏ hàng...).</li>
+                                <li><strong>Live Loki Logs Stream</strong>: Xem trực tiếp nhật ký ứng dụng và thông báo lỗi.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <a href="http://localhost:3001/d/devops-tech-rental" target="_blank" class="btn-grafana" style="width: 100%; justify-content: center; box-sizing: border-box; padding: 12px; font-size: 14px; text-align: center;">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở Trực Tiếp Dashboard DevOps (:3001)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard 2: QA & Load Testing -->
+                <div style="background: white; border-radius: 14px; border: 1px solid var(--admin-border); box-shadow: 0 4px 16px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 18px 22px; color: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h4 style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-vial-circle-check"></i> 2. Dashboard Kiểm Định Chất Lượng & Test Tải (k6)
+                            </h4>
+                            <span style="background: rgba(255,255,255,0.25); font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600;">QA Testing</span>
+                        </div>
+                        <p style="margin: 6px 0 0; font-size: 12.5px; opacity: 0.95;">
+                            Cung cấp minh chứng số liệu kiểm thử hiệu năng phục vụ môn Kiểm định chất lượng phần mềm.
+                        </p>
+                    </div>
+                    <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div style="font-size: 13px; color: #334155; line-height: 1.6;">
+                            <strong style="display: block; margin-bottom: 8px; color: #0f172a;">Tính Năng Chi Tiết Trên Grafana:</strong>
+                            <ul style="margin: 0 0 16px; padding-left: 20px;">
+                                <li><strong>Người Dùng Ảo (Virtual Users - VUs)</strong>: Theo dõi số lượng VUs đang đồng thời truy cập.</li>
+                                <li><strong>Đánh Giá Tiêu Chuẩn SLA</strong>: Tỉ lệ lỗi SLA (ngưỡng &lt; 1%) và độ trễ SLA (P95 &lt; 500ms).</li>
+                                <li><strong>Hiệu Năng Khi Tăng Tải</strong>: Quan sát khả năng chịu tải khi người dùng tăng dần từ 1 đến 50 VUs.</li>
+                                <li><strong>Phân Tích Điểm Nghẽn API</strong>: Đo đạc tốc độ xử lý của từng trang (Trang chủ, Chi tiết, Đặt hàng, Admin).</li>
+                                <li><strong>Báo Cáo Minh Chứng Đồ Thị</strong>: Xuất biểu đồ và bảng số liệu để đưa vào báo cáo đồ án.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <a href="http://localhost:3001/d/qa-loadtest-tech-rental" target="_blank" class="btn-grafana" style="background: linear-gradient(135deg, #7c3aed, #a855f7); width: 100%; justify-content: center; box-sizing: border-box; padding: 12px; font-size: 14px; text-align: center;">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở Trực Tiếp Dashboard QA Test (:3001)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card hướng dẫn chạy k6 Test Tải -->
+            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 20px;">
+                <h4 style="margin: 0 0 10px; font-size: 15px; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-terminal" style="color: #0071e3;"></i> Kích Hoạt Kịch Bản Kiểm Thử Tải QA (k6 Load Test Script)
+                </h4>
+                <p style="margin: 0 0 12px; font-size: 13px; color: #475569;">
+                    Để quan sát biểu đồ nhảy số liệu thời gian thực trên Grafana, bạn hãy mở terminal PowerShell và chạy script k6 đi kèm dự án:
+                </p>
+                <div style="background: #1e293b; color: #f8fafc; padding: 12px 16px; border-radius: 8px; font-family: monospace; font-size: 13px; display: flex; justify-content: space-between; align-items: center;">
+                    <code>powershell -ExecutionPolicy Bypass -File monitoring/k6/run-test.ps1</code>
+                    <span style="color: #38bdf8; font-size: 11px;">Script tự động đẩy metrics vào Prometheus & Grafana</span>
                 </div>
             </div>
         </div>
 
     </main>
 
+    <!-- ========================================================== -->
+    <!-- MODAL QUẢN LÝ TOÀN DIỆN THIẾT BỊ (THÔNG TIN, PHÂN LOẠI & ẢNH) -->
+    <!-- ========================================================== -->
+    <div id="deviceModal" class="modal-backdrop">
+        <div class="modal-box modal-box-lg">
+            <div class="modal-header">
+                <div>
+                    <h3 id="deviceModalTitle" style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-mobile-screen-button" style="color: #0071e3;"></i> Chỉnh Sửa Thiết Bị
+                    </h3>
+                    <small id="deviceModalSubtitle" style="color: #8e8e93;">Mã thiết bị: #--</small>
+                </div>
+                <button class="modal-close" onclick="closeModal('deviceModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Subtab điều hướng: Thông Tin Cơ Bản | Phân Loại & Giá Thuê | Bộ Sưu Tập Ảnh -->
+                <div class="modal-subtab-bar" id="deviceModalSubtabs">
+                    <button class="modal-subtab-btn active" id="tab-btn-dev-info" onclick="switchDeviceModalTab('tab-dev-info', this)">
+                        <i class="fa-solid fa-circle-info"></i> 1. Thông Tin Chung
+                    </button>
+                    <button class="modal-subtab-btn" id="tab-btn-dev-variants" onclick="switchDeviceModalTab('tab-dev-variants', this)">
+                        <i class="fa-solid fa-layer-group"></i> 2. Phân Loại & Giá Thuê <span id="devVariantsCountBadge" style="background:#e0f2fe; color:#0369a1; padding:2px 7px; border-radius:10px; font-size:11px; margin-left:4px;">0</span>
+                    </button>
+                    <button class="modal-subtab-btn" id="tab-btn-dev-images" onclick="switchDeviceModalTab('tab-dev-images', this)">
+                        <i class="fa-solid fa-images"></i> 3. Bộ Sưu Tập Ảnh <span id="devImagesCountBadge" style="background:#e0f2fe; color:#0369a1; padding:2px 7px; border-radius:10px; font-size:11px; margin-left:4px;">0</span>
+                    </button>
+                </div>
+
+                <!-- 1. TAB THÔNG TIN CƠ BẢN -->
+                <div id="tab-dev-info" class="device-modal-tab-content">
+                    <input type="hidden" id="dev-id">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
+                        <div class="form-group">
+                            <label>Tên Thiết Bị (*)</label>
+                            <input type="text" id="dev-name" class="form-control" placeholder="Ví dụ: iPhone 15 Pro Max 256GB">
+                        </div>
+                        <div class="form-group">
+                            <label>Hãng Sản Xuất</label>
+                            <input type="text" id="dev-manufacturer" class="form-control" placeholder="Apple, Sony, Dell...">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group">
+                            <label>Danh Mục (*)</label>
+                            <select id="dev-category" class="form-control"></select>
+                        </div>
+                        <div class="form-group">
+                            <label style="color: #0071e3; font-weight: 700;">Giá Thuê Mặc Định / Ngày (VNĐ) (*)</label>
+                            <input type="number" id="dev-price" class="form-control" placeholder="150000" style="font-weight: 600; color: #0071e3;">
+                        </div>
+                    </div>
+                    <div class="form-group" id="dev-stock-group">
+                        <label>Số Lượng Kho Khởi Tạo (khi tạo mới)</label>
+                        <input type="number" id="dev-stock" class="form-control" value="3">
+                    </div>
+                    <div class="form-group">
+                        <label>Đường Dẫn Ảnh Đại Diện Mặc Định (URL)</label>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <input type="text" id="dev-image" class="form-control" placeholder="https://..." oninput="updateDeviceImagePreview(this.value)">
+                            <img id="dev-image-preview" src="https://placehold.co/80x80?text=No+Img" style="width: 44px; height: 44px; border-radius: 8px; object-fit: contain; border: 1px solid var(--admin-border); flex-shrink: 0;" onerror="this.src='https://placehold.co/80x80?text=Error'">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Mô Tả Thiết Bị</label>
+                        <textarea id="dev-desc" class="form-control" rows="3" placeholder="Mô tả thông số kỹ thuật, bảo hành..."></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+                        <button class="btn-primary" onclick="saveDevice()">
+                            <i class="fa-solid fa-floppy-disk"></i> Lưu Thông Tin Thiết Bị
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. TAB PHÂN LOẠI (VARIANTS) -->
+                <div id="tab-dev-variants" class="device-modal-tab-content" style="display: none;">
+                    <div id="variants-new-device-warning" style="display: none; padding: 24px; text-align: center; color: #64748b; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                        <i class="fa-solid fa-circle-info" style="font-size: 32px; color: #0071e3; margin-bottom: 10px;"></i>
+                        <h4 style="margin: 0 0 6px; color: #1e293b;">Thiết bị mới chưa được lưu</h4>
+                        <p style="margin: 0; font-size: 13px;">Vui lòng nhấn "Lưu Thông Tin Thiết Bị" ở Tab 1 trước khi quản lý các phân loại màu sắc & dung lượng.</p>
+                    </div>
+                    <div id="variants-management-container">
+                        <div style="margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <h4 style="margin: 0; font-size: 13.5px; color: #1e293b;">Danh Sách Phân Loại (Màu sắc × Dung lượng × Giá thuê)</h4>
+                                <small style="color: #8e8e93;">Mỗi phân loại có giá thuê và tồn kho riêng</small>
+                            </div>
+                            <table style="border: 1px solid var(--admin-border); border-radius: 8px; overflow: hidden; width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Màu Sắc</th>
+                                        <th>Dung Lượng</th>
+                                        <th>Tình Trạng</th>
+                                        <th style="color: #0071e3;">Giá Thuê / Ngày</th>
+                                        <th>Tồn Kho</th>
+                                        <th>Trạng Thái</th>
+                                        <th style="text-align: center;">Thao Tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deviceVariantsTableBody">
+                                    <tr><td colspan="7" style="text-align: center; padding: 20px;">Đang tải danh sách phân loại...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Form thêm phân loại mới -->
+                        <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px;">
+                            <h4 style="margin: 0 0 12px; font-size: 13px; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-circle-plus" style="color: #0071e3;"></i> Thêm Phân Loại Mới Cho Thiết Bị
+                            </h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Màu Sắc (*)</label>
+                                    <select id="new-var-color" class="form-control"></select>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Dung Lượng (*)</label>
+                                    <select id="new-var-capacity" class="form-control"></select>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Tình Trạng</label>
+                                    <input type="text" id="new-var-condition" class="form-control" value="New" placeholder="New, Like New...">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="color: #0071e3; font-weight: 700;">Giá Thuê / Ngày (*)</label>
+                                    <input type="number" id="new-var-price" class="form-control" placeholder="150000" style="font-weight: 600; color: #0071e3;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Số Lượng Tồn Kho</label>
+                                    <input type="number" id="new-var-stock" class="form-control" value="2">
+                                </div>
+                            </div>
+                            <div style="margin-top: 14px; display: flex; justify-content: flex-end;">
+                                <button class="btn-primary" onclick="addVariantToDevice()">
+                                    <i class="fa-solid fa-plus"></i> Thêm Phân Loại Này
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. TAB HÌNH ẢNH (IMAGES) -->
+                <div id="tab-dev-images" class="device-modal-tab-content" style="display: none;">
+                    <div id="images-new-device-warning" style="display: none; padding: 24px; text-align: center; color: #64748b; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                        <i class="fa-solid fa-circle-info" style="font-size: 32px; color: #0071e3; margin-bottom: 10px;"></i>
+                        <h4 style="margin: 0 0 6px; color: #1e293b;">Thiết bị mới chưa được lưu</h4>
+                        <p style="margin: 0; font-size: 13px;">Vui lòng nhấn "Lưu Thông Tin Thiết Bị" ở Tab 1 trước khi tải ảnh vào bộ sưu tập.</p>
+                    </div>
+                    <div id="images-management-container">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h4 style="margin: 0; font-size: 13.5px; color: #1e293b;">Bộ Sưu Tập Hình Ảnh Theo Màu (device_images)</h4>
+                            <small style="color: #8e8e93;">Mỗi màu sắc có thể có nhiều ảnh thực tế</small>
+                        </div>
+                        <div id="deviceImagesGrid" class="image-grid" style="margin-bottom: 16px;">
+                            <p style="color: #8e8e93;">Đang tải hình ảnh...</p>
+                        </div>
+
+                        <!-- Form thêm ảnh mới -->
+                        <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px;">
+                            <h4 style="margin: 0 0 12px; font-size: 13px; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-cloud-arrow-up" style="color: #0071e3;"></i> Thêm Hình Ảnh Mới Vào Bộ Sưu Tập
+                            </h4>
+                            <div style="display: grid; grid-template-columns: 220px 1fr; gap: 12px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Áp Dụng Cho Màu Sắc</label>
+                                    <select id="new-img-color" class="form-control">
+                                        <option value="">Chung (Tất cả màu)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Đường Dẫn Hình Ảnh (URL) (*)</label>
+                                    <input type="text" id="new-img-url" class="form-control" placeholder="https://store.apple.com/...">
+                                </div>
+                            </div>
+                            <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #374151;">
+                                    <input type="checkbox" id="new-img-primary"> Đặt làm ảnh đại diện chính của thiết bị
+                                </label>
+                                <button class="btn-primary" onclick="addImageToDevice()">
+                                    <i class="fa-solid fa-plus"></i> Thêm Ảnh Này
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 12.5px; color: #8e8e93;"><i class="fa-solid fa-circle-check" style="color:#34c759;"></i> Dữ liệu tự động đồng bộ thời gian thực</span>
+                <button class="btn-outline" onclick="closeModal('deviceModal')">Xong & Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm / Sửa Danh Mục -->
+    <div id="categoryModal" class="modal-backdrop">
+        <div class="modal-box" style="width: 420px;">
+            <div class="modal-header">
+                <h3 id="categoryModalTitle">Thêm Danh Mục Mới</h3>
+                <button class="modal-close" onclick="closeModal('categoryModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="cat-id">
+                <div class="form-group">
+                    <label>Tên Danh Mục (*)</label>
+                    <input type="text" id="cat-name" class="form-control" placeholder="Ví dụ: Máy Chiếu, Loa Di Động...">
+                </div>
+                <div class="form-group">
+                    <label>Mô tả / Ảnh biểu tượng</label>
+                    <input type="text" id="cat-image" class="form-control" placeholder="URL hình ảnh...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeModal('categoryModal')">Hủy</button>
+                <button class="btn-primary" onclick="saveCategory()">Lưu Danh Mục</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sửa Khách Hàng -->
+    <div id="customerModal" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Chỉnh Sửa Thông Tin Khách Hàng</h3>
+                <button class="modal-close" onclick="closeModal('customerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="cust-id">
+                <div class="form-group">
+                    <label>Họ Và Tên (*)</label>
+                    <input type="text" id="cust-name" class="form-control">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label>Số Điện Thoại</label>
+                        <input type="text" id="cust-phone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="cust-email" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Số CCCD / Định Danh</label>
+                    <input type="text" id="cust-identity" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Địa Chỉ</label>
+                    <input type="text" id="cust-address" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="closeModal('customerModal')">Hủy</button>
+                <button class="btn-primary" onclick="saveCustomer()">Cập Nhật</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"><i class="fa-solid fa-circle-check" style="color: #4ade80;"></i> <span id="toastMsg">Thành công</span></div>
+
+    <!-- ============================================== -->
+    <!-- JAVASCRIPT LOGIC -->
+    <!-- ============================================== -->
     <script>
-        let allProducts = [];
+        let allDevices = [];
+        let allCategories = [];
+        let allColors = [];
+        let allCapacities = [];
+        let currentDeviceFilter = 'active';
+        let currentSelectedDeviceId = null;
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -606,62 +1265,96 @@
             event.currentTarget.classList.add('active');
             document.getElementById(tabId).classList.add('active');
 
+            if (tabId === 'tab-products') loadDevices();
+            if (tabId === 'tab-categories') loadCategories();
             if (tabId === 'tab-orders') loadOrders();
-            if (tabId === 'tab-payments') loadPendingPayments();
+            if (tabId === 'tab-customers') loadCustomers();
+            if (tabId === 'tab-payments') loadPayments();
         }
 
-        // Tải danh sách thiết bị
-        async function loadProducts() {
+        // Tải Metadata (Màu sắc, dung lượng, danh mục)
+        async function loadMetadata() {
             try {
-                const start = performance.now();
-                const res = await fetch('/api/products');
+                const res = await fetch('/api/admin/meta');
                 const data = await res.json();
-                const duration = Math.round(performance.now() - start);
-
-                document.getElementById('kpi-latency').innerText = `${duration} ms`;
-
-                if (data.success && data.products) {
-                    allProducts = data.products;
-                    document.getElementById('kpi-products').innerText = allProducts.length;
-                    document.getElementById('productCountBadge').innerText = `Tổng cộng: ${allProducts.length} thiết bị`;
-                    renderProducts(allProducts);
+                if (data.success) {
+                    allColors = data.colors || [];
+                    allCapacities = data.capacities || [];
+                    allCategories = data.categories || [];
+                    document.getElementById('kpi-categories').innerText = allCategories.length;
                 }
             } catch (err) {
                 console.error(err);
-                document.getElementById('productsTableBody').innerHTML = `
-                    <tr><td colspan="7" style="text-align: center; color: red;">Lỗi kết nối API: ${err.message}</td></tr>
-                `;
             }
         }
 
-        function renderProducts(products) {
+        // ==========================================
+        // 1. THIẾT BỊ (DEVICES & VARIANTS)
+        // ==========================================
+        function setDeviceFilter(filter, btn) {
+            currentDeviceFilter = filter;
+            btn.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadDevices();
+        }
+
+        async function loadDevices() {
+            try {
+                const res = await fetch(`/api/admin/devices?status=${currentDeviceFilter}`);
+                const data = await res.json();
+                if (data.success) {
+                    allDevices = data.devices;
+                    document.getElementById('kpi-products').innerText = allDevices.filter(d => d.is_active && !d.deleted_at).length;
+                    renderDevices(allDevices);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('productsTableBody').innerHTML = `<tr><td colspan="9" style="color: red; text-align: center;">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderDevices(devices) {
             const tbody = document.getElementById('productsTableBody');
-            if (!products.length) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Không tìm thấy thiết bị nào.</td></tr>';
+            if (!devices.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 30px;">Không có thiết bị nào trong danh mục này.</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = products.map(p => {
-                const price = Number(p.gia_thue_ngay || p.price_per_day || 0).toLocaleString('vi-VN');
-                const deposit = Number(p.tien_coc || p.deposit || 0).toLocaleString('vi-VN');
-                const stock = p.so_luong_kho !== undefined ? p.so_luong_kho : (p.quantity || 1);
-                const img = p.hinh_anh || p.image_url || '/images/laptop.jpg';
-                const statusBadge = stock > 0 
-                    ? '<span class="badge-status badge-active">Sẵn sàng thuê</span>' 
-                    : '<span class="badge-status badge-canceled">Hết thiết bị</span>';
+            tbody.innerHTML = devices.map(d => {
+                const dailyPrice = Number(d.daily_rental_price || 0);
+                const priceFormatted = dailyPrice > 0 ? dailyPrice.toLocaleString('vi-VN') + ' đ / ngày' : '<span style="color:#999;">Chưa gán giá</span>';
+                const isSoftDeleted = !d.is_active || d.deleted_at !== null;
+                const statusBadge = isSoftDeleted
+                    ? '<span class="badge-status badge-deleted"><i class="fa-solid fa-trash-can"></i> Đã xóa mềm</span>'
+                    : (d.available_stock > 0 
+                        ? '<span class="badge-status badge-active">Đang kinh doanh</span>' 
+                        : '<span class="badge-status badge-pending">Tạm hết máy</span>');
+
+                const actionBtns = isSoftDeleted
+                    ? `<button class="btn-action btn-restore" onclick="restoreDevice(${d.id})"><i class="fa-solid fa-rotate-left"></i> Khôi phục</button>`
+                    : `
+                        <button class="btn-action btn-edit" onclick="openEditDeviceModal(${d.id}, 'info')" title="Sửa thông tin, phân loại & ảnh"><i class="fa-solid fa-pen"></i> Sửa</button>
+                        <button class="btn-action btn-soft-delete" onclick="softDeleteDevice(${d.id})" title="Xóa mềm (ẩn khỏi web)"><i class="fa-solid fa-trash"></i></button>
+                      `;
 
                 return `
-                    <tr>
-                        <td><img src="${img}" class="tech-image" onerror="this.src='https://placehold.co/100x100?text=Tech'"></td>
+                    <tr class="${isSoftDeleted ? 'row-deleted' : ''}">
+                        <td><img src="${d.image_url}" class="tech-image" onerror="this.src='https://placehold.co/100x100?text=Device'"></td>
                         <td>
-                            <div style="font-weight: 600;">${p.ten_san_pham || p.name || 'Thiết bị'}</div>
-                            <small style="color: #8e8e93;">Mã: #${p.id}</small>
+                            <div style="font-weight: 600;">${d.name}</div>
+                            <small style="color: #8e8e93;">Mã: #${d.id}</small>
                         </td>
-                        <td>${p.ten_danh_muc || p.category_name || 'Công nghệ'}</td>
-                        <td style="font-weight: 600; color: #0071e3;">${price} đ / ngày</td>
-                        <td>${deposit} đ</td>
-                        <td style="font-weight: 600;">${stock} chiếc</td>
+                        <td>${d.category_name || 'Khác'}</td>
+                        <td>${d.manufacturer || '--'}</td>
+                        <td style="font-weight: 700; color: #0071e3; font-size: 13.5px;">${priceFormatted}</td>
+                        <td>
+                            <button class="btn-action btn-edit" style="background: #eff6ff; color: #0071e3; border: 1px solid rgba(0,113,227,0.25); font-weight: 600;" onclick="openEditDeviceModal(${d.id}, 'variants')" title="Quản lý phân loại & ảnh">
+                                <i class="fa-solid fa-sliders"></i> ${d.variant_count || 1} Phân loại · <i class="fa-solid fa-image"></i> ${d.image_count || 1} Ảnh
+                            </button>
+                        </td>
+                        <td><strong>${d.available_stock}</strong> / ${d.total_stock} máy</td>
                         <td>${statusBadge}</td>
+                        <td style="text-align: center;">${actionBtns}</td>
                     </tr>
                 `;
             }).join('');
@@ -669,72 +1362,846 @@
 
         function filterProducts() {
             const q = document.getElementById('searchProductInput').value.toLowerCase();
-            const filtered = allProducts.filter(p => {
-                const name = (p.ten_san_pham || p.name || '').toLowerCase();
-                const cat = (p.ten_danh_muc || p.category_name || '').toLowerCase();
-                return name.includes(q) || cat.includes(q);
-            });
-            renderProducts(filtered);
+            const filtered = allDevices.filter(d => 
+                d.name.toLowerCase().includes(q) || 
+                (d.manufacturer && d.manufacturer.toLowerCase().includes(q))
+            );
+            renderDevices(filtered);
         }
 
-        // Tải danh sách đơn thuê
+        function switchDeviceModalTab(tabId, btn) {
+            document.querySelectorAll('#deviceModal .modal-subtab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#deviceModal .device-modal-tab-content').forEach(c => c.style.display = 'none');
+            if (btn) btn.classList.add('active');
+            const target = document.getElementById(tabId);
+            if (target) target.style.display = 'block';
+        }
+
+        function updateDeviceImagePreview(url) {
+            const preview = document.getElementById('dev-image-preview');
+            if (!preview) return;
+            if (url && url.trim()) {
+                preview.src = url.trim();
+            } else {
+                preview.src = 'https://placehold.co/80x80?text=No+Img';
+            }
+        }
+
+        // Mở Modal Quản Lý Toàn Diện Thiết Bị (Thông tin cơ bản + Phân loại + Bộ sưu tập ảnh)
+        async function openEditDeviceModal(deviceId, initialTab = 'info') {
+            currentSelectedDeviceId = deviceId;
+            try {
+                const res = await fetch(`/api/admin/devices/${deviceId}`);
+                const data = await res.json();
+                if (!data.success) return alert(data.message);
+
+                const { device, variants, images } = data;
+
+                // Cập nhật tiêu đề & thông tin định danh
+                document.getElementById('deviceModalTitle').innerHTML = `
+                    <i class="fa-solid fa-mobile-screen-button" style="color: #0071e3;"></i> Chỉnh Sửa Thiết Bị: ${device.name}
+                `;
+                document.getElementById('deviceModalSubtitle').innerText = 
+                    `Mã: #${device.id} | Hãng: ${device.manufacturer || 'Apple'} | Danh mục: ${device.category_name || 'Công nghệ'}`;
+
+                // 1. Nạp dữ liệu Tab 1 (Thông tin cơ bản)
+                document.getElementById('dev-id').value = device.id;
+                document.getElementById('dev-name').value = device.name;
+                document.getElementById('dev-manufacturer').value = device.manufacturer || '';
+                document.getElementById('dev-price').value = Number(device.daily_rental_price || 0);
+                document.getElementById('dev-stock-group').style.display = 'none';
+                document.getElementById('dev-image').value = device.image_url || '';
+                updateDeviceImagePreview(device.image_url || '');
+                document.getElementById('dev-desc').value = device.description || '';
+                populateCategorySelect('dev-category', device.category_id);
+
+                // 2. Nạp dữ liệu Tab 2 (Phân loại) & Tab 3 (Bộ sưu tập ảnh)
+                document.getElementById('devVariantsCountBadge').innerText = (variants || []).length;
+                document.getElementById('devImagesCountBadge').innerText = (images || []).length;
+
+                document.getElementById('variants-new-device-warning').style.display = 'none';
+                document.getElementById('variants-management-container').style.display = 'block';
+                document.getElementById('images-new-device-warning').style.display = 'none';
+                document.getElementById('images-management-container').style.display = 'block';
+
+                populateColorSelect('new-var-color');
+                populateCapacitySelect('new-var-capacity');
+                populateColorSelect('new-img-color', true);
+
+                renderDeviceVariants(variants || []);
+                renderDeviceImages(images || []);
+
+                // Chuyển đến tab được yêu cầu ('info', 'variants', hoặc 'images')
+                let tabTarget = 'tab-dev-info';
+                let btnTarget = document.getElementById('tab-btn-dev-info');
+                if (initialTab === 'variants') {
+                    tabTarget = 'tab-dev-variants';
+                    btnTarget = document.getElementById('tab-btn-dev-variants');
+                } else if (initialTab === 'images') {
+                    tabTarget = 'tab-dev-images';
+                    btnTarget = document.getElementById('tab-btn-dev-images');
+                }
+                switchDeviceModalTab(tabTarget, btnTarget);
+
+                document.getElementById('deviceModal').classList.add('show');
+            } catch (err) {
+                alert('Lỗi tải thông tin thiết bị: ' + err.message);
+            }
+        }
+
+        // Tương thích ngược nếu còn lời gọi openManageDeviceModal
+        function openManageDeviceModal(deviceId) {
+            openEditDeviceModal(deviceId, 'variants');
+        }
+
+        // Làm mới dữ liệu chi tiết của thiết bị hiện tại mà không làm đóng modal
+        async function refreshDeviceModalDetails() {
+            if (!currentSelectedDeviceId) return;
+            try {
+                const res = await fetch(`/api/admin/devices/${currentSelectedDeviceId}`);
+                const data = await res.json();
+                if (!data.success) return;
+                const { variants, images } = data;
+                document.getElementById('devVariantsCountBadge').innerText = (variants || []).length;
+                document.getElementById('devImagesCountBadge').innerText = (images || []).length;
+                renderDeviceVariants(variants || []);
+                renderDeviceImages(images || []);
+            } catch (err) {
+                console.error('Error refreshing modal details:', err);
+            }
+        }
+
+        function populateColorSelect(selectId, allowAll = false) {
+            const sel = document.getElementById(selectId);
+            if (!sel) return;
+            let html = allowAll ? '<option value="">Chung (Mọi màu sắc)</option>' : '';
+            html += allColors.map(c => `
+                <option value="${c.id}">${c.name}</option>
+            `).join('');
+            sel.innerHTML = html;
+        }
+
+        function populateCapacitySelect(selectId) {
+            const sel = document.getElementById(selectId);
+            if (!sel) return;
+            sel.innerHTML = allCapacities.map(c => `
+                <option value="${c.id}">${c.name}</option>
+            `).join('');
+        }
+
+        function renderDeviceVariants(variants) {
+            const tbody = document.getElementById('deviceVariantsTableBody');
+            if (!variants.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #8e8e93;">Thiết bị này chưa có phân loại nào. Hãy thêm phân loại ở form bên dưới.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = variants.map(v => {
+                const isSoftDeleted = !v.is_active || v.deleted_at !== null;
+                const price = Number(v.daily_rental_price || 0).toLocaleString('vi-VN');
+                const dot = v.hex_code ? `<span class="color-dot" style="background: ${v.hex_code};"></span>` : '';
+
+                return `
+                    <tr class="${isSoftDeleted ? 'row-deleted' : ''}">
+                        <td>${dot} <strong>${v.color_name || 'Tiêu chuẩn'}</strong></td>
+                        <td>${v.capacity_value || 'Mặc định'}</td>
+                        <td><span style="font-size: 11px; background:#f0f0f2; padding:2px 6px; border-radius:4px;">${v.condition_name || 'New'}</span></td>
+                        <td style="font-weight: 700; color: #0071e3;">${price} đ</td>
+                        <td>${v.available_stock} / ${v.total_stock}</td>
+                        <td>
+                            <span class="badge-status ${isSoftDeleted ? 'badge-deleted' : 'badge-active'}">
+                                ${isSoftDeleted ? 'Đã xóa mềm' : 'Đang bật'}
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-edit" onclick="quickEditVariantPrice(${v.variant_id}, ${v.daily_rental_price})" title="Sửa giá"><i class="fa-solid fa-pen"></i> Sửa giá</button>
+                            ${isSoftDeleted ? `
+                                <button class="btn-action btn-restore" onclick="restoreVariant(${v.variant_id})"><i class="fa-solid fa-rotate-left"></i> Bật lại</button>
+                            ` : `
+                                <button class="btn-action btn-soft-delete" onclick="softDeleteVariant(${v.variant_id})" title="Xóa mềm"><i class="fa-solid fa-trash"></i></button>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderDeviceImages(images) {
+            const grid = document.getElementById('deviceImagesGrid');
+            if (!images.length) {
+                grid.innerHTML = '<p style="color: #8e8e93; grid-column: 1/-1; padding: 12px; margin: 0;">Chưa có hình ảnh nào trong bộ sưu tập. Hãy thêm ảnh bên dưới.</p>';
+                return;
+            }
+
+            grid.innerHTML = images.map(img => {
+                const colorBadge = img.color_name 
+                    ? `<span style="display:inline-flex; align-items:center;"><span class="color-dot" style="background:${img.hex_code || '#ccc'};"></span>${img.color_name}</span>`
+                    : '<span style="color:#8e8e93;">Chung (Tất cả màu)</span>';
+
+                return `
+                    <div class="image-card">
+                        ${img.is_primary ? '<span class="badge-primary-img">Ảnh chính</span>' : ''}
+                        <img src="${img.image_url}" onerror="this.src='https://placehold.co/200x150?text=Error'">
+                        <div class="image-card-info">
+                            <div>${colorBadge}</div>
+                        </div>
+                        <div class="image-card-actions">
+                            ${!img.is_primary ? `
+                                <button class="btn-action btn-approve" style="font-size: 11px; padding: 3px 6px;" onclick="setImagePrimary(${img.image_id})">Đặt làm chính</button>
+                            ` : ''}
+                            <button class="btn-action btn-soft-delete" style="font-size: 11px; padding: 3px 6px; margin-left: auto;" onclick="deleteImage(${img.image_id})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Thao tác Thêm Variant
+        async function addVariantToDevice() {
+            if (!currentSelectedDeviceId) return;
+            const color_id = document.getElementById('new-var-color').value;
+            const capacity_id = document.getElementById('new-var-capacity').value;
+            const condition_name = document.getElementById('new-var-condition').value.trim();
+            const daily_rental_price = parseFloat(document.getElementById('new-var-price').value);
+            const initial_stock = parseInt(document.getElementById('new-var-stock').value, 10) || 2;
+
+            if (isNaN(daily_rental_price) || daily_rental_price <= 0) {
+                return alert('Vui lòng nhập giá thuê hàng ngày hợp lệ!');
+            }
+
+            try {
+                const res = await fetch(`/api/admin/devices/${currentSelectedDeviceId}/variants`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ color_id, capacity_id, condition_name, daily_rental_price, initial_stock })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Đã thêm phân loại mới thành công!');
+                    document.getElementById('new-var-price').value = '';
+                    await refreshDeviceModalDetails();
+                    loadDevices();
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        async function quickEditVariantPrice(variantId, currentPrice) {
+            const newPrice = prompt('Nhập giá thuê hàng ngày mới (VNĐ):', currentPrice);
+            if (!newPrice || isNaN(parseFloat(newPrice))) return;
+
+            try {
+                const res = await fetch(`/api/admin/variants/${variantId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ daily_rental_price: parseFloat(newPrice) })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Đã cập nhật giá thuê thành công!');
+                    await refreshDeviceModalDetails();
+                    loadDevices();
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        async function softDeleteVariant(variantId) {
+            if (!confirm('Xóa mềm phân loại này?')) return;
+            try {
+                const res = await fetch(`/api/admin/variants/${variantId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Đã xóa mềm phân loại!');
+                    await refreshDeviceModalDetails();
+                    loadDevices();
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        async function restoreVariant(variantId) {
+            try {
+                const res = await fetch(`/api/admin/variants/${variantId}/restore`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Đã khôi phục phân loại!');
+                    await refreshDeviceModalDetails();
+                    loadDevices();
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        // Thao tác Thêm & Sửa Ảnh
+        async function addImageToDevice() {
+            if (!currentSelectedDeviceId) return;
+            const color_id = document.getElementById('new-img-color').value;
+            const image_url = document.getElementById('new-img-url').value.trim();
+            const is_primary = document.getElementById('new-img-primary').checked;
+
+            if (!image_url) return alert('Vui lòng nhập đường dẫn hình ảnh!');
+
+            try {
+                const res = await fetch(`/api/admin/devices/${currentSelectedDeviceId}/images`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ color_id, image_url, is_primary })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Đã thêm hình ảnh mới vào bộ sưu tập!');
+                    document.getElementById('new-img-url').value = '';
+                    document.getElementById('new-img-primary').checked = false;
+                    await refreshDeviceModalDetails();
+                    loadDevices();
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        async function setImagePrimary(imageId) {
+            try {
+                const res = await fetch(`/api/admin/images/${imageId}/primary`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Đã đặt làm ảnh đại diện chính!');
+                    await refreshDeviceModalDetails();
+                    loadDevices();
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        async function deleteImage(imageId) {
+            if (!confirm('Xóa hình ảnh này khỏi bộ sưu tập?')) return;
+            try {
+                const res = await fetch(`/api/admin/images/${imageId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Đã xóa hình ảnh!');
+                    await refreshDeviceModalDetails();
+                    loadDevices();
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        // Modal Thêm Thiết Bị Mới
+        function openAddDeviceModal() {
+            currentSelectedDeviceId = null;
+            document.getElementById('deviceModalTitle').innerHTML = `
+                <i class="fa-solid fa-circle-plus" style="color: #0071e3;"></i> Thêm Thiết Bị Công Nghệ Mới
+            `;
+            document.getElementById('deviceModalSubtitle').innerText = 'Tạo thông tin cơ bản trước, sau đó cấu hình phân loại & ảnh';
+            document.getElementById('dev-id').value = '';
+            document.getElementById('dev-name').value = '';
+            document.getElementById('dev-manufacturer').value = 'Apple';
+            document.getElementById('dev-price').value = '150000';
+            document.getElementById('dev-stock').value = '3';
+            document.getElementById('dev-stock-group').style.display = 'block';
+            document.getElementById('dev-image').value = '';
+            updateDeviceImagePreview('');
+            document.getElementById('dev-desc').value = '';
+            populateCategorySelect('dev-category');
+
+            document.getElementById('devVariantsCountBadge').innerText = '0';
+            document.getElementById('devImagesCountBadge').innerText = '0';
+
+            document.getElementById('variants-new-device-warning').style.display = 'block';
+            document.getElementById('variants-management-container').style.display = 'none';
+            document.getElementById('images-new-device-warning').style.display = 'block';
+            document.getElementById('images-management-container').style.display = 'none';
+
+            switchDeviceModalTab('tab-dev-info', document.getElementById('tab-btn-dev-info'));
+            document.getElementById('deviceModal').classList.add('show');
+        }
+
+        function populateCategorySelect(selectId, selectedId = null) {
+            const sel = document.getElementById(selectId);
+            if (!sel) return;
+            sel.innerHTML = allCategories.map(c => 
+                `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.name}</option>`
+            ).join('');
+        }
+
+        async function saveDevice() {
+            const id = document.getElementById('dev-id').value;
+            const payload = {
+                device_name: document.getElementById('dev-name').value.trim(),
+                category_id: document.getElementById('dev-category').value,
+                manufacturer: document.getElementById('dev-manufacturer').value.trim(),
+                daily_rental_price: parseFloat(document.getElementById('dev-price').value),
+                default_image: document.getElementById('dev-image').value.trim(),
+                description: document.getElementById('dev-desc').value.trim(),
+                initial_stock: parseInt(document.getElementById('dev-stock').value, 10) || 3
+            };
+
+            if (!payload.device_name || isNaN(payload.daily_rental_price)) {
+                alert('Vui lòng nhập tên thiết bị và giá thuê hàng ngày!');
+                return;
+            }
+
+            try {
+                let res;
+                if (id) {
+                    res = await fetch(`/api/admin/devices/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    res = await fetch('/api/admin/devices', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                const result = await res.json();
+                if (result.success) {
+                    showToast(result.message || 'Lưu thông tin thiết bị thành công!');
+                    loadDevices();
+                    if (!id && result.device_id) {
+                        // Tự động mở thiết bị mới tạo và chuyển ngay sang Tab 2 (Phân loại)
+                        await openEditDeviceModal(result.device_id, 'variants');
+                    } else if (id) {
+                        await openEditDeviceModal(id, 'info');
+                    }
+                } else {
+                    alert(result.message);
+                }
+            } catch (err) {
+                alert('Lỗi: ' + err.message);
+            }
+        }
+
+        async function softDeleteDevice(id) {
+            if (!confirm('Bạn có chắc muốn XÓA MỀM thiết bị này?\nThiết bị sẽ được ẩn khỏi trang web khách hàng nhưng vẫn lưu trong hệ thống để bảo toàn đơn thuê.')) return;
+
+            try {
+                const res = await fetch(`/api/admin/devices/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Đã xóa mềm thiết bị!');
+                    loadDevices();
+                }
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function restoreDevice(id) {
+            try {
+                const res = await fetch(`/api/admin/devices/${id}/restore`, { method: 'POST' });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Đã khôi phục thiết bị hoạt động lại!');
+                    loadDevices();
+                }
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // ==========================================
+        // 2. DANH MỤC (CATEGORIES)
+        // ==========================================
+        let currentCategoryFilter = 'active';
+
+        function setCategoryFilter(filter, btn) {
+            currentCategoryFilter = filter;
+            document.querySelectorAll('#tab-categories .filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            loadCategories();
+        }
+
+        async function loadCategories() {
+            try {
+                const res = await fetch(`/api/admin/categories?status=${currentCategoryFilter}`);
+                const data = await res.json();
+                if (data.success) {
+                    allCategories = data.categories;
+                    document.getElementById('kpi-categories').innerText = allCategories.length;
+                    renderCategories(allCategories);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderCategories(categories) {
+            const tbody = document.getElementById('categoriesTableBody');
+            if (!categories.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #8e8e93;">Không có danh mục nào trong danh sách.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = categories.map(c => {
+                const isSoftDeleted = !c.is_active || c.deleted_at !== null;
+                const statusBadge = isSoftDeleted
+                    ? '<span class="badge-status badge-deleted"><i class="fa-solid fa-trash-can"></i> Đã xóa mềm</span>'
+                    : '<span class="badge-status badge-active"><i class="fa-solid fa-circle-check"></i> Đang hoạt động</span>';
+
+                const imgTag = c.image_url 
+                    ? `<img src="${c.image_url}" class="tech-image" style="width:36px; height:36px; object-fit:cover; border-radius:8px;" onerror="this.src='https://placehold.co/80x80?text=Cat'">` 
+                    : '<span style="color:#bbb; font-size:12px;">--</span>';
+
+                const safeName = (c.name || '').replace(/'/g, "\\'");
+                const safeImg = (c.image_url || '').replace(/'/g, "\\'");
+
+                const actionBtns = isSoftDeleted
+                    ? `<button class="btn-action btn-restore" onclick="restoreCategory(${c.id})"><i class="fa-solid fa-rotate-left"></i> Khôi phục</button>`
+                    : `
+                        <button class="btn-action btn-edit" onclick="openEditCategoryModal(${c.id}, '${safeName}', '${safeImg}')" title="Sửa danh mục"><i class="fa-solid fa-pen"></i> Sửa</button>
+                        <button class="btn-action btn-soft-delete" onclick="softDeleteCategory(${c.id})" title="Xóa mềm danh mục"><i class="fa-solid fa-trash"></i></button>
+                      `;
+
+                return `
+                    <tr class="${isSoftDeleted ? 'row-deleted' : ''}">
+                        <td style="font-weight: 600;">#${c.id}</td>
+                        <td>${imgTag}</td>
+                        <td><strong>${c.name}</strong></td>
+                        <td>${c.active_device_count} thiết bị đang bán (tổng: ${c.total_device_count})</td>
+                        <td>${statusBadge}</td>
+                        <td style="text-align: center;">${actionBtns}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openAddCategoryModal() {
+            document.getElementById('categoryModalTitle').innerText = 'Thêm Danh Mục Mới';
+            document.getElementById('cat-id').value = '';
+            document.getElementById('cat-name').value = '';
+            document.getElementById('cat-image').value = '';
+            document.getElementById('categoryModal').classList.add('show');
+        }
+
+        function openEditCategoryModal(id, name, image) {
+            document.getElementById('categoryModalTitle').innerText = 'Sửa Danh Mục';
+            document.getElementById('cat-id').value = id;
+            document.getElementById('cat-name').value = name;
+            document.getElementById('cat-image').value = image;
+            document.getElementById('categoryModal').classList.add('show');
+        }
+
+        async function saveCategory() {
+            const id = document.getElementById('cat-id').value;
+            const name = document.getElementById('cat-name').value.trim();
+            const image = document.getElementById('cat-image').value.trim();
+
+            if (!name) return alert('Tên danh mục không được để trống');
+
+            try {
+                const url = id ? `/api/admin/categories/${id}` : '/api/admin/categories';
+                const method = id ? 'PUT' : 'POST';
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ category_name: name, category_image: image })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    closeModal('categoryModal');
+                    loadCategories();
+                    loadMetadata();
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        async function softDeleteCategory(id) {
+            if (!confirm('Bạn có chắc muốn XÓA MỀM danh mục này?\nDanh mục sẽ được ẩn khỏi trang web khách hàng và các bộ lọc.')) return;
+            try {
+                const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    loadCategories();
+                    loadMetadata();
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        async function restoreCategory(id) {
+            try {
+                const res = await fetch(`/api/admin/categories/${id}/restore`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    loadCategories();
+                    loadMetadata();
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        // ==========================================
+        // 3. ĐƠN THUÊ (RENTAL ORDERS)
+        // ==========================================
+        let currentOrderFilter = '';
+        function setOrderFilter(status, btn) {
+            currentOrderFilter = status;
+            btn.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadOrders();
+        }
+
         async function loadOrders() {
             try {
-                const res = await fetch('/api/orders');
+                const res = await fetch(`/api/admin/orders?status=${currentOrderFilter}`);
                 const data = await res.json();
-                const tbody = document.getElementById('ordersTableBody');
-
-                const orders = Array.isArray(data) ? data : (data.orders || []);
-                document.getElementById('kpi-orders').innerText = orders.length;
-
-                if (!orders.length) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Chưa có đơn thuê nào phát sinh.</td></tr>';
-                    return;
+                if (data.success) {
+                    document.getElementById('kpi-orders').innerText = data.orders.length;
+                    renderOrders(data.orders);
                 }
-
-                tbody.innerHTML = orders.map(o => {
-                    const total = Number(o.tong_tien || o.total_amount || 0).toLocaleString('vi-VN');
-                    return `
-                        <tr>
-                            <td style="font-weight: 600;">#${o.id || o.order_id}</td>
-                            <td>
-                                <div>${o.ho_ten || o.customer_name || 'Khách hàng'}</div>
-                                <small style="color: #8e8e93;">${o.so_dien_thoai || o.phone || '0901234567'}</small>
-                            </td>
-                            <td>${o.ngay_bat_dau || 'Hôm nay'} → ${o.ngay_ket_thuc || '5 ngày tới'}</td>
-                            <td style="font-weight: 600; color: #0071e3;">${total} đ</td>
-                            <td><span class="badge-status badge-pending">${o.trang_thai || 'Đang xử lý'}</span></td>
-                            <td style="text-align: center;">
-                                <button class="btn-action btn-approve" onclick="alert('Đã cập nhật trạng thái đơn #${o.id}!')">Duyệt giao máy</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
             } catch (err) {
                 console.error(err);
             }
         }
 
-        // Tải giao dịch pending
-        async function loadPendingPayments() {
+        function renderOrders(orders) {
+            const tbody = document.getElementById('ordersTableBody');
+            if (!orders.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px;">Không có đơn thuê nào.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = orders.map(o => {
+                const total = Number(o.total_amount || 0).toLocaleString('vi-VN');
+                const deposit = Number(o.deposit_amount || 0).toLocaleString('vi-VN');
+                const start = (o.rental_start_date || '').substring(0, 10);
+                const end = (o.expected_return_date || '').substring(0, 10);
+
+                let badgeClass = 'badge-pending';
+                if (o.rental_order_status === 'active') badgeClass = 'badge-rented';
+                if (o.rental_order_status === 'completed') badgeClass = 'badge-active';
+                if (o.rental_order_status === 'cancelled') badgeClass = 'badge-canceled';
+
+                const itemsDesc = o.items.map(i => `${i.device_name} (x${i.quantity})`).join(', ');
+
+                return `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 700;">${o.order_code || '#' + o.id}</div>
+                            <small style="color: #6e6e73;">${itemsDesc || 'Thiết bị công nghệ'}</small>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600;">${o.customer_name || 'Khách vãng lai'}</div>
+                            <small style="color: #8e8e93;">${o.phone_number || o.shipping_phone || '--'}</small>
+                        </td>
+                        <td>${start} → ${end}</td>
+                        <td>
+                            <div style="font-weight: 700; color: #0071e3;">${total} đ</div>
+                            <small style="color: #8e8e93;">Cọc: ${deposit} đ</small>
+                        </td>
+                        <td><span class="badge-status ${badgeClass}">${o.rental_order_status}</span></td>
+                        <td style="text-align: center;">
+                            ${o.rental_order_status === 'pending' ? `
+                                <button class="btn-action btn-approve" onclick="updateOrderStatus(${o.id}, 'confirmed')">Duyệt Đơn</button>
+                                <button class="btn-action btn-soft-delete" onclick="updateOrderStatus(${o.id}, 'cancelled')">Hủy Đơn</button>
+                            ` : ''}
+                            ${o.rental_order_status === 'confirmed' ? `
+                                <button class="btn-action btn-approve" onclick="updateOrderStatus(${o.id}, 'active')">Giao Máy</button>
+                            ` : ''}
+                            ${o.rental_order_status === 'active' ? `
+                                <button class="btn-action btn-restore" onclick="updateOrderStatus(${o.id}, 'completed')">Hoàn Tất</button>
+                            ` : ''}
+                            ${o.rental_order_status === 'completed' || o.rental_order_status === 'cancelled' ? `
+                                <span style="color: #8e8e93; font-size: 12px;">Đã kết thúc</span>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function updateOrderStatus(orderId, status) {
             try {
-                const res = await fetch('/api/payment/pending');
+                const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
                 const data = await res.json();
-                const tbody = document.getElementById('paymentsTableBody');
-
-                if (!data || !data.length) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Hiện tại không có yêu cầu nào chờ duyệt.</td></tr>';
-                    return;
+                if (data.success) {
+                    showToast(data.message);
+                    loadOrders();
                 }
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { alert(err.message); }
         }
 
-        // Tự động nạp khi load trang
-        window.addEventListener('DOMContentLoaded', () => {
-            loadProducts();
+        // ==========================================
+        // 4. KHÁCH HÀNG (CUSTOMERS CRUD)
+        // ==========================================
+        let allCustomers = [];
+        async function loadCustomers() {
+            try {
+                const res = await fetch('/api/admin/customers');
+                const data = await res.json();
+                if (data.success) {
+                    allCustomers = data.customers;
+                    document.getElementById('kpi-customers').innerText = allCustomers.length;
+                    renderCustomers(allCustomers);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function renderCustomers(customers) {
+            const tbody = document.getElementById('customersTableBody');
+            tbody.innerHTML = customers.map(c => {
+                const isDeleted = c.status === 'deleted' || c.status === 'locked';
+                return `
+                    <tr class="${isDeleted ? 'row-deleted' : ''}">
+                        <td>#${c.id}</td>
+                        <td><strong>${c.full_name}</strong></td>
+                        <td>${c.phone_number || '--'}</td>
+                        <td>${c.email || '--'}</td>
+                        <td><strong>${c.total_orders}</strong> đơn thuê</td>
+                        <td>
+                            <span class="badge-status ${isDeleted ? 'badge-deleted' : 'badge-active'}">
+                                ${c.status}
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-edit" onclick="openEditCustomerModal(${c.id})"><i class="fa-solid fa-pen"></i></button>
+                            ${isDeleted ? `
+                                <button class="btn-action btn-restore" onclick="restoreCustomer(${c.id})"><i class="fa-solid fa-unlock"></i> Mở lại</button>
+                            ` : `
+                                <button class="btn-action btn-soft-delete" onclick="softDeleteCustomer(${c.id})" title="Xóa mềm / Khóa"><i class="fa-solid fa-ban"></i></button>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openEditCustomerModal(id) {
+            const c = allCustomers.find(item => item.id === id);
+            if (!c) return;
+            document.getElementById('cust-id').value = c.id;
+            document.getElementById('cust-name').value = c.full_name;
+            document.getElementById('cust-phone').value = c.phone_number || '';
+            document.getElementById('cust-email').value = c.email || '';
+            document.getElementById('cust-identity').value = c.identity_number || '';
+            document.getElementById('cust-address').value = c.address || '';
+            document.getElementById('customerModal').classList.add('show');
+        }
+
+        async function saveCustomer() {
+            const id = document.getElementById('cust-id').value;
+            const payload = {
+                full_name: document.getElementById('cust-name').value.trim(),
+                phone_number: document.getElementById('cust-phone').value.trim(),
+                email: document.getElementById('cust-email').value.trim(),
+                identity_number: document.getElementById('cust-identity').value.trim(),
+                address: document.getElementById('cust-address').value.trim()
+            };
+
+            try {
+                const res = await fetch(`/api/admin/customers/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    closeModal('customerModal');
+                    loadCustomers();
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        async function softDeleteCustomer(id) {
+            if (!confirm('Khóa / Xóa mềm tài khoản khách hàng này?')) return;
+            try {
+                const res = await fetch(`/api/admin/customers/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    loadCustomers();
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        async function restoreCustomer(id) {
+            try {
+                const res = await fetch(`/api/admin/customers/${id}/restore`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    loadCustomers();
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        // ==========================================
+        // 5. GIAO DỊCH (PAYMENTS)
+        // ==========================================
+        async function loadPayments() {
+            try {
+                const res = await fetch('/api/admin/payments');
+                const data = await res.json();
+                if (data.success) {
+                    renderPayments(data.payments);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function renderPayments(payments) {
+            const tbody = document.getElementById('paymentsTableBody');
+            if (!payments.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px;">Không có giao dịch nào.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = payments.map(p => {
+                const amount = Number(p.amount || 0).toLocaleString('vi-VN');
+                return `
+                    <tr>
+                        <td><strong>#${p.id}</strong></td>
+                        <td>${p.customer_name || 'Khách hàng'}</td>
+                        <td>${p.order_code || '#' + p.rental_order_id}</td>
+                        <td style="font-weight: 700; color: #0071e3;">${amount} đ</td>
+                        <td>${p.payment_type}</td>
+                        <td><span class="badge-status ${p.payment_status === 'paid' ? 'badge-active' : 'badge-pending'}">${p.payment_status}</span></td>
+                        <td style="text-align: center;">
+                            ${p.payment_status === 'pending' ? `
+                                <button class="btn-action btn-approve" onclick="processPayment(${p.id}, 'paid')">Duyệt</button>
+                                <button class="btn-action btn-soft-delete" onclick="processPayment(${p.id}, 'cancelled')">Từ chối</button>
+                            ` : '<span style="color:#8e8e93; font-size:12px;">Đã xử lý</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function processPayment(id, status) {
+            try {
+                const res = await fetch(`/api/admin/payments/${id}/process`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    loadPayments();
+                }
+            } catch (err) { alert(err.message); }
+        }
+
+        // ==========================================
+        // KHỞI ĐỘNG BAN ĐẦU
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadMetadata();
+            loadDevices();
             loadOrders();
+            loadCustomers();
         });
     </script>
 </body>

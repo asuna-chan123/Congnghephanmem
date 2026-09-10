@@ -5,39 +5,39 @@ param (
 )
 
 Write-Host "================================================================" -ForegroundColor Cyan
-Write-Host "  KHỞI CHẠY KIỂM ĐỊNH HIỆU NĂNG VÀ CHỊU TẢI (LOAD TESTING K6)  " -ForegroundColor Yellow
+Write-Host "  KHOI CHAY KIEM DINH HIEU NANG VA CHIU TAI (LOAD TESTING K6)   " -ForegroundColor Yellow
 Write-Host "================================================================" -ForegroundColor Cyan
-Write-Host "Mục tiêu: $TargetUrl" -ForegroundColor Green
-Write-Host "Stream metrics về: http://prometheus:9090/api/v1/write" -ForegroundColor Green
+Write-Host "Target URL: $TargetUrl" -ForegroundColor Green
+Write-Host "Prometheus Remote Write: http://prometheus:9090/api/v1/write" -ForegroundColor Green
 Write-Host "Grafana Dashboard: http://localhost:3001" -ForegroundColor Cyan
 Write-Host "----------------------------------------------------------------"
 
 $extraArgs = @()
 if ($VUs -gt 0) {
-    $extraArgs += "--vus", $VUs
+    $extraArgs += "--vus"
+    $extraArgs += "$VUs"
 }
 if ($Duration -ne "") {
-    $extraArgs += "--duration", $Duration
+    $extraArgs += "--duration"
+    $extraArgs += "$Duration"
 }
 
-# Lấy đường dẫn tuyệt đối thư mục k6
 $k6Dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Kiểm tra mạng docker
-$networkName = "monitoring_monitoring_net"
-$netExists = docker network ls --filter name=$networkName -q
-if (-not $netExists) {
-    $networkName = "host"
+# Lay ID mang monitoring_net
+$netId = (docker network ls --filter "name=monitoring_net" -q)
+if (-not $netId) {
+    $netId = "monitoring_monitoring_net"
 }
 
-Write-Host "Đang chạy kịch bản K6 qua container Docker..." -ForegroundColor Yellow
+Write-Host "Dang chay kich ban K6 qua Docker container..." -ForegroundColor Yellow
 
 docker run --rm -i `
-  --network=$networkName `
+  --network=$netId `
   -v "${k6Dir}:/scripts" `
   -e TARGET_URL="$TargetUrl" `
-  -e K6_PROMETHEUS_REMOTE_URL="http://prometheus:9090/api/v1/write" `
-  grafana/k6 run -o experimental-prometheus-rw /scripts/load_test.js @extraArgs
+  -e K6_PROMETHEUS_RW_SERVER_URL="http://prometheus:9090/api/v1/write" `
+  grafana/k6 run -o experimental-prometheus-rw /scripts/load_test.js $extraArgs
 
 Write-Host "----------------------------------------------------------------"
-Write-Host "Kiểm thử hoàn tất! Xem đồ thị kết quả tại http://localhost:3001" -ForegroundColor Green
+Write-Host "Kiem thu hoan tat! Xem do thi ket qua tai http://localhost:3001" -ForegroundColor Green

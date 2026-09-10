@@ -17,6 +17,8 @@ class ProductModel {
           ELSE LOWER(REPLACE(category_name, ' ', '-'))
         END AS slug
       FROM equipment_categories
+      WHERE is_active = TRUE OR deleted_at IS NULL
+      ORDER BY category_id ASC
     `;
     return db.query(sql);
   }

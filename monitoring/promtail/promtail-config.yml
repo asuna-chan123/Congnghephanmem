@@ -1,0 +1,38 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: app_logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: tech-rental-app
+          service: backend
+          __path__: /var/log/app/*.log
+
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+            message: message
+            method: method
+            route: route
+            statusCode: statusCode
+            durationMs: durationMs
+            timestamp: timestamp
+      - labels:
+          level:
+          method:
+          route:
+          statusCode:
+      - timestamp:
+          source: timestamp
+          format: "2006-01-02 15:04:05.000"

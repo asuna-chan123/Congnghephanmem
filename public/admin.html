@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Tech Store — Hệ Thống Quản Trị Nghiệp Vụ & Điều Hành</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --admin-nav-bg: rgba(255, 255, 255, 0.85);
+            --admin-card: #ffffff;
+            --admin-border: rgba(0, 0, 0, 0.08);
+            --admin-accent: #0071e3;
+        }
+
+        body {
+            background-color: #f5f5f7;
+            font-family: var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+            margin: 0;
+            padding: 0;
+            color: #1d1d1f;
+        }
+
+        .admin-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--admin-nav-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--admin-border);
+            padding: 12px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .admin-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #1d1d1f;
+        }
+
+        .admin-brand-badge {
+            background: linear-gradient(135deg, #0071e3, #47a3ff);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .admin-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-grafana {
+            background: linear-gradient(135deg, #f05a28, #ff8144);
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(240, 90, 40, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .btn-grafana:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(240, 90, 40, 0.35);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--admin-border);
+            background: white;
+            color: #1d1d1f;
+            padding: 8px 14px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            background: #f0f0f2;
+        }
+
+        .admin-container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 24px 24px 80px;
+        }
+
+        /* Banner thông tin phân biệt 2 Admin */
+        .info-banner {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: #f8fafc;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+            gap: 20px;
+        }
+
+        .info-banner-content h3 {
+            margin: 0 0 6px;
+            font-size: 17px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-banner-content p {
+            margin: 0;
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        /* Thống kê KPIs */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--admin-card);
+            border: 1px solid var(--admin-border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-info span {
+            font-size: 13px;
+            color: #6e6e73;
+            font-weight: 500;
+        }
+
+        .kpi-info h2 {
+            margin: 4px 0 0;
+            font-size: 26px;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+
+        .kpi-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .icon-blue { background: rgba(0, 113, 227, 0.1); color: #0071e3; }
+        .icon-green { background: rgba(52, 199, 89, 0.1); color: #34c759; }
+        .icon-orange { background: rgba(255, 159, 10, 0.1); color: #ff9f0a; }
+        .icon-purple { background: rgba(175, 82, 222, 0.1); color: #af52de; }
+
+        /* Tabs điều hướng nghiệp vụ */
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--admin-border);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6e6e73;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #1d1d1f;
+        }
+
+        .tab-btn.active {
+            color: #0071e3;
+            border-bottom-color: #0071e3;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Bảng dữ liệu quản trị */
+        .admin-table-card {
+            background: var(--admin-card);
+            border: 1px solid var(--admin-border);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .table-header-tools {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--admin-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0f0f2;
+            padding: 8px 14px;
+            border-radius: 20px;
+            width: 280px;
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            font-size: 13px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background: #fbfbfd;
+            color: #6e6e73;
+            font-weight: 600;
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--admin-border);
+            color: #1d1d1f;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #fafafa;
+        }
+
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-active { background: rgba(52, 199, 89, 0.12); color: #28a745; }
+        .badge-pending { background: rgba(255, 159, 10, 0.12); color: #d97706; }
+        .badge-rented { background: rgba(0, 113, 227, 0.12); color: #0071e3; }
+        .badge-canceled { background: rgba(255, 59, 48, 0.12); color: #dc2626; }
+
+        .btn-action {
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-approve { background: #0071e3; color: white; }
+        .btn-approve:hover { background: #005bb5; }
+        .btn-cancel { background: #ff3b30; color: white; }
+        .btn-cancel:hover { background: #cc2920; }
+
+        .tech-image {
+            width: 44px;
+            height: 44px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #e5e5ea;
+        }
+
+        /* Tab DevOps QA Section */
+        .qa-suite-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .qa-card {
+            background: white;
+            border: 1px solid var(--admin-border);
+            border-radius: 14px;
+            padding: 22px;
+        }
+
+        .qa-card h4 {
+            margin: 0 0 10px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .qa-card p {
+            font-size: 13px;
+            color: #6e6e73;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .code-block {
+            background: #1e1e24;
+            color: #4ade80;
+            font-family: monospace;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            overflow-x: auto;
+            margin-bottom: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header điều hướng -->
+    <header class="admin-header">
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <a href="/" class="admin-brand">
+                <i class="fa-solid fa-laptop-code" style="font-size: 22px; color: #0071e3;"></i>
+                <span style="font-weight: 700; font-size: 18px; letter-spacing: -0.3px;">E-Tech Rental</span>
+            </a>
+            <span class="admin-brand-badge">Admin Nghiệp Vụ</span>
+        </div>
+
+        <div class="admin-nav-actions">
+            <a href="/" class="btn-outline"><i class="fa-solid fa-store"></i> Xem Cửa Hàng</a>
+            <a href="/orders" class="btn-outline"><i class="fa-solid fa-box"></i> Đơn Thuê</a>
+            <!-- NÚT CHUYỂN SANG ADMIN KỸ THUẬT GRAFANA -->
+            <a href="http://localhost:3001" target="_blank" class="btn-grafana">
+                <i class="fa-solid fa-chart-line"></i>
+                Admin Kỹ Thuật (Grafana :3001)
+                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
+            </a>
+        </div>
+    </header>
+
+    <main class="admin-container">
+
+        <!-- Banner giải thích & điều hướng -->
+        <div class="info-banner">
+            <div class="info-banner-content">
+                <h3><i class="fa-solid fa-shield-halved" style="color: #60a5fa;"></i> Phân Hệ Quản Trị Hệ Thống Cho Thuê Thiết Bị Công Nghệ</h3>
+                <p>
+                    Trang hiện tại là <strong>Admin Nghiệp vụ (:3000/admin)</strong> dùng để quản lý kho máy móc, duyệt đơn thuê và số dư ký cọc của khách hàng.<br>
+                    Để phục vụ môn <strong>Kiểm định chất lượng phần mềm</strong> (giám sát CPU/RAM, QPS, Latency p95, Error Tracking và K6 Load Test), vui lòng mở <strong>Admin Kỹ thuật Grafana tại cổng 3001</strong>.
+                </p>
+            </div>
+            <div>
+                <a href="http://localhost:3001" target="_blank" class="btn-grafana" style="white-space: nowrap; padding: 10px 20px; font-size: 14px;">
+                    <i class="fa-solid fa-gauge-high"></i> Mở Grafana Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Thống kê KPIs nhanh -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span>Thiết Bị Sẵn Sàng Cho Thuê</span>
+                    <h2 id="kpi-products">--</h2>
+                </div>
+                <div class="kpi-icon icon-blue">
+                    <i class="fa-solid fa-laptop"></i>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span>Đơn Thuê Đang Xử Lý</span>
+                    <h2 id="kpi-orders">--</h2>
+                </div>
+                <div class="kpi-icon icon-green">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span>Thời Gian Phản Hồi Database</span>
+                    <h2 id="kpi-latency">-- ms</h2>
+                </div>
+                <div class="kpi-icon icon-orange">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <span>Trạng Thái Cụm Giám Sát</span>
+                    <h2 id="kpi-monitoring" style="color: #34c759; font-size: 18px;">Hoạt Động</h2>
+                </div>
+                <div class="kpi-icon icon-purple">
+                    <i class="fa-solid fa-server"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thanh Tabs chuyển đổi chức năng -->
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('tab-products')">
+                <i class="fa-solid fa-boxes-stacked"></i> Kho Thiết Bị Công Nghệ
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-orders')">
+                <i class="fa-solid fa-receipt"></i> Đơn Thuê & Giao Nhận
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-payments')">
+                <i class="fa-solid fa-wallet"></i> Duyệt Ví & Tiền Cọc
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-qa')">
+                <i class="fa-solid fa-flask-vial"></i> Kiểm Định & DevOps (QA Suite)
+            </button>
+        </div>
+
+        <!-- TAB 1: KHO THIẾT BỊ -->
+        <div id="tab-products" class="tab-content active">
+            <div class="admin-table-card">
+                <div class="table-header-tools">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass" style="color: #8e8e93;"></i>
+                        <input type="text" id="searchProductInput" placeholder="Tìm theo tên máy, danh mục..." onkeyup="filterProducts()">
+                    </div>
+                    <div>
+                        <span id="productCountBadge" style="font-size: 13px; color: #6e6e73; font-weight: 500;">Đang nạp dữ liệu...</span>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Hình Ảnh</th>
+                            <th>Tên Thiết Bị</th>
+                            <th>Danh Mục</th>
+                            <th>Giá Thuê / Ngày</th>
+                            <th>Giá Trị Cọc</th>
+                            <th>Số Lượng Kho</th>
+                            <th>Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #8e8e93; padding: 30px;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải danh sách thiết bị từ PostgreSQL...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 2: ĐƠN THUÊ -->
+        <div id="tab-orders" class="tab-content">
+            <div class="admin-table-card">
+                <div class="table-header-tools">
+                    <h4 style="margin: 0; font-size: 15px;">Danh Sách Đơn Đặt Thuê Thiết Bị</h4>
+                    <button class="btn-outline" onclick="loadOrders()"><i class="fa-solid fa-rotate-right"></i> Làm Mới</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Khách Hàng / SĐT</th>
+                            <th>Thời Gian Thuê</th>
+                            <th>Tổng Tiền</th>
+                            <th>Trạng Thái</th>
+                            <th style="text-align: center;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #8e8e93; padding: 30px;">
+                                Đang tải danh sách đơn thuê...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: DUYỆT GIAO DỊCH VÍ -->
+        <div id="tab-payments" class="tab-content">
+            <div class="admin-table-card">
+                <div class="table-header-tools">
+                    <h4 style="margin: 0; font-size: 15px;">Yêu Cầu Nạp / Hoàn Tiền Đặt Cọc Chờ Duyệt</h4>
+                    <button class="btn-outline" onclick="loadPendingPayments()"><i class="fa-solid fa-rotate-right"></i> Làm Mới</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã Giao Dịch</th>
+                            <th>Khách Hàng</th>
+                            <th>Loại Yêu Cầu</th>
+                            <th>Số Tiền</th>
+                            <th>Thời Điểm</th>
+                            <th style="text-align: center;">Duyệt Nghiệp Vụ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #8e8e93; padding: 30px;">
+                                Không có yêu cầu nạp hoặc rút cọc nào đang chờ.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 4: KIỂM ĐỊNH CHẤT LƯỢNG & DEVOPS -->
+        <div id="tab-qa" class="tab-content">
+            <div class="qa-suite-grid">
+                <div class="qa-card">
+                    <h4><i class="fa-solid fa-chart-pie" style="color: #f05a28;"></i> Admin Kỹ Thuật (Grafana)</h4>
+                    <p>Mở giao diện Grafana để quan sát trực tiếp các biểu đồ QPS, Response Time p95, Error Rate, và Live Log từ Loki.</p>
+                    <a href="http://localhost:3001" target="_blank" class="btn-grafana" style="width: 100%; justify-content: center; box-sizing: border-box;">
+                        Mở Grafana (:3001)
+                    </a>
+                </div>
+
+                <div class="qa-card">
+                    <h4><i class="fa-solid fa-vial-virus" style="color: #0071e3;"></i> Chạy Kịch Bản Kiểm Thử K6</h4>
+                    <p>Chạy kịch bản mô phỏng 100 - 500 người dùng đồng thời thuê thiết bị. Dữ liệu sẽ stream tự động vào Prometheus và vẽ đồ thị.</p>
+                    <div class="code-block">.\monitoring\k6\run-test.ps1 -VUs 100 -Duration "1m"</div>
+                    <button class="btn-outline" style="width: 100%; justify-content: center;" onclick="alert('Hãy mở Terminal PowerShell tại thư mục dự án và chạy câu lệnh trên!')">
+                        <i class="fa-solid fa-terminal"></i> Xem Hướng Dẫn Chạy Test
+                    </button>
+                </div>
+
+                <div class="qa-card">
+                    <h4><i class="fa-solid fa-book" style="color: #34c759;"></i> Tài Liệu Vận Hành & Báo Cáo</h4>
+                    <p>Xem toàn bộ tài liệu hướng dẫn xuất Snapshot đồ thị, điều tra log lỗi làm Bug Report cho môn học trong file <code>README_MONITORING.md</code>.</p>
+                    <a href="http://localhost:9090" target="_blank" class="btn-outline" style="width: 100%; justify-content: center; box-sizing: border-box;">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i> Mở Prometheus (:9090)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let allProducts = [];
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            if (tabId === 'tab-orders') loadOrders();
+            if (tabId === 'tab-payments') loadPendingPayments();
+        }
+
+        // Tải danh sách thiết bị
+        async function loadProducts() {
+            try {
+                const start = performance.now();
+                const res = await fetch('/api/products');
+                const data = await res.json();
+                const duration = Math.round(performance.now() - start);
+
+                document.getElementById('kpi-latency').innerText = `${duration} ms`;
+
+                if (data.success && data.products) {
+                    allProducts = data.products;
+                    document.getElementById('kpi-products').innerText = allProducts.length;
+                    document.getElementById('productCountBadge').innerText = `Tổng cộng: ${allProducts.length} thiết bị`;
+                    renderProducts(allProducts);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('productsTableBody').innerHTML = `
+                    <tr><td colspan="7" style="text-align: center; color: red;">Lỗi kết nối API: ${err.message}</td></tr>
+                `;
+            }
+        }
+
+        function renderProducts(products) {
+            const tbody = document.getElementById('productsTableBody');
+            if (!products.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Không tìm thấy thiết bị nào.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = products.map(p => {
+                const price = Number(p.gia_thue_ngay || p.price_per_day || 0).toLocaleString('vi-VN');
+                const deposit = Number(p.tien_coc || p.deposit || 0).toLocaleString('vi-VN');
+                const stock = p.so_luong_kho !== undefined ? p.so_luong_kho : (p.quantity || 1);
+                const img = p.hinh_anh || p.image_url || '/images/laptop.jpg';
+                const statusBadge = stock > 0 
+                    ? '<span class="badge-status badge-active">Sẵn sàng thuê</span>' 
+                    : '<span class="badge-status badge-canceled">Hết thiết bị</span>';
+
+                return `
+                    <tr>
+                        <td><img src="${img}" class="tech-image" onerror="this.src='https://placehold.co/100x100?text=Tech'"></td>
+                        <td>
+                            <div style="font-weight: 600;">${p.ten_san_pham || p.name || 'Thiết bị'}</div>
+                            <small style="color: #8e8e93;">Mã: #${p.id}</small>
+                        </td>
+                        <td>${p.ten_danh_muc || p.category_name || 'Công nghệ'}</td>
+                        <td style="font-weight: 600; color: #0071e3;">${price} đ / ngày</td>
+                        <td>${deposit} đ</td>
+                        <td style="font-weight: 600;">${stock} chiếc</td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterProducts() {
+            const q = document.getElementById('searchProductInput').value.toLowerCase();
+            const filtered = allProducts.filter(p => {
+                const name = (p.ten_san_pham || p.name || '').toLowerCase();
+                const cat = (p.ten_danh_muc || p.category_name || '').toLowerCase();
+                return name.includes(q) || cat.includes(q);
+            });
+            renderProducts(filtered);
+        }
+
+        // Tải danh sách đơn thuê
+        async function loadOrders() {
+            try {
+                const res = await fetch('/api/orders');
+                const data = await res.json();
+                const tbody = document.getElementById('ordersTableBody');
+
+                const orders = Array.isArray(data) ? data : (data.orders || []);
+                document.getElementById('kpi-orders').innerText = orders.length;
+
+                if (!orders.length) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Chưa có đơn thuê nào phát sinh.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = orders.map(o => {
+                    const total = Number(o.tong_tien || o.total_amount || 0).toLocaleString('vi-VN');
+                    return `
+                        <tr>
+                            <td style="font-weight: 600;">#${o.id || o.order_id}</td>
+                            <td>
+                                <div>${o.ho_ten || o.customer_name || 'Khách hàng'}</div>
+                                <small style="color: #8e8e93;">${o.so_dien_thoai || o.phone || '0901234567'}</small>
+                            </td>
+                            <td>${o.ngay_bat_dau || 'Hôm nay'} → ${o.ngay_ket_thuc || '5 ngày tới'}</td>
+                            <td style="font-weight: 600; color: #0071e3;">${total} đ</td>
+                            <td><span class="badge-status badge-pending">${o.trang_thai || 'Đang xử lý'}</span></td>
+                            <td style="text-align: center;">
+                                <button class="btn-action btn-approve" onclick="alert('Đã cập nhật trạng thái đơn #${o.id}!')">Duyệt giao máy</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Tải giao dịch pending
+        async function loadPendingPayments() {
+            try {
+                const res = await fetch('/api/payment/pending');
+                const data = await res.json();
+                const tbody = document.getElementById('paymentsTableBody');
+
+                if (!data || !data.length) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Hiện tại không có yêu cầu nào chờ duyệt.</td></tr>';
+                    return;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Tự động nạp khi load trang
+        window.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            loadOrders();
+        });
+    </script>
+</body>
+</html>

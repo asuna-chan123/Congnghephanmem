@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const homeRoutes = require('./src/routes/home.route');
@@ -12,10 +13,25 @@ const authModule = require('./src/Auth/routes');
 const customerModule = require('./src/Customer/routes');
 const paymentModule = require('./src/Payment/routes');
 
+// Giám sát & Logging
+const logger = require('./src/utils/logger');
+const { register, metricsMiddleware } = require('./src/middleware/metrics.middleware');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Prometheus Metrics Endpoint
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  } catch (err) {
+    res.status(500).end(err.message);
+  }
+});
+
 // Middleware
+app.use(metricsMiddleware);
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Serve Static Files
@@ -43,6 +59,9 @@ app.get('/cart', (req, res) => {
 });
 app.get('/orders', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'orders.html'));
+});
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 // API Bắt mạch kết nối

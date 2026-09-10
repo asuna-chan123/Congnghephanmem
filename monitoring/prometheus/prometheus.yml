@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+  scrape_timeout: 4s
+
+rule_files:
+  - "/etc/prometheus/alert_rules.yml"
+
+scrape_configs:
+  # Giám sát chính Prometheus
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Giám sát ứng dụng Web Cho Thuê Thiết Bị Công Nghệ (Node.js)
+  - job_name: "tech_rental_backend"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["host.docker.internal:3000"]
+        labels:
+          app: "tech-rental-backend"
+          env: "production"
+
+  # Giám sát tài nguyên phần cứng (Node Exporter)
+  - job_name: "node_exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels:
+          system: "host-machine"

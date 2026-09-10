@@ -1,0 +1,49 @@
+groups:
+  - name: devops_alerts
+    rules:
+      - alert: ServerDown
+        expr: up{job="tech_rental_backend"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Máy chủ Web Cho Thuê Thiết Bị ngừng hoạt động (Server Down)"
+          description: "Không thể kết nối đến Web Backend (http://host.docker.internal:3000/metrics) trong hơn 30 giây."
+
+      - alert: HighCpuUsage
+        expr: rate(node_process_cpu_seconds_total[1m]) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Mức sử dụng CPU quá cao (> 80%)"
+          description: "Tiến trình Node.js đang sử dụng hơn 80% CPU trong 2 phút liên tiếp."
+
+      - alert: HighMemoryUsage
+        expr: node_process_resident_memory_bytes / 1024 / 1024 > 500
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Mức sử dụng RAM vượt ngưỡng (> 500MB)"
+          description: "Bộ nhớ Resident Memory của ứng dụng vượt quá 500MB."
+
+  - name: qa_testing_alerts
+    rules:
+      - alert: HighErrorRate
+        expr: (sum(rate(http_requests_total{status_code=~"5.."}[1m])) / sum(rate(http_requests_total[1m]))) * 100 > 5
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Tỷ lệ lỗi hệ thống vượt ngưỡng QA (> 5%)"
+          description: "Tỷ lệ HTTP 5xx lỗi server đang vượt quá 5% tổng lưu lượng trong quá trình kiểm định."
+
+      - alert: SlowResponseTime
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1m])) by (le)) > 2
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Thời gian phản hồi API quá chậm (p95 > 2s)"
+          description: "95% người dùng đang phải chờ hơn 2 giây để nhận phản hồi từ hệ thống."

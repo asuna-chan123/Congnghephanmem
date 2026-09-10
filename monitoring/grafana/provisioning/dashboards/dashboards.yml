@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: 'Tech Rental Monitoring'
+    orgId: 1
+    folder: 'Tech Rental System'
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/dashboards
